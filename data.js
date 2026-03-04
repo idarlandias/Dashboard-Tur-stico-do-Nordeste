@@ -76,6 +76,23 @@ const empregos = {
 const turistas = chegadasInt;
 
 // ============================================================
+// CONFIANÇA DOS DADOS - Classificação por indicador e período
+// ============================================================
+// Níveis: "verificado" (fontes oficiais), "estimativa" (modelos/pro-rata), "projecao" (OLS)
+const DATA_CONFIDENCE = {
+  turistas:  { niveis: ["verificado","verificado","verificado","verificado","projecao","projecao"],   fonte: "EMBRATUR / Polícia Federal" },
+  receita:   { niveis: ["verificado","verificado","verificado","verificado","projecao","projecao"],   fonte: "PNAD Contínua Turismo IBGE 2024 + MTur" },
+  ocupacao:  { niveis: ["estimativa","estimativa","estimativa","estimativa","estimativa","projecao"], fonte: "MTur / ABIH (estimativa pro-rata)" },
+  empregos:  { niveis: ["estimativa","estimativa","estimativa","estimativa","estimativa","projecao"], fonte: "EMBRATUR / MTur (estimativa)" },
+};
+
+const CONFIDENCE_META = {
+  verificado: { label: "Verificado",  icon: "✓", color: "#06D6A0", desc: "Dados oficiais verificados em fontes primárias" },
+  estimativa: { label: "Estimativa",  icon: "≈", color: "#F4A261", desc: "Estimativa baseada em modelos e dados pro-rata" },
+  projecao:   { label: "Projeção",    icon: "◇", color: "#845EC2", desc: "Projeção por Regressão Linear OLS (2021–2025)" },
+};
+
+// ============================================================
 // PROSPECOES 2026 E INDICE DE OPORTUNIDADE DE INVESTIMENTO BNB
 // Metodologia: Regressao Linear OLS + Indice Composto
 // ============================================================
