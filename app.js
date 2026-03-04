@@ -65,6 +65,30 @@ function bindEvents() {
         });
     });
 
+    // ── Menu Mobile ───────────────────────────────────────────
+    const btnMenu = document.getElementById('btn-menu');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (btnMenu && sidebar && overlay) {
+        function toggleMenu() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+        btnMenu.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+
+        // Fecha ao clicar em um item
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 900) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('show');
+                }
+            });
+        });
+    }
+
     // ── Exportação CSV ────────────────────────────────────────
     document.getElementById('btn-export-csv').addEventListener('click', exportCSV);
 

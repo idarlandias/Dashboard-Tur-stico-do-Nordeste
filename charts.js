@@ -104,9 +104,11 @@ function drawBarChart(canvasId, labels, datasets, opts = {}) {
     animate();
 
     // Tooltip
-    canvas.onmousemove = (e) => {
+    const handleMove = (e) => {
         const r = canvas.getBoundingClientRect();
-        const mx = e.clientX - r.left, my = e.clientY - r.top;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const mx = clientX - r.left, my = clientY - r.top;
         let found = false;
         datasets.forEach((ds, di) => {
             ds.data.forEach((val, gi) => {
@@ -121,7 +123,11 @@ function drawBarChart(canvasId, labels, datasets, opts = {}) {
         });
         if (!found) hideTooltip();
     };
-    canvas.onmouseleave = hideTooltip;
+    canvas.addEventListener('mousemove', handleMove);
+    canvas.addEventListener('touchmove', handleMove, { passive: true });
+    canvas.addEventListener('touchstart', handleMove, { passive: true });
+    canvas.addEventListener('mouseleave', hideTooltip);
+    canvas.addEventListener('touchend', hideTooltip);
 }
 
 // ── Line Chart ────────────────────────────────────────────────
@@ -202,16 +208,21 @@ function drawLineChart(canvasId, labels, datasets, opts = {}) {
     }
     animate();
 
-    canvas.onmousemove = (e) => {
+    const handleMove = (e) => {
         const r = canvas.getBoundingClientRect();
-        const mx = e.clientX - r.left;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const mx = clientX - r.left;
         const i = Math.round(((mx - pad.left) / chartW) * (n - 1));
         if (i >= 0 && i < n) {
             const lines = datasets.map(ds => `${ds.label || ''}: <b>${opts.yFormat ? opts.yFormat(ds.data[i]) : ds.data[i]}</b>`).join('<br>');
             showTooltip(e, `<b>${labels[i]}</b><br>${lines}`);
         } else hideTooltip();
     };
-    canvas.onmouseleave = hideTooltip;
+    canvas.addEventListener('mousemove', handleMove);
+    canvas.addEventListener('touchmove', handleMove, { passive: true });
+    canvas.addEventListener('touchstart', handleMove, { passive: true });
+    canvas.addEventListener('mouseleave', hideTooltip);
+    canvas.addEventListener('touchend', hideTooltip);
 }
 
 // ── Donut Chart ───────────────────────────────────────────────
@@ -260,9 +271,11 @@ function drawDonutChart(canvasId, labels, data, colors) {
     }
     animate();
 
-    canvas.onmousemove = (e) => {
+    const handleMove = (e) => {
         const rect2 = canvas.getBoundingClientRect();
-        const mx = e.clientX - rect2.left - cx, my = e.clientY - rect2.top - cy;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const mx = clientX - rect2.left - cx, my = clientY - rect2.top - cy;
         const dist = Math.sqrt(mx * mx + my * my);
         if (dist > r && dist < R) {
             let angle = Math.atan2(my, mx) + Math.PI / 2;
@@ -279,7 +292,11 @@ function drawDonutChart(canvasId, labels, data, colors) {
         }
         hideTooltip();
     };
-    canvas.onmouseleave = hideTooltip;
+    canvas.addEventListener('mousemove', handleMove);
+    canvas.addEventListener('touchmove', handleMove, { passive: true });
+    canvas.addEventListener('touchstart', handleMove, { passive: true });
+    canvas.addEventListener('mouseleave', hideTooltip);
+    canvas.addEventListener('touchend', hideTooltip);
 }
 
 // ── Tooltip ───────────────────────────────────────────────────
@@ -288,6 +305,7 @@ function getTooltip() {
     if (!tooltipEl) {
         tooltipEl = document.createElement('div');
         tooltipEl.className = 'chart-tooltip';
+        tooltipEl.setAttribute('aria-hidden', 'true');
         document.body.appendChild(tooltipEl);
     }
     return tooltipEl;
@@ -297,8 +315,10 @@ function showTooltip(e, html) {
     const t = getTooltip();
     t.innerHTML = html;
     t.style.display = 'block';
-    t.style.left = (e.clientX + 14) + 'px';
-    t.style.top = (e.clientY - 10) + 'px';
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    t.style.left = (clientX + 14) + 'px';
+    t.style.top = (clientY - 10) + 'px';
 }
 
 function hideTooltip() {

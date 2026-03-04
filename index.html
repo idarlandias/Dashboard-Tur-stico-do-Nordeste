@@ -12,7 +12,7 @@
 
 <body>
 
-  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>  <!-- ══════════════════════════════════════════════════════════ -->
   <!--  SIDEBAR                                                   -->
   <!-- ══════════════════════════════════════════════════════════ -->
   <aside class="sidebar">
@@ -76,8 +76,13 @@
     <!-- ── Topbar ── -->
     <header class="topbar">
       <div class="topbar-left">
-        <h2>Dashboard Turístico do Nordeste</h2>
-        <p>Indicadores consolidados · Observatório ObIT-NE · BNB</p>
+        <button class="mobile-menu-btn" id="btn-menu" aria-label="Abrir menu lateral">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div>
+          <h2>Dashboard Turístico do Nordeste</h2>
+          <p>Indicadores consolidados · Observatório ObIT-NE · BNB</p>
+        </div>
       </div>
       <div class="topbar-right">
         <div class="last-updated">
@@ -97,10 +102,10 @@
     <div class="filter-bar">
       <span class="filter-label">Filtros</span>
       <div class="filter-group">
-        <select class="filter-select" id="sel-estado" title="Filtrar por estado">
+        <select class="filter-select" id="sel-estado" aria-label="Filtrar por estado" title="Filtrar por estado">
           <!-- preenchido pelo JS -->
         </select>
-        <select class="filter-select" id="sel-periodo" title="Selecionar período">
+        <select class="filter-select" id="sel-periodo" aria-label="Selecionar período" title="Selecionar período">
           <!-- preenchido pelo JS -->
         </select>
       </div>
