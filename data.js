@@ -148,10 +148,28 @@ const prospecoes2026 = [
 // ============================================================
 // DADOS AUXILIARES - Categorias, Ranking, Sazonalidade
 // ============================================================
+const ATRACAO_LABELS = ["Praia / Litoral", "Ecoturismo", "Cultura / Patrimônio", "Gastronomia", "Eventos / Festas", "Aventura"];
+const ATRACAO_COLORS = ["#00B4D8", "#06D6A0", "#FFB703", "#FF6B6B", "#845EC2", "#FF9671"];
+
+// Perfis de atração por estado (baseados no perfil turístico real de cada UF)
+const atracoesPerEstado = {
+  "Todos": [38, 22, 18, 10, 8, 4],  // Nordeste geral
+  "Ceará": [42, 14, 20, 12, 8, 4],  // Fortaleza + praias de Jericoacoara
+  "Bahia": [30, 14, 34, 12, 8, 2],  // Salvador (Pelourinho) domina
+  "Pernambuco": [22, 18, 36, 10, 8, 6],  // Recife/Olinda + Noronha (eco)
+  "Rio Grande do Norte": [50, 8, 12, 6, 6, 18],  // Natal, Genipabu, kitesurf
+  "Alagoas": [64, 8, 8, 10, 6, 4],  // Maceió - praias = produto principal
+  "Paraíba": [34, 10, 28, 14, 10, 4],  // João Pessoa + praia do Jacaré
+  "Maranhão": [10, 52, 24, 8, 4, 2],  // Lençóis Maranhenses domina
+  "Piauí": [4, 32, 44, 8, 4, 8],  // Serra da Capivara (UNESCO)
+  "Sergipe": [28, 12, 26, 22, 8, 4],  // Gastronomia + cultura
+};
+
+// Alias para compatibilidade (Visão Geral usa "Todos" por padrão)
 const atracoesCategoria = {
-  labels: ["Praia / Litoral", "Ecoturismo", "Cultura / Patrimônio", "Gastronomia", "Eventos / Festas", "Aventura"],
-  data: [38, 22, 18, 10, 8, 4],
-  colors: ["#00B4D8", "#06D6A0", "#FFB703", "#FF6B6B", "#845EC2", "#FF9671"],
+  labels: ATRACAO_LABELS,
+  data: atracoesPerEstado["Todos"],
+  colors: ATRACAO_COLORS,
 };
 
 const kpis2025 = {

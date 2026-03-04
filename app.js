@@ -269,8 +269,32 @@ function renderCharts() {
         yFormat: v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v),
     });
 
-    // Donut de categorias
-    drawDonutChart('chart-categorias', atracoesCategoria.labels, atracoesCategoria.data, atracoesCategoria.colors);
+    // Donut de categorias — dinâmico por estado selecionado
+    const perfilEstado = (atracoesPerEstado && atracoesPerEstado[estado])
+        ? atracoesPerEstado[estado]
+        : atracoesCategoria.data;
+    drawDonutChart('chart-categorias', ATRACAO_LABELS || atracoesCategoria.labels, perfilEstado, ATRACAO_COLORS || atracoesCategoria.colors);
+
+    // Atualiza legenda do donut
+    const legend = document.getElementById('donut-legend');
+    if (legend) {
+        const labels = ATRACAO_LABELS || atracoesCategoria.labels;
+        const colors = ATRACAO_COLORS || atracoesCategoria.colors;
+        legend.innerHTML = labels.map((lbl, i) => `
+          <div class="legend-item">
+            <div class="legend-dot" style="background:${colors[i]}"></div>
+            <span>${lbl}</span>
+            <span class="legend-pct">${perfilEstado[i]}%</span>
+          </div>
+        `).join('');
+    }
+
+    // Atualiza badge do donut com estado atual
+    const donutCard = document.getElementById('sec-categorias');
+    if (donutCard) {
+        const badge = donutCard.querySelector('.chart-badge');
+        if (badge) badge.textContent = estado === 'Todos' ? 'Nordeste' : estado;
+    }
 }
 
 // ── Ranking ───────────────────────────────────────────────────
