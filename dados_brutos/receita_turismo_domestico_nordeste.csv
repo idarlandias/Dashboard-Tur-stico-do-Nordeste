@@ -1,0 +1,28 @@
+uf;estado;regiao;ano;gasto_medio_percapita_brl;total_viagens_domesticas_mil;receita_turistica_estimada_milhoes_brl;fonte
+AL;Alagoas;Nordeste;2021;1820;820;1493;PNAD-IBGE/MTur
+BA;Bahia;Nordeste;2021;2140;2850;6099;PNAD-IBGE/MTur
+CE;Ceará;Nordeste;2021;1980;2210;4376;PNAD-IBGE/MTur
+MA;Maranhão;Nordeste;2021;1510;640;967;PNAD-IBGE/MTur
+PB;Paraíba;Nordeste;2021;1640;540;885;PNAD-IBGE/MTur
+PE;Pernambuco;Nordeste;2021;1890;1780;3364;PNAD-IBGE/MTur
+PI;Piauí;Nordeste;2021;1420;380;540;PNAD-IBGE/MTur
+RN;Rio Grande do Norte;Nordeste;2021;1760;910;1602;PNAD-IBGE/MTur
+SE;Sergipe;Nordeste;2021;1530;390;597;PNAD-IBGE/MTur
+AL;Alagoas;Nordeste;2023;2890;1380;3988;PNAD-IBGE/MTur
+BA;Bahia;Nordeste;2023;2711;4920;13338;PNAD-IBGE/MTur
+CE;Ceará;Nordeste;2023;3006;3750;11273;PNAD-IBGE/MTur
+MA;Maranhão;Nordeste;2023;1820;1050;1911;PNAD-IBGE/MTur
+PB;Paraíba;Nordeste;2023;1940;910;1765;PNAD-IBGE/MTur
+PE;Pernambuco;Nordeste;2023;2340;3120;7301;PNAD-IBGE/MTur
+PI;Piauí;Nordeste;2023;1680;620;1042;PNAD-IBGE/MTur
+RN;Rio Grande do Norte;Nordeste;2023;2180;1540;3357;PNAD-IBGE/MTur
+SE;Sergipe;Nordeste;2023;1720;610;1049;PNAD-IBGE/MTur
+AL;Alagoas;Nordeste;2024;3790;1620;6142;PNAD-IBGE 2024
+BA;Bahia;Nordeste;2024;2711;6100;16537;PNAD-IBGE 2024
+CE;Ceará;Nordeste;2024;3006;4800;14429;PNAD-IBGE 2024
+MA;Maranhão;Nordeste;2024;1950;1280;2496;PNAD-IBGE 2024
+PB;Paraíba;Nordeste;2024;2020;1120;2262;PNAD-IBGE 2024
+PE;Pernambuco;Nordeste;2024;2480;3980;9870;PNAD-IBGE 2024
+PI;Piauí;Nordeste;2024;1820;780;1420;PNAD-IBGE 2024
+RN;Rio Grande do Norte;Nordeste;2024;2350;2080;4888;PNAD-IBGE 2024
+SE;Sergipe;Nordeste;2024;1850;730;1351;PNAD-IBGE 2024

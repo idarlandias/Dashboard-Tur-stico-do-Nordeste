@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ObIT-NE | Dashboard de Inteligência Turística do Nordeste</title>
+  <meta name="description" content="Observatório do Turismo do Nordeste – painel interativo de dados turísticos por estado, período e indicadores. Protótipo para candidatura BNB/ObIT-NE." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  SIDEBAR                                                   -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">🌊 BNB · ObIT-NE</div>
+    <h1>Observatório do<br>Turismo do<br>Nordeste</h1>
+    <p>Inteligência Turística Regional</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Painel Principal</div>
+
+    <a class="nav-item active" data-section="sec-overview" href="#">
+      <span class="nav-icon">📊</span> Visão Geral
+    </a>
+    <a class="nav-item" data-section="sec-estados" href="#">
+      <span class="nav-icon">🗺️</span> Por Estado
+    </a>
+    <a class="nav-item" data-section="sec-sazonalidade" href="#">
+      <span class="nav-icon">📅</span> Sazonalidade
+    </a>
+    <a class="nav-item" data-section="sec-ranking" href="#">
+      <span class="nav-icon">🏆</span> Ranking Destinos
+    </a>
+
+    <div class="nav-section-label" style="margin-top:16px;">Análises</div>
+
+    <a class="nav-item" data-section="sec-categorias" href="#">
+      <span class="nav-icon">🎯</span> Categorias de Atração
+    </a>
+    <a class="nav-item" data-section="sec-evolucao" href="#">
+      <span class="nav-icon">📈</span> Evolução Temporal
+    </a>
+
+    <div class="nav-section-label" style="margin-top:16px;">Relatórios</div>
+
+    <a class="nav-item" href="#" onclick="document.getElementById('btn-export').click(); return false;">
+      <span class="nav-icon">📥</span> Exportar Dados
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <strong>BNB · ObIT-NE</strong><br>
+    Dados: Simulação demo<br>
+    Protótipo v1.0 · 2025<br>
+    <span style="color:#00B4D8">Portfólio de candidatura</span>
+  </div>
+</aside>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  MAIN                                                      -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- ── Topbar ── -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h2>Dashboard Turístico do Nordeste</h2>
+      <p>Indicadores consolidados · Observatório ObIT-NE · BNB</p>
+    </div>
+    <div class="topbar-right">
+      <div class="last-updated">
+        <span class="status-dot"></span>
+        Dados simulados · Atualizado em tempo real
+      </div>
+      <button class="btn-export" id="btn-export">
+        📥 Exportar Relatório
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Filter Bar ── -->
+  <div class="filter-bar">
+    <span class="filter-label">Filtros</span>
+    <div class="filter-group">
+      <select class="filter-select" id="sel-estado" title="Filtrar por estado">
+        <!-- preenchido pelo JS -->
+      </select>
+      <select class="filter-select" id="sel-periodo" title="Selecionar período">
+        <!-- preenchido pelo JS -->
+      </select>
+    </div>
+    <div class="filter-chips">
+      <button class="chip active" data-ind="turistas" title="Chegada de turistas">✈️ Turistas</button>
+      <button class="chip" data-ind="receita"  title="Receita turística">💰 Receita</button>
+      <button class="chip" data-ind="ocupacao" title="Taxa de ocupação hoteleira">🏨 Ocupação</button>
+      <button class="chip" data-ind="empregos" title="Empregos diretos no turismo">👥 Empregos</button>
+    </div>
+  </div>
+
+  <!-- ── Content ── -->
+  <div class="content">
+
+    <!-- ===== SEÇÃO: Visão Geral ===== -->
+    <section class="dash-section" id="sec-overview">
+
+      <!-- KPIs -->
+      <p class="section-title">Indicadores-chave</p>
+      <div class="kpi-grid">
+
+        <div class="kpi-card a" id="kpi-turistas">
+          <div class="kpi-icon">✈️</div>
+          <div class="kpi-body">
+            <div class="kpi-label">Chegada de Turistas</div>
+            <div class="kpi-value">—</div>
+            <span class="kpi-trend">— vs —</span>
+          </div>
+        </div>
+
+        <div class="kpi-card b" id="kpi-receita">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-body">
+            <div class="kpi-label">Receita Turística</div>
+            <div class="kpi-value">—</div>
+            <span class="kpi-trend">— vs —</span>
+          </div>
+        </div>
+
+        <div class="kpi-card c" id="kpi-ocupacao">
+          <div class="kpi-icon">🏨</div>
+          <div class="kpi-body">
+            <div class="kpi-label">Ocupação Hoteleira</div>
+            <div class="kpi-value">—</div>
+            <span class="kpi-trend">— vs —</span>
+          </div>
+        </div>
+
+        <div class="kpi-card d" id="kpi-empregos">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-body">
+            <div class="kpi-label">Empregos Diretos</div>
+            <div class="kpi-value">—</div>
+            <span class="kpi-trend">— vs —</span>
+          </div>
+        </div>
+
+      </div><!-- /kpi-grid -->
+
+      <!-- Charts row -->
+      <div class="charts-grid">
+
+        <!-- Barras por estado -->
+        <div class="chart-card" id="sec-estados">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Comparativo por Estado</div>
+              <div class="chart-subtitle">Indicador selecionado · Período filtrado</div>
+            </div>
+            <span class="chart-badge" id="badge-estados">2025</span>
+          </div>
+          <div class="chart-wrap" style="height:240px;">
+            <canvas id="chart-estados" style="width:100%;height:100%;display:block;"></canvas>
+          </div>
+        </div>
+
+        <!-- Donut categorias -->
+        <div class="chart-card" id="sec-categorias">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Categorias de Atrações</div>
+              <div class="chart-subtitle">Distribuição por tipo de atração turística</div>
+            </div>
+            <span class="chart-badge">Nordeste</span>
+          </div>
+          <div class="donut-wrap" style="min-height:200px; margin-top:8px;">
+            <div class="donut-chart-container">
+              <canvas id="chart-categorias" style="width:180px;height:180px;display:block;"></canvas>
+            </div>
+            <div class="donut-legend" id="donut-legend"></div>
+          </div>
+        </div>
+
+      </div><!-- /charts-grid -->
+    </section>
+
+    <!-- ===== SEÇÃO: Evolução Temporal ===== -->
+    <section class="dash-section" id="sec-evolucao" style="display:none;">
+      <p class="section-title">Evolução Temporal (2021–2025)</p>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Série Histórica</div>
+            <div class="chart-subtitle">Indicador filtrado · Todos os anos disponíveis</div>
+          </div>
+          <span class="chart-badge">2021–2025</span>
+        </div>
+        <div class="chart-wrap" style="height:260px;">
+          <canvas id="chart-temporal" style="width:100%;height:100%;display:block;"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SEÇÃO: Sazonalidade ===== -->
+    <section class="dash-section" id="sec-sazonalidade" style="display:none;">
+      <p class="section-title">Sazonalidade Mensal</p>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Chegada de Turistas por Mês</div>
+            <div class="chart-subtitle">Média consolidada · Nordeste · dados simulados</div>
+          </div>
+          <span class="chart-badge">Jan–Dez</span>
+        </div>
+        <div class="chart-wrap" style="height:260px;">
+          <canvas id="chart-sazonalidade" style="width:100%;height:100%;display:block;"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SEÇÃO: Ranking ===== -->
+    <section class="dash-section" id="sec-ranking" style="display:none;">
+      <p class="section-title">Ranking de Destinos Mais Visitados · 2025</p>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Top 8 Destinos Turísticos</div>
+            <div class="chart-subtitle">Milhões de visitantes · período selecionado</div>
+          </div>
+          <span class="chart-badge">Nordeste</span>
+        </div>
+        <div class="ranking-list" id="ranking-list" style="margin-top:4px;"></div>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+</main>
+
+<!-- Scripts -->
+<script src="data.js"></script>
+<script src="charts.js"></script>
+<script>
+  // Preenche legenda do donut após carregar
+  document.addEventListener('DOMContentLoaded', () => {
+    const legend = document.getElementById('donut-legend');
+    if (legend) {
+      legend.innerHTML = atracoesCategoria.labels.map((lbl, i) => `
+        <div class="legend-item">
+          <div class="legend-dot" style="background:${atracoesCategoria.colors[i]}"></div>
+          <span>${lbl}</span>
+          <span class="legend-pct">${atracoesCategoria.data[i]}%</span>
+        </div>
+      `).join('');
+    }
+
+    // Sync badge de estados com período selecionado
+    document.getElementById('sel-periodo').addEventListener('change', e => {
+      const b = document.getElementById('badge-estados');
+      if (b) b.textContent = e.target.value;
+    });
+  });
+</script>
+<script src="app.js"></script>
+</body>
+</html>
