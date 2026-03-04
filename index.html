@@ -12,7 +12,8 @@
 
 <body>
 
-  <div class="sidebar-overlay" id="sidebar-overlay"></div>  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <!-- ══════════════════════════════════════════════════════════ -->
   <!--  SIDEBAR                                                   -->
   <!-- ══════════════════════════════════════════════════════════ -->
   <aside class="sidebar">
@@ -77,7 +78,12 @@
     <header class="topbar">
       <div class="topbar-left">
         <button class="mobile-menu-btn" id="btn-menu" aria-label="Abrir menu lateral">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
         </button>
         <div>
           <h2>Dashboard Turístico do Nordeste</h2>
@@ -167,6 +173,21 @@
 
         <!-- Charts row -->
         <div class="charts-grid">
+
+          <!-- Mapa GeoViz -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Mapa Interativo (GeoViz)</div>
+                <div class="chart-subtitle">Filtre o dashboard clicando em um estado</div>
+              </div>
+              <span class="chart-badge" id="badge-mapa">Nordeste</span>
+            </div>
+            <div class="svg-map-wrap" id="mapa-container"
+              style="height:240px; display:flex; justify-content:center; align-items:center;">
+              <!-- Map loaded via JS -->
+            </div>
+          </div>
 
           <!-- Barras por estado -->
           <div class="chart-card" id="sec-estados">
@@ -360,6 +381,7 @@
 
   <!-- Scripts -->
   <script src="data.js"></script>
+  <script src="mapa_nordeste.js"></script>
   <script src="charts.js"></script>
   <script>
     // Preenche legenda do donut após carregar

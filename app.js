@@ -10,6 +10,7 @@ let indicador = 'turistas';
 // ── Inicialização ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     populateSelects();
+    initMap();
     bindEvents();
     render();
 });
@@ -99,6 +100,76 @@ function bindEvents() {
     document.getElementById('btn-export-pdf').addEventListener('click', exportPDF);
 }
 
+// ── Integração GeoViz (Mapa SVG) ──────────────────────────────
+function initMap() {
+    const container = document.getElementById('mapa-container');
+    if (!container || typeof mapaNordesteSVG === 'undefined') return;
+
+    container.innerHTML = mapaNordesteSVG;
+
+    // Ajusta viewBox dinamicamente se necessário para o container
+    const svg = container.querySelector('svg');
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    svg.style.filter = 'drop-shadow(0px 8px 16px rgba(0,0,0,0.4))';
+
+    // Mapeamento das siglas dos paths SVG para a string "Estado (UF)" do seletor
+    const siglaParaEstado = {};
+    ESTADOS.forEach(est => {
+        const match = est.match(/\((.*?)\)/);
+        if (match && match[1]) {
+            siglaParaEstado[match[1]] = est;
+        }
+    });
+
+    // Eventos de clique nos estados do mapa
+    const shapes = svg.querySelectorAll('.estado-shape');
+    shapes.forEach(shape => {
+        shape.addEventListener('click', (e) => {
+            const sigla = shape.id;
+            const nomeEstado = siglaParaEstado[sigla];
+            if (!nomeEstado) return;
+
+            // Toggle logic: se clicou no que já tá selecionado, desmarca (volta para "Todos")
+            if (estado === nomeEstado) {
+                estado = 'Todos';
+            } else {
+                estado = nomeEstado;
+            }
+
+            // Syncrona a UI (Select do Topo) com o estado do Mapa
+            const selEstado = document.getElementById('sel-estado');
+            if (selEstado) selEstado.value = estado;
+
+            render();
+        });
+
+        // Tooltips nativos SVG Title para ajudar no UX
+        const nome = shape.getAttribute('data-nome');
+        if (nome) {
+            const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+            title.textContent = nome + ' (Clique para filtrar o Dashboard)';
+            shape.appendChild(title);
+        }
+    });
+}
+
+function updateMapSelection() {
+    const shapes = document.querySelectorAll('.estado-shape');
+    if (!shapes.length) return;
+
+    shapes.forEach(shape => shape.classList.remove('selected'));
+
+    if (estado !== 'Todos') {
+        // Obter a sigla do estado atual (ex: "Ceará (CE)" -> "CE")
+        const match = estado.match(/\((.*?)\)/);
+        if (match && match[1]) {
+            const shapeSel = document.getElementById(match[1]);
+            if (shapeSel) shapeSel.classList.add('selected');
+        }
+    }
+}
+
 // ── Helpers de exportação ─────────────────────────────────────
 function buildDataRows() {
     // Monta array de objetos com todos os dados por estado e período
@@ -181,6 +252,11 @@ function render() {
     renderRanking();
     renderSazonalidade();
     renderProspecoes2026();
+    updateMapSelection();
+
+    // Update mapa badge se existir
+    const badgeMapa = document.getElementById('badge-mapa');
+    if (badgeMapa) badgeMapa.textContent = estado === 'Todos' ? 'Nordeste' : estado;
 }
 
 // ── Prospecoes 2026 ───────────────────────────────────────────

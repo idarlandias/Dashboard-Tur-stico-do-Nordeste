@@ -774,21 +774,28 @@ body {
 
 .estado-shape {
   fill: var(--bg-card2);
-  stroke: var(--border);
-  stroke-width: 1.5;
-  transition: fill var(--transition), stroke var(--transition);
+  stroke: var(--ocean);
+  stroke-width: 3;
+  transition: all var(--transition);
   cursor: pointer;
 }
 
 .estado-shape:hover {
+  fill: rgba(0, 180, 216, 0.4);
   stroke: var(--sky);
-  stroke-width: 2.5;
+  stroke-width: 4;
 }
 
 .estado-shape.selected {
-  fill: rgba(0, 180, 216, .35) !important;
-  stroke: var(--sky);
-  stroke-width: 2.5;
+  fill: rgba(6, 214, 160, 0.35) !important;
+  stroke: var(--growth) !important;
+  stroke-width: 4;
+}
+
+text {
+  pointer-events: none;
+  font-family: 'Syne', sans-serif;
+  opacity: 0.8;
 }
 
 /* ── Section Label ─────────────────────────────────────────── */
