@@ -84,9 +84,12 @@
           <span class="status-dot"></span>
           Dados simulados · Atualizado em tempo real
         </div>
-        <button class="btn-export" id="btn-export">
-          📥 Exportar Relatório
-        </button>
+        <div class="export-group">
+          <span style="font-size:0.75rem;color:#90a4ae;margin-right:6px;">Exportar:</span>
+          <button class="btn-export btn-csv" id="btn-export-csv" title="Baixar dados em CSV">📄 CSV</button>
+          <button class="btn-export btn-xls" id="btn-export-xls" title="Abrir no Excel">📊 Excel</button>
+          <button class="btn-export btn-pdf" id="btn-export-pdf" title="Salvar como PDF">🖨️ PDF</button>
+        </div>
       </div>
     </header>
 

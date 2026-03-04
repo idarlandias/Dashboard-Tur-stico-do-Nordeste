@@ -62,9 +62,89 @@ function bindEvents() {
         });
     });
 
-    document.getElementById('btn-export').addEventListener('click', () => {
-        alert('📊 Exportação de relatório em PDF/Excel\n\n(Funcionalidade de portfólio – integração com backend em produção)');
+    // ── Exportação CSV ────────────────────────────────────────
+    document.getElementById('btn-export-csv').addEventListener('click', exportCSV);
+
+    // ── Exportação Excel ──────────────────────────────────────
+    document.getElementById('btn-export-xls').addEventListener('click', exportExcel);
+
+    // ── Exportação PDF ────────────────────────────────────────
+    document.getElementById('btn-export-pdf').addEventListener('click', exportPDF);
+}
+
+// ── Helpers de exportação ─────────────────────────────────────
+function buildDataRows() {
+    // Monta array de objetos com todos os dados por estado e período
+    const rows = [];
+    ESTADOS.forEach(est => {
+        PERIODOS.forEach((ano, idx) => {
+            rows.push({
+                Estado: est,
+                Ano: ano,
+                Chegadas_Int: (chegadasInt[est] || [])[idx] || '',
+                Receita_Mi_BRL: (receita[est] || [])[idx] || '',
+                Ocupacao_Pct: (ocupacao[est] || [])[idx] || '',
+                Empregos: (empregos[est] || [])[idx] || '',
+            });
+        });
     });
+    return rows;
+}
+
+function exportCSV() {
+    const rows = buildDataRows();
+    const header = Object.keys(rows[0]).join(';');
+    const body = rows.map(r => Object.values(r).join(';')).join('\n');
+    const bom = '\uFEFF'; // BOM UTF-8 para Excel abrir com acentos
+    const blob = new Blob([bom + header + '\n' + body], { type: 'text/csv;charset=utf-8;' });
+    downloadBlob(blob, 'obit-ne_turismo_nordeste.csv');
+}
+
+function exportExcel() {
+    const rows = buildDataRows();
+    // Constrói tabela HTML — Excel abre .xls com HTML nativo
+    const header = `<tr>${Object.keys(rows[0]).map(h => `<th style="background:#0077B6;color:#fff;font-weight:bold;padding:6px 10px;">${h}</th>`).join('')}</tr>`;
+    const body = rows.map((r, i) => {
+        const bg = i % 2 === 0 ? '#EBF5FB' : '#fff';
+        return `<tr>${Object.values(r).map(v => `<td style="padding:5px 10px;background:${bg};">${v}</td>`).join('')}</tr>`;
+    }).join('');
+    const html = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:x="urn:schemas-microsoft-com:office:excel"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="UTF-8">
+<style>table{border-collapse:collapse;font-family:Arial;font-size:10pt;}td,th{border:1px solid #ccc;}</style>
+</head><body>
+<h2 style="color:#0077B6;font-family:Arial;">ObIT-NE · Dados Turísticos do Nordeste</h2>
+<p style="font-family:Arial;color:#555;font-size:9pt;">Fonte: EMBRATUR/PF + PNAD-IBGE 2024 · Projeções 2026 por Regressão Linear OLS</p>
+<table>${header}${body}</table>
+<p style="font-family:Arial;color:#999;font-size:8pt;margin-top:8px;">Gerado em: ${new Date().toLocaleString('pt-BR')} · Dashboard ObIT-NE BNB</p>
+</body></html>`;
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    downloadBlob(blob, 'obit-ne_turismo_nordeste.xls');
+}
+
+function exportPDF() {
+    // Mostra todas as seções temporariamente para o print
+    const sections = document.querySelectorAll('.dash-section');
+    const prevDisplay = [];
+    sections.forEach((s, i) => { prevDisplay[i] = s.style.display; s.style.display = ''; });
+    window.print();
+    // Restaura após print
+    setTimeout(() => {
+        sections.forEach((s, i) => { s.style.display = prevDisplay[i]; });
+    }, 500);
+}
+
+function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // ── Render principal ──────────────────────────────────────────
