@@ -56,6 +56,9 @@ Dashboard-Turistico-do-Nordeste/
 ## ✨ Funcionalidades
 
 - ✅ **Filtros dinâmicos** — estado, período e indicador com atualização em tempo real
+- ✅ **Navegação Responsiva** — menu mobile "hamburguer" ajustável a smartphones e tablets com overlay.
+- ✅ **Suporte a Touch Móvel** — tooltips dinâmicos ativados por toque e arraste (`touchmove`) na tela em dispositivos touch.
+- ✅ **Acessibilidade Otimizada (A11y)** — labels ocultas em filtros (`aria-label`) e ocultação de overlay dinâmico de leitores de tela (`aria-hidden`).
 - ✅ **6 seções de visualização** — Visão Geral, Sazonalidade, Ranking, Categorias, Evolução Temporal e Prospecções 2026
 - ✅ **KPIs com variação** — comparativo automático vs. ano anterior (%)
 - ✅ **Gráficos animados** — barras, linhas com área e donut interativo
