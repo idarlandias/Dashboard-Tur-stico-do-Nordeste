@@ -56,6 +56,7 @@ Dashboard-Turistico-do-Nordeste/
 ## ✨ Funcionalidades
 
 - ✅ **Filtros dinâmicos** — estado, período e indicador com atualização em tempo real
+- ✅ **Mapa SVG Interativo (GeoViz)** — Filtre todo o dashboard cruzando dados através de cliques diretos nos polígonos dos estados do mapa (*Cross-filtering*).
 - ✅ **Navegação Responsiva** — menu mobile "hamburguer" ajustável a smartphones e tablets com overlay.
 - ✅ **Suporte a Touch Móvel** — tooltips dinâmicos ativados por toque e arraste (`touchmove`) na tela em dispositivos touch.
 - ✅ **Acessibilidade Otimizada (A11y)** — labels ocultas em filtros (`aria-label`) e ocultação de overlay dinâmico de leitores de tela (`aria-hidden`).
