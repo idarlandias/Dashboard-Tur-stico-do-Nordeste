@@ -1,4 +1,4 @@
-# ObIT-NE - Pipeline de Dados Turisticos v2.0
+# ObIT-NE - Pipeline de Dados Turisticos v2.1
 # Fontes: EMBRATUR/PF, PNAD-IBGE 2024, MTur
 # DIAGNOSTICO DE DISPONIBILIDADE (04/03/2026):
 #   FORA DO AR: dados.turismo.gov.br (502), IBGE SIDRA hospedagem (ate 2010)
@@ -6,8 +6,16 @@
 # USO: python processar_dados.py           -> usa dados verificados embutidos
 #      python processar_dados.py --refresh -> tenta download MTur (quando voltar)
 
-import os, json, csv, gzip, ssl, time, argparse, urllib.request
+import os, json, csv, ssl, time, argparse, logging, urllib.request, urllib.error
 from datetime import datetime
+
+# ── Logging ──────────────────────────────────────────────────
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%H:%M:%S",
+)
+log = logging.getLogger("ObIT-NE")
 
 PASTA     = os.path.dirname(os.path.abspath(__file__))
 SAIDA_CSV = os.path.join(PASTA, "turismo_nordeste_2021_2025.csv")
@@ -20,9 +28,11 @@ UFS = {
     "MA":"Maranhao", "PI":"Piaui", "SE":"Sergipe",
 }
 
+# SSL: Bypass necessário para endpoints governamentais com certificados expirados
 CTX = ssl.create_default_context()
 CTX.check_hostname = False
 CTX.verify_mode = ssl.CERT_NONE
+log.warning("SSL verify desabilitado para endpoints gov.br (certificados inconsistentes)")
 
 # CHEGADAS INTERNACIONAIS por estado - Fonte: EMBRATUR/Policia Federal
 # Ref: Panrotas/ne9/gov.br - Jan-Set 2024 = 380.223 NE total; +53% jan-fev 2025
@@ -76,21 +86,69 @@ BCB_SERIES = {
     "despesa_viagens_usd_mi": 22742,   # Viagens - despesa mensal (US$ milhoes)
 }
 
+MAX_RETRIES = 3
+RETRY_BACKOFF = 2  # segundos (multiplicador exponencial)
+
+
+def fetch_with_retry(url, max_retries=MAX_RETRIES):
+    """Faz HTTP GET com retry e backoff exponencial."""
+    for attempt in range(1, max_retries + 1):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 ObIT-NE/2.1"})
+            with urllib.request.urlopen(req, context=CTX, timeout=15) as r:
+                if r.status == 200:
+                    return r.read()
+                log.warning("HTTP %d na tentativa %d/%d: %s", r.status, attempt, max_retries, url)
+        except urllib.error.HTTPError as e:
+            log.warning("HTTPError %d na tentativa %d/%d: %s", e.code, attempt, max_retries, url)
+        except urllib.error.URLError as e:
+            log.warning("URLError na tentativa %d/%d: %s — %s", attempt, max_retries, e.reason, url)
+        except OSError as e:
+            log.warning("Erro de rede na tentativa %d/%d: %s", attempt, max_retries, str(e)[:80])
+
+        if attempt < max_retries:
+            wait = RETRY_BACKOFF ** attempt
+            log.info("Aguardando %ds antes de nova tentativa...", wait)
+            time.sleep(wait)
+
+    log.error("Todas as %d tentativas falharam para: %s", max_retries, url)
+    return None
+
+
 def tentar_mtur(ano):
     if ano not in MTUR_URLS:
         return
-    try:
-        req = urllib.request.Request(MTUR_URLS[ano], headers={"User-Agent":"Mozilla/5.0"})
-        with urllib.request.urlopen(req, context=CTX, timeout=15) as r:
-            if r.status == 200:
-                raw = r.read()
-                dest = os.path.join(BRUTOS, "chegadas_mtur_{}.csv".format(ano))
-                with open(dest, "wb") as f:
-                    f.write(raw)
-                print("  OK MTur {}: {:,} bytes -> {}".format(ano, len(raw), dest))
-                return
-    except Exception as e:
-        print("  FALHOU MTur {}: {}".format(ano, str(e)[:80]))
+    data = fetch_with_retry(MTUR_URLS[ano])
+    if data:
+        dest = os.path.join(BRUTOS, "chegadas_mtur_{}.csv".format(ano))
+        with open(dest, "wb") as f:
+            f.write(data)
+        log.info("OK MTur %d: %s bytes -> %s", ano, f"{len(data):,}", dest)
+    else:
+        log.warning("MTur %d: indisponível, usando dados embutidos", ano)
+
+
+def validar_dados():
+    """Valida integridade dos dados embutidos."""
+    erros = []
+    for uf in UFS:
+        for nome, ds in [("CHEGADAS", CHEGADAS), ("RECEITA", RECEITA), ("GASTO", GASTO)]:
+            if uf not in ds:
+                erros.append(f"{nome}: UF '{uf}' ausente")
+                continue
+            if len(ds[uf]) != len(ANOS):
+                erros.append(f"{nome}[{uf}]: esperado {len(ANOS)} valores, encontrado {len(ds[uf])}")
+            for i, v in enumerate(ds[uf]):
+                if not isinstance(v, (int, float)) or v < 0:
+                    erros.append(f"{nome}[{uf}][{ANOS[i]}]: valor inválido ({v})")
+
+    if erros:
+        for e in erros:
+            log.error("Validação: %s", e)
+        raise ValueError(f"Dados embutidos com {len(erros)} erro(s) de integridade")
+
+    log.info("Validação OK: %d UFs × %d anos × 3 indicadores", len(UFS), len(ANOS))
+
 
 def consolidar():
     rows = []
@@ -117,7 +175,7 @@ def salvar_csv(rows):
         w = csv.DictWriter(f, fieldnames=campos, delimiter=";")
         w.writeheader()
         w.writerows(rows)
-    print("  CSV: {}".format(SAIDA_CSV))
+    log.info("CSV salvo: %s", SAIDA_CSV)
 
 def salvar_json(rows):
     saida = {
@@ -144,39 +202,43 @@ def salvar_json(rows):
     }
     with open(SAIDA_JSON, "w", encoding="utf-8") as f:
         json.dump(saida, f, ensure_ascii=False, indent=2)
-    print("  JSON: {}".format(SAIDA_JSON))
+    log.info("JSON salvo: %s", SAIDA_JSON)
 
 def main():
-    parser = argparse.ArgumentParser(description="ObIT-NE Pipeline")
+    parser = argparse.ArgumentParser(description="ObIT-NE Pipeline v2.1")
     parser.add_argument("--refresh", action="store_true",
                         help="Tentar download MTur quando disponivel")
     args = parser.parse_args()
 
     print("=" * 60)
-    print(" ObIT-NE - Pipeline de Dados Turisticos v2.0")
+    print(" ObIT-NE - Pipeline de Dados Turisticos v2.1")
     print(" {}".format(datetime.now().strftime("%d/%m/%Y %H:%M")))
     print("=" * 60)
+
+    # Validar dados embutidos antes de prosseguir
+    log.info("Validando integridade dos dados embutidos...")
+    validar_dados()
 
     os.makedirs(BRUTOS, exist_ok=True)
 
     if args.refresh:
-        print("\n[1/4] Tentando download MTur (--refresh)...")
+        log.info("Tentando download MTur (--refresh)...")
         for ano in [2021, 2024, 2025]:
             tentar_mtur(ano)
             time.sleep(1)
     else:
-        print("\n[1/4] Usando dados verificados (MTur fora do ar)")
-        print("      Use --refresh quando o portal voltar")
+        log.info("Usando dados verificados (MTur fora do ar)")
+        log.info("Use --refresh quando o portal voltar")
 
-    print("\n[2/4] Consolidando registros...")
+    log.info("Consolidando registros...")
     rows = consolidar()
-    print("  {} registros ({} estados x {} anos)".format(len(rows), len(UFS), len(ANOS)))
+    log.info("%d registros (%d estados x %d anos)", len(rows), len(UFS), len(ANOS))
 
-    print("\n[3/4] Salvando saidas...")
+    log.info("Salvando saídas...")
     salvar_csv(rows)
     salvar_json(rows)
 
-    print("\n[4/4] Resumo 2024 - Nordeste")
+    print("\n  Resumo 2024 - Nordeste")
     print("{:<24} {:>14} {:>14} {}".format("Estado","Chegadas Int.","Receita(Rmi)","GastoMedio"))
     print("-" * 60)
     total_ch = total_rec = 0
@@ -190,11 +252,7 @@ def main():
     print("-" * 60)
     print("  {:<22} {:>12,} {:>10,.0f} M".format("TOTAL NORDESTE", total_ch, total_rec))
     print("=" * 60)
-    print("\nDownload manual (quando MTur voltar):")
-    print("  1. https://dados.turismo.gov.br/dataset")
-    print("  2. https://dados.embratur.com.br (Paineis de Dados)")
-    print("  3. Coloque CSVs em ./dados_brutos/")
-    print("  4. python processar_dados.py --refresh")
+    log.info("Pipeline concluído com sucesso")
 
 if __name__ == "__main__":
     main()
