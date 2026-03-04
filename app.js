@@ -73,6 +73,41 @@ function render() {
     renderCharts();
     renderRanking();
     renderSazonalidade();
+    renderProspecoes2026();
+}
+
+// ── Prospecoes 2026 ───────────────────────────────────────────
+function renderProspecoes2026() {
+    const container = document.getElementById('matriz-investimento');
+    if (!container || typeof prospecoes2026 === 'undefined') return;
+
+    container.innerHTML = prospecoes2026.map((d, i) => {
+        const barWidth = (d.indice).toFixed(0);
+        const barColor = d.cor || '#00B4D8';
+        const badgeCls = d.classificacao === 'ALTA' ? 'badge-alta'
+            : d.classificacao === 'MEDIA-ALTA' ? 'badge-media-alta'
+                : 'badge-media';
+        return `
+<div class="invest-row" style="padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.05);">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+    <span style="font-size:1.3rem; min-width:28px;">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + '.'}</span>
+    <div style="flex:1;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <strong style="color:#e0f0ff; font-size:0.95rem;">${d.estado}</strong>
+        <span style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:20px; background:${barColor}22; color:${barColor}; border:1px solid ${barColor}44;">${d.classificacao}</span>
+        <span style="font-size:0.75rem; color:#90a4ae;">CAGR ${d.cagr}% · Proj. +${d.variacao}%</span>
+      </div>
+      <div style="margin-top:5px; background:rgba(255,255,255,0.07); border-radius:4px; height:8px; overflow:hidden;">
+        <div style="height:100%; width:${barWidth}%; background:linear-gradient(90deg, ${barColor}, ${barColor}aa); border-radius:4px; transition:width 0.6s ease;"></div>
+      </div>
+      <div style="margin-top:2px; display:flex; justify-content:space-between;">
+        <span style="font-size:0.72rem; color:#b0bec5;">${d.rationale.substring(0, 90)}…</span>
+        <span style="font-size:0.8rem; font-weight:700; color:${barColor}; white-space:nowrap; margin-left:8px;">${d.indice}/100</span>
+      </div>
+    </div>
+  </div>
+</div>`;
+    }).join('');
 }
 
 // ── KPIs ──────────────────────────────────────────────────────
