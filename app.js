@@ -113,21 +113,21 @@ function initMap() {
     svg.style.height = '100%';
     svg.style.filter = 'drop-shadow(0px 8px 16px rgba(0,0,0,0.4))';
 
-    // Mapeamento das siglas dos paths SVG para a string "Estado (UF)" do seletor
-    const siglaParaEstado = {};
-    ESTADOS.forEach(est => {
-        const match = est.match(/\((.*?)\)/);
-        if (match && match[1]) {
-            siglaParaEstado[match[1]] = est;
-        }
-    });
+    // Mapeamento das siglas dos paths SVG para a string "Estado" do seletor
+    const estadoToUf = {
+        "Maranhão": "MA", "Piauí": "PI", "Ceará": "CE",
+        "Rio Grande do Norte": "RN", "Paraíba": "PB", "Pernambuco": "PE",
+        "Alagoas": "AL", "Sergipe": "SE", "Bahia": "BA"
+    };
+
+    const ufToEstado = Object.fromEntries(Object.entries(estadoToUf).map(([k, v]) => [v, k]));
 
     // Eventos de clique nos estados do mapa
     const shapes = svg.querySelectorAll('.estado-shape');
     shapes.forEach(shape => {
         shape.addEventListener('click', (e) => {
             const sigla = shape.id;
-            const nomeEstado = siglaParaEstado[sigla];
+            const nomeEstado = ufToEstado[sigla];
             if (!nomeEstado) return;
 
             // Toggle logic: se clicou no que já tá selecionado, desmarca (volta para "Todos")
@@ -160,11 +160,16 @@ function updateMapSelection() {
 
     shapes.forEach(shape => shape.classList.remove('selected'));
 
+    const estadoToUf = {
+        "Maranhão": "MA", "Piauí": "PI", "Ceará": "CE",
+        "Rio Grande do Norte": "RN", "Paraíba": "PB", "Pernambuco": "PE",
+        "Alagoas": "AL", "Sergipe": "SE", "Bahia": "BA"
+    };
+
     if (estado !== 'Todos') {
-        // Obter a sigla do estado atual (ex: "Ceará (CE)" -> "CE")
-        const match = estado.match(/\((.*?)\)/);
-        if (match && match[1]) {
-            const shapeSel = document.getElementById(match[1]);
+        const uf = estadoToUf[estado];
+        if (uf) {
+            const shapeSel = document.getElementById(uf);
             if (shapeSel) shapeSel.classList.add('selected');
         }
     }
