@@ -59,8 +59,9 @@ function bindEvents() {
             document.querySelectorAll('.dash-section').forEach(s => {
                 s.style.display = s.id === target ? '' : 'none';
             });
-            // Re-renderiza para que canvases ocultos sejam desenhados agora que a seção está visível
-            render();
+            // requestAnimationFrame garante que o browser fez o reflow
+            // e o canvas tem dimensoes antes de desenhar
+            requestAnimationFrame(() => requestAnimationFrame(render));
         });
     });
 
