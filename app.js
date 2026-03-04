@@ -132,12 +132,20 @@ function renderKPIs() {
     const prevOcup = idxPrev !== null ? estados.reduce((s, e) => s + ocupacao[e][idxPrev], 0) / estados.length : null;
     const prevEmp = idxPrev !== null ? estados.reduce((s, e) => s + empregos[e][idxPrev], 0) : null;
 
-    function fmt(n, suf = '') { return n >= 1000 ? (n / 1000).toFixed(1) + 'k' + suf : n + suf; }
+    function fmtNum(n) {
+        if (n >= 1000000) return (n / 1000000).toFixed(1) + ' mi';
+        if (n >= 1000) return (n / 1000).toFixed(1) + ' mil';
+        return n.toFixed(0);
+    }
+    function fmtRec(n) {
+        if (n >= 1000) return 'R$ ' + (n / 1000).toFixed(1) + ' bi';
+        return 'R$ ' + n + ' mi';
+    }
 
-    setKPI('kpi-turistas', fmt(totalTuristas) + ' mil', varPct(totalTuristas, prevTuristas));
-    setKPI('kpi-receita', 'R$ ' + fmt(totalReceita * 1) + ' mi', varPct(totalReceita, prevReceita));
+    setKPI('kpi-turistas', fmtNum(totalTuristas), varPct(totalTuristas, prevTuristas));
+    setKPI('kpi-receita', fmtRec(totalReceita), varPct(totalReceita, prevReceita));
     setKPI('kpi-ocupacao', mediaOcupacao.toFixed(1) + '%', varPct(mediaOcupacao, prevOcup));
-    setKPI('kpi-empregos', fmt(totalEmpregos) + ' mil', varPct(totalEmpregos, prevEmp));
+    setKPI('kpi-empregos', fmtNum(totalEmpregos) + ' empregos', varPct(totalEmpregos, prevEmp));
 }
 
 function setKPI(id, val, pct) {

@@ -14,8 +14,7 @@
 //      Indice Oportunidade BNB = CAGR(35%) + Potencial(35%) + Eficiencia(30%)
 // ============================================================
 
-const ESTADOS = ["Ceara", "Bahia", "Pernambuco", "Rio Grande do Norte", "Alagoas", "Paraiba", "Maranhao", "Piaui", "Sergipe"];
-const ESTADOS_PT = ["Ceará", "Bahia", "Pernambuco", "Rio Grande do Norte", "Alagoas", "Paraíba", "Maranhão", "Piauí", "Sergipe"];
+const ESTADOS = ["Ceará", "Bahia", "Pernambuco", "Rio Grande do Norte", "Alagoas", "Paraíba", "Maranhão", "Piauí", "Sergipe"];
 const PERIODOS = ["2021", "2022", "2023", "2024", "2025", "2026*"];
 const PERIODOS_HIST = ["2021", "2022", "2023", "2024", "2025"];
 
