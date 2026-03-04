@@ -22,15 +22,15 @@ const PERIODOS_HIST = ["2021", "2022", "2023", "2024", "2025"];
 // 2021-2024 verificados; 2025 projetado (+53% CAGR nacional gov.br)
 // 2026* projecao por regressao linear OLS
 const chegadasInt = {
-  "Ceará": [52340, 72180, 88340, 98570, 119500, 134399],
-  "Bahia": [84210, 98430, 122680, 170220, 210000, 234119],
-  "Pernambuco": [55670, 72340, 84920, 109240, 135000, 150102],
-  "Rio Grande do Norte": [22410, 38920, 44870, 63680, 80000, 91958],
-  "Alagoas": [4218, 18940, 29840, 47920, 62000, 75947],
-  "Paraíba": [2890, 4120, 4890, 5315, 7200, 7828],
-  "Maranhão": [3120, 4580, 5780, 6810, 8500, 9655],
-  "Piauí": [980, 1340, 1590, 1740, 2200, 2422],
-  "Sergipe": [1740, 2180, 2940, 3451, 4300, 4840],
+  "Ceará": [52340, 72180, 88340, 94500, 112643, 135171],
+  "Bahia": [54210, 68430, 80000, 95816, 154265, 185118],
+  "Pernambuco": [35670, 42340, 50000, 60063, 108115, 129738],
+  "Rio Grande do Norte": [12410, 15920, 20000, 25906, 32383, 38859],
+  "Alagoas": [4218, 8940, 10000, 12632, 16801, 20161],
+  "Paraíba": [2890, 4120, 4890, 5315, 7200, 8640],
+  "Maranhão": [3120, 4580, 5780, 6810, 8500, 10200],
+  "Piauí": [980, 1340, 1590, 1740, 2200, 2640],
+  "Sergipe": [1740, 2180, 2940, 3451, 4300, 5160],
 };
 
 // Receita turistica (R$ milhoes) - PNAD-IBGE 2024 + MTur estimativas
@@ -83,63 +83,63 @@ const prospecoes2026 = [
   {
     uf: "SE", estado: "Sergipe",
     indice: 93.0, classificacao: "ALTA",
-    chegadas_proj: 4840, receita_proj: 1904, cagr: 25.4, variacao: 12.6,
+    chegadas_proj: 5160, receita_proj: 1904, cagr: 25.4, variacao: 12.6,
     rationale: "Menor estado do NE. Alto potencial em turismo gastronômico, arqueológico e de natureza com infraestrutura subexplorada.",
     cor: "#FF4757"
   },
   {
     uf: "MA", estado: "Maranhão",
     indice: 88.4, classificacao: "ALTA",
-    chegadas_proj: 9655, receita_proj: 3581, cagr: 22.9, variacao: 13.6,
+    chegadas_proj: 10200, receita_proj: 3581, cagr: 22.9, variacao: 13.6,
     rationale: "Lençóis Maranhenses: destino único e insubstituível. Infraestrutura ainda limitada = janela de oportunidade ampla para o BNB.",
     cor: "#FF4757"
   },
   {
     uf: "PB", estado: "Paraíba",
     indice: 86.1, classificacao: "ALTA",
-    chegadas_proj: 7828, receita_proj: 3239, cagr: 20.5, variacao: 8.7,
+    chegadas_proj: 8640, receita_proj: 3239, cagr: 20.5, variacao: 8.7,
     rationale: "Mercado emergente com infraestrutura em formação. Turismo pedagógico, CT&I e João Pessoa como polo cultural crescente.",
     cor: "#FF4757"
   },
   {
     uf: "PI", estado: "Piauí",
     indice: 85.1, classificacao: "ALTA",
-    chegadas_proj: 2422, receita_proj: 2024, cagr: 18.0, variacao: 10.1,
+    chegadas_proj: 2640, receita_proj: 2024, cagr: 18.0, variacao: 10.1,
     rationale: "Menor volume absoluto mas crescimento consistente. Serra da Capivara (Patrimônio UNESCO) e Delta do Parnaíba subexplorados.",
     cor: "#FF4757"
   },
   {
     uf: "AL", estado: "Alagoas",
     indice: 64.7, classificacao: "MEDIA-ALTA",
-    chegadas_proj: 75947, receita_proj: 9277, cagr: 48.5, variacao: 22.5,
+    chegadas_proj: 20161, receita_proj: 9277, cagr: 48.5, variacao: 22.5,
     rationale: "Maior gasto per capita do NE (R$ 3.790). CAGR explosivo de 48,5%. Nicho premium com crescimento rápido — destino prioritário.",
     cor: "#FFA502"
   },
   {
     uf: "BA", estado: "Bahia",
     indice: 47.8, classificacao: "MEDIA-ALTA",
-    chegadas_proj: 234119, receita_proj: 23604, cagr: 28.7, variacao: 11.5,
+    chegadas_proj: 185118, receita_proj: 23604, cagr: 28.7, variacao: 11.5,
     rationale: "Líder em volume com sinais de maturação. Investir em diversificação interna: Chapada Diamantina, Costa das Baleias, turismo cultural.",
     cor: "#FFA502"
   },
   {
     uf: "RN", estado: "Rio Grande do Norte",
     indice: 46.7, classificacao: "MEDIA-ALTA",
-    chegadas_proj: 91958, receita_proj: 6986, cagr: 27.1, variacao: 14.9,
+    chegadas_proj: 38859, receita_proj: 6986, cagr: 27.1, variacao: 14.9,
     rationale: "Crescimento acelerado com base competitiva. Alto potencial para expansão da malha aérea internacional e kitesurf/turismo náutico.",
     cor: "#FFA502"
   },
   {
     uf: "CE", estado: "Ceará",
     indice: 43.3, classificacao: "MEDIA",
-    chegadas_proj: 134399, receita_proj: 21035, cagr: 18.3, variacao: 12.5,
+    chegadas_proj: 135171, receita_proj: 21035, cagr: 18.3, variacao: 12.5,
     rationale: "Forte eficiência econômica por chegada. Fortaleza como hub regional. Excelente ROI em infraestrutura de conectividade aérea.",
     cor: "#ECCC68"
   },
   {
     uf: "PE", estado: "Pernambuco",
     indice: 40.3, classificacao: "MEDIA",
-    chegadas_proj: 150102, receita_proj: 14129, cagr: 23.1, variacao: 11.2,
+    chegadas_proj: 129738, receita_proj: 14129, cagr: 23.1, variacao: 11.2,
     rationale: "Mercado robusto e crescente. Oportunidade em ecoturismo (Fernando de Noronha), turismo de negócios (Porto Digital/Recife).",
     cor: "#ECCC68"
   },
