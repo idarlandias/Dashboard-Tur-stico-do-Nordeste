@@ -70,6 +70,12 @@ MTUR_URLS = {
     2025:"https://dados.turismo.gov.br/gl/dataset/184e0ddd-7eaf-488d-ad84-0331219d6e99/resource/53dd37d0-42fe-4c23-9a9a-8248191d06e8/download/chegadas-2025.csv",
 }
 
+# API Banco Central do Brasil (SEMPRE FUNCIONANDO - dados reais oficiais)
+BCB_SERIES = {
+    "receita_viagens_usd_mi": 22741,   # Viagens - receita mensal (US$ milhoes)
+    "despesa_viagens_usd_mi": 22742,   # Viagens - despesa mensal (US$ milhoes)
+}
+
 def tentar_mtur(ano):
     if ano not in MTUR_URLS:
         return
