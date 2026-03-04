@@ -197,7 +197,23 @@ const rankingDestinos = [
   { nome: "Lençóis Maranhenses–MA", visitas: 0.7, icon: "🏜️" },
 ];
 
-const sazonalidade = {
+// Sazonalidade mensal por estado (indice relativo, base 100 = media anual)
+// Padroes baseados no perfil turistico real de cada UF
+const sazonalidadePerEstado = {
   labels: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
-  data: [310, 280, 245, 198, 175, 190, 260, 220, 185, 210, 245, 340],
+  "Todos": [310, 280, 245, 198, 175, 190, 260, 220, 185, 210, 245, 340], // NE geral
+  "Ceará": [340, 310, 220, 180, 160, 170, 280, 240, 190, 210, 250, 360], // pico jan+jul+dez
+  "Bahia": [300, 380, 220, 190, 160, 180, 310, 250, 190, 230, 260, 320], // Carnaval fev, jul
+  "Pernambuco": [280, 420, 210, 185, 155, 175, 300, 240, 185, 215, 250, 310], // Carnaval fev fortissimo
+  "Rio Grande do Norte": [320, 270, 230, 190, 170, 200, 290, 260, 210, 230, 260, 350], // kitesurf todo ano
+  "Alagoas": [380, 340, 200, 170, 150, 165, 300, 270, 200, 220, 270, 390], // verao nordestino
+  "Paraíba": [300, 360, 220, 185, 160, 175, 280, 235, 185, 210, 245, 310], // Carnaval + jul
+  "Maranhão": [240, 220, 200, 180, 160, 370, 410, 380, 310, 220, 200, 230], // Lencois: jun-ago
+  "Piauí": [220, 200, 190, 175, 160, 340, 380, 360, 290, 210, 195, 215], // Delta+Capivara: jun-ago
+  "Sergipe": [290, 340, 215, 185, 160, 175, 270, 230, 185, 210, 245, 300], // Carnaval + verao
+};
+
+const sazonalidade = {
+  labels: sazonalidadePerEstado.labels,
+  data: sazonalidadePerEstado["Todos"],
 };

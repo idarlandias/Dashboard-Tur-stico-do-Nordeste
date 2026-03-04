@@ -59,6 +59,8 @@ function bindEvents() {
             document.querySelectorAll('.dash-section').forEach(s => {
                 s.style.display = s.id === target ? '' : 'none';
             });
+            // Re-renderiza para que canvases ocultos sejam desenhados agora que a seção está visível
+            render();
         });
     });
 
@@ -319,10 +321,20 @@ function renderRanking() {
 
 // ── Sazonalidade ──────────────────────────────────────────────
 function renderSazonalidade() {
+    const dadosMes = (typeof sazonalidadePerEstado !== 'undefined' && sazonalidadePerEstado[estado])
+        ? sazonalidadePerEstado[estado]
+        : sazonalidade.data;
+
     drawBarChart('chart-sazonalidade', sazonalidade.labels,
-        [{ label: 'Chegadas (mil)', data: sazonalidade.data, color: '#F4A261', color2: '#E76F51' }],
+        [{ label: 'Índice de Chegadas (relativo)', data: dadosMes, color: '#F4A261', color2: '#E76F51' }],
         { yFormat: v => Math.round(v) }
     );
+
+    // Atualiza subtítulo com estado atual
+    const sub = document.querySelector('#sec-sazonalidade .chart-subtitle');
+    if (sub) sub.textContent = estado === 'Todos'
+        ? 'Média consolidada · Nordeste · perfil estimado por mês'
+        : `Perfil de sazonalidade · ${estado} · base estimada`;
 }
 
 // ── Redimensionamento ─────────────────────────────────────────
