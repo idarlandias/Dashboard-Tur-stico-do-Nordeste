@@ -292,12 +292,32 @@ function renderCharts() {
         `).join('');
     }
 
-    // Atualiza badge do donut com estado atual
-    const donutCard = document.getElementById('sec-categorias');
-    if (donutCard) {
-        const badge = donutCard.querySelector('.chart-badge');
-        if (badge) badge.textContent = estado === 'Todos' ? 'Nordeste' : estado;
+    // Atualiza badge do donut com estado atual (seção principal)
+    const badgeGeral = document.getElementById('badge-categorias-geral');
+    if (badgeGeral) badgeGeral.textContent = estado === 'Todos' ? 'Nordeste' : estado;
+
+    // Renderiza também o canvas da seção dedicada de categorias
+    const labels = ATRACAO_LABELS || atracoesCategoria.labels;
+    const colors = ATRACAO_COLORS || atracoesCategoria.colors;
+    drawDonutChart('chart-categorias-sec', labels, perfilEstado, colors);
+
+    // Atualiza legend e badge da seção dedicada
+    const legendSec = document.getElementById('donut-legend-sec');
+    if (legendSec) {
+        legendSec.innerHTML = labels.map((lbl, i) => `
+          <div class="legend-item">
+            <div class="legend-dot" style="background:${colors[i]}"></div>
+            <span>${lbl}</span>
+            <span class="legend-pct">${perfilEstado[i]}%</span>
+          </div>
+        `).join('');
     }
+    const badgeSec = document.getElementById('badge-categorias');
+    if (badgeSec) badgeSec.textContent = estado === 'Todos' ? 'Nordeste' : estado;
+    const subSec = document.getElementById('categorias-sub');
+    if (subSec) subSec.textContent = estado === 'Todos'
+        ? 'Distribuição estimada do perfil turístico · Nordeste'
+        : `Perfil de atrações · ${estado} · estimativa`;
 }
 
 // ── Ranking ───────────────────────────────────────────────────

@@ -177,14 +177,14 @@
             </div>
           </div>
 
-          <!-- Donut categorias -->
-          <div class="chart-card" id="sec-categorias">
+          <!-- Donut categorias (visao geral) -->
+          <div class="chart-card">
             <div class="chart-header">
               <div>
                 <div class="chart-title">Categorias de Atrações</div>
                 <div class="chart-subtitle">Distribuição por tipo de atração turística</div>
               </div>
-              <span class="chart-badge">Nordeste</span>
+              <span class="chart-badge" id="badge-categorias-geral">Nordeste</span>
             </div>
             <div class="donut-wrap" style="min-height:200px; margin-top:8px;">
               <div class="donut-chart-container">
@@ -243,6 +243,30 @@
             <span class="chart-badge">Nordeste</span>
           </div>
           <div class="ranking-list" id="ranking-list" style="margin-top:4px;"></div>
+        </div>
+      </section>
+
+      <!-- ===== SEÇÃO: Categorias de Atração (seção dedicada) ===== -->
+      <section class="dash-section" id="sec-categorias" style="display:none;">
+        <p class="section-title">Categorias de Atração Turística</p>
+        <div class="charts-grid">
+          <div class="chart-card chart-card--full" style="grid-column:1/-1;">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Mix de Atrações por Estado</div>
+                <div class="chart-subtitle" id="categorias-sub">Distribuição estimada do perfil turístico · Nordeste
+                </div>
+              </div>
+              <span class="chart-badge" id="badge-categorias">Nordeste</span>
+            </div>
+            <div
+              style="display:flex; align-items:center; gap:32px; padding:16px 0; flex-wrap:wrap; justify-content:center;">
+              <div style="width:220px; height:220px; flex-shrink:0;">
+                <canvas id="chart-categorias-sec" style="width:220px;height:220px;display:block;"></canvas>
+              </div>
+              <div id="donut-legend-sec" class="donut-legend" style="flex:1; min-width:180px;"></div>
+            </div>
+          </div>
         </div>
       </section>
 
