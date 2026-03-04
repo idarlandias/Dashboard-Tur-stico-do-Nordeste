@@ -892,6 +892,77 @@ text {
     align-items: center;
     justify-content: center;
   }
+
+  /* ── Topbar mobile: compacto e limpo ── */
+  .topbar {
+    padding: 0 14px;
+    height: 58px;
+  }
+
+  /* Esconde export e status — acessíveis pelo menu lateral */
+  .export-group,
+  .last-updated {
+    display: none;
+  }
+
+  .topbar-right {
+    display: none;
+  }
+
+  .topbar-left {
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .topbar-left > div {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .topbar-left h2 {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .topbar-left p {
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* KPI grid: 2 colunas no tablet/mobile médio */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Mobile pequeno (smartphones ≤ 500px) ── */
+@media (max-width: 500px) {
+  .topbar {
+    padding: 0 12px;
+    height: 54px;
+  }
+
+  .topbar-left h2 {
+    font-size: 13px;
+  }
+
+  .topbar-left p {
+    display: none; /* subtítulo oculto em telas muito pequenas */
+  }
+
+  /* KPI em coluna única em telas bem pequenas */
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .content {
+    padding: 14px;
+    gap: 14px;
+  }
 }
 
 /* ── Print / PDF ────────────────────────────────────────────── */
