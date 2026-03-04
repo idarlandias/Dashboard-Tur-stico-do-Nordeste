@@ -43,6 +43,7 @@ Dashboard-Turistico-do-Nordeste/
 │
 ├── dados_brutos/
 │   ├── chegadas_internacionais_nordeste.csv   ← EMBRATUR / PF
+│   ├── receitas_bcb_22741_mensal.csv          ← API Banco Central (SGS)
 │   └── receita_turismo_domestico_nordeste.csv ← PNAD-IBGE
 │
 ├── turismo_nordeste_2021_2025.csv  → Dataset consolidado
@@ -84,10 +85,11 @@ Dashboard-Turistico-do-Nordeste/
 
 | Indicador | Fonte | Status |
 |-----------|-------|--------|
-| Chegadas internacionais por UF | EMBRATUR / Polícia Federal | ✅ Verificado |
+| Chegadas internacionais por UF | EMBRATUR / Polícia Federal | ✅ Fechamento 2025 verificado |
+| Receitas de viagens int. | API Banco Central (SGS 22741) | ✅ Integrado via Python |
 | Gasto médio por estado 2024 | PNAD Contínua Turismo – IBGE | ✅ Verificado |
 | Receita turística estimada | MTur + IBGE pro-rata | 🟡 Estimado |
-| Portal MTur CSVs | dados.turismo.gov.br | ❌ 502 (fora do ar) |
+| Portal MTur CSVs | dados.turismo.gov.br | ❌ 502 (aguardando retorno) |
 
 **Totais nacionais verificados (Anuário Embratur 2025):**  
 2021: 745k · 2022: 3,6M · 2023: 5,9M · 2024: **6,7M chegadas internacionais**
