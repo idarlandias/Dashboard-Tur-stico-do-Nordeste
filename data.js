@@ -217,3 +217,50 @@ const sazonalidade = {
   labels: sazonalidadePerEstado.labels,
   data: sazonalidadePerEstado["Todos"],
 };
+
+// ============================================================
+// MAPEAMENTO UF ↔ ESTADO (reutilizável)
+// ============================================================
+const UF_SIGLAS = {
+  "Ceará": "CE", "Bahia": "BA", "Pernambuco": "PE",
+  "Rio Grande do Norte": "RN", "Alagoas": "AL", "Paraíba": "PB",
+  "Maranhão": "MA", "Piauí": "PI", "Sergipe": "SE"
+};
+
+// ============================================================
+// SIMULADOR DE INVESTIMENTO - Multiplicadores Turísticos
+// Fonte: MTur/FGV - Conta Satélite do Turismo
+// ============================================================
+const MULTIPLIERS = {
+  economicMultiplier: { min: 5, max: 7 },
+  jobsPerMillion: { min: 12, max: 25 },
+  touristsPerMillion: { min: 800, max: 3000 },
+  occupancyBoostPerMillion: 0.5,
+};
+
+const STATE_INVESTMENT_PROFILE = {
+  "Sergipe":            { efficiency: 1.40, jobMult: 25, touristMult: 3000 },
+  "Maranhão":           { efficiency: 1.35, jobMult: 23, touristMult: 2800 },
+  "Piauí":              { efficiency: 1.30, jobMult: 22, touristMult: 2600 },
+  "Paraíba":            { efficiency: 1.25, jobMult: 20, touristMult: 2400 },
+  "Alagoas":            { efficiency: 1.15, jobMult: 18, touristMult: 2000 },
+  "Rio Grande do Norte": { efficiency: 1.10, jobMult: 16, touristMult: 1600 },
+  "Pernambuco":         { efficiency: 1.00, jobMult: 15, touristMult: 1200 },
+  "Ceará":              { efficiency: 0.95, jobMult: 14, touristMult: 1000 },
+  "Bahia":              { efficiency: 0.90, jobMult: 12, touristMult: 800 },
+};
+
+// ============================================================
+// RADAR CHART - Eixos de Competitividade
+// ============================================================
+const RADAR_AXES = ["Crescimento", "Eficiência", "Volume", "Infraestrutura", "Potencial", "Regularidade"];
+
+// ============================================================
+// INSIGHTS - Limiares para geração automática de alertas
+// ============================================================
+const INSIGHT_THRESHOLDS = {
+  highGrowth: 2.0,
+  highEfficiency: 1.5,
+  seasonalConcentration: 0.35,
+  lowOccupancy: 60,
+};
