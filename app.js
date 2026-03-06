@@ -9,12 +9,12 @@ const DashboardState = {
     _indicador: 'turistas',
     _listeners: [],
 
-    get estado()    { return this._estado; },
-    get periodo()   { return this._periodo; },
+    get estado() { return this._estado; },
+    get periodo() { return this._periodo; },
     get indicador() { return this._indicador; },
 
-    set estado(v)    { if (this._estado !== v)    { this._estado = v;    this._notify(); } },
-    set periodo(v)   { if (this._periodo !== v)   { this._periodo = v;   this._notify(); } },
+    set estado(v) { if (this._estado !== v) { this._estado = v; this._notify(); } },
+    set periodo(v) { if (this._periodo !== v) { this._periodo = v; this._notify(); } },
     set indicador(v) { if (this._indicador !== v) { this._indicador = v; this._notify(); } },
 
     /** Atualiza sem disparar render (para batch updates) */
@@ -590,6 +590,8 @@ function renderHeatmap() {
 
 // ── Bubble Chart BCG ─────────────────────────────────────────
 function renderBubbleChart() {
+    const estado = DashboardState.estado;
+    const periodo = DashboardState.periodo;
     const canvas = document.getElementById('chart-bubble');
     if (!canvas) return;
     const idx = periodoIdx(periodo);
@@ -669,6 +671,8 @@ function computeRadarScores(est, idx) {
 }
 
 function renderRadarChart() {
+    const estado = DashboardState.estado;
+    const periodo = DashboardState.periodo;
     const canvas = document.getElementById('chart-radar');
     if (!canvas) return;
     const idx = periodoIdx(periodo);
@@ -722,6 +726,8 @@ function renderRadarChart() {
 
 // ── Insights Automáticos ─────────────────────────────────────
 function generateInsights() {
+    const estado = DashboardState.estado;
+    const periodo = DashboardState.periodo;
     const idx = periodoIdx(periodo);
     const idxPrev = idx > 0 ? idx - 1 : null;
     const insights = [];
@@ -836,6 +842,8 @@ function generateInsights() {
 }
 
 function renderInsights() {
+    const estado = DashboardState.estado;
+    const periodo = DashboardState.periodo;
     const grid = document.getElementById('insights-grid');
     const summary = document.getElementById('insights-summary');
     if (!grid) return;
@@ -893,6 +901,8 @@ function initSimulador() {
 }
 
 function renderSimulador() {
+    const estado = DashboardState.estado;
+    const periodo = DashboardState.periodo;
     const valorEl = document.getElementById('sim-valor');
     const estEl = document.getElementById('sim-estado');
     if (!valorEl || !estEl) return;
@@ -965,6 +975,8 @@ function renderSimulador() {
 
 // ── Relatório Executivo PDF ──────────────────────────────────
 function generateExecutiveReport() {
+    const estado = DashboardState.estado;
+    const periodo = DashboardState.periodo;
     const idx = periodoIdx(periodo);
     const estados = estado === 'Todos' ? ESTADOS : [estado];
 
@@ -1041,9 +1053,9 @@ function generateExecutiveReport() {
 
   <h2>3. Análise Visual</h2>
   ${Object.entries(chartImages).map(([id, src]) => {
-    const titles = { 'chart-estados': 'Comparativo por Estado', 'chart-temporal': 'Evolução Temporal', 'chart-bubble': 'Matriz BCG', 'chart-heatmap': 'Heatmap Sazonalidade', 'chart-radar': 'Radar Comparativo' };
-    return `<p style="font-size:10pt;color:#0077B6;font-weight:bold;margin-top:12px;">${titles[id] || id}</p><img class="chart-img" src="${src}" alt="${id}">`;
-  }).join('')}
+        const titles = { 'chart-estados': 'Comparativo por Estado', 'chart-temporal': 'Evolução Temporal', 'chart-bubble': 'Matriz BCG', 'chart-heatmap': 'Heatmap Sazonalidade', 'chart-radar': 'Radar Comparativo' };
+        return `<p style="font-size:10pt;color:#0077B6;font-weight:bold;margin-top:12px;">${titles[id] || id}</p><img class="chart-img" src="${src}" alt="${id}">`;
+    }).join('')}
 
   <h2>4. Nota Metodológica</h2>
   <div class="nota">
