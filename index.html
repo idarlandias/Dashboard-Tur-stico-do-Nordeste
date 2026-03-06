@@ -35,6 +35,9 @@
       <a class="nav-item" data-section="sec-sazonalidade" href="#">
         <span class="nav-icon">📅</span> Sazonalidade
       </a>
+      <a class="nav-item" data-section="sec-heatmap" href="#">
+        <span class="nav-icon">🌡️</span> Mapa de Calor
+      </a>
       <a class="nav-item" data-section="sec-ranking" href="#">
         <span class="nav-icon">🏆</span> Ranking Destinos
       </a>
@@ -47,11 +50,23 @@
       <a class="nav-item" data-section="sec-evolucao" href="#">
         <span class="nav-icon">📈</span> Evolução Temporal
       </a>
+      <a class="nav-item" data-section="sec-radar" href="#">
+        <span class="nav-icon">🕸️</span> Radar Comparativo
+      </a>
 
       <div class="nav-section-label" style="margin-top:16px;">Inteligência BNB</div>
 
       <a class="nav-item" data-section="sec-prospecoes" href="#">
         <span class="nav-icon">🔮</span> Prospecções 2026
+      </a>
+      <a class="nav-item" data-section="sec-bubble" href="#">
+        <span class="nav-icon">🫧</span> Matriz BCG
+      </a>
+      <a class="nav-item" data-section="sec-simulador" href="#">
+        <span class="nav-icon">🎛️</span> Simulador What-If
+      </a>
+      <a class="nav-item" data-section="sec-insights" href="#">
+        <span class="nav-icon">💡</span> Insights Automáticos
       </a>
 
       <div class="nav-section-label" style="margin-top:16px;">Relatórios</div>
@@ -100,6 +115,7 @@
           <button class="btn-export btn-csv" id="btn-export-csv" title="Baixar dados em CSV">📄 CSV</button>
           <button class="btn-export btn-xls" id="btn-export-xls" title="Abrir no Excel">📊 Excel</button>
           <button class="btn-export btn-pdf" id="btn-export-pdf" title="Salvar como PDF">🖨️ PDF</button>
+          <button class="btn-export btn-report" id="btn-export-report" title="Relatório Executivo BNB">📑 Relatório</button>
         </div>
       </div>
     </header>
@@ -374,6 +390,179 @@
               resultado.</p>
           </div>
         </div>
+      </section>
+
+      <!-- ===== SEÇÃO: Simulador de Investimento What-If ===== -->
+      <section class="dash-section" id="sec-simulador" style="display:none;">
+        <p class="section-title">Simulador de Investimento "What-If"</p>
+
+        <div class="sim-controls">
+          <div class="sim-control-group">
+            <label class="sim-label" for="sim-valor">Investimento (R$ milhões)</label>
+            <div class="sim-input-row">
+              <input type="range" id="sim-slider" min="1" max="500" value="50" class="sim-slider">
+              <input type="number" id="sim-valor" min="1" max="500" value="50" class="sim-input-number">
+              <span class="sim-unit">R$ mi</span>
+            </div>
+          </div>
+          <div class="sim-control-group">
+            <label class="sim-label" for="sim-estado">Estado destino</label>
+            <select id="sim-estado" class="filter-select" aria-label="Estado para simulação">
+              <!-- populated by JS -->
+            </select>
+          </div>
+        </div>
+
+        <div class="kpi-grid" style="margin-top:20px;">
+          <div class="kpi-card a" id="sim-kpi-retorno">
+            <div class="kpi-icon">💰</div>
+            <div class="kpi-body">
+              <div class="kpi-label">Retorno Econômico Projetado</div>
+              <div class="kpi-value">—</div>
+              <span class="kpi-trend">Multiplicador turístico 5–7x</span>
+            </div>
+          </div>
+          <div class="kpi-card b" id="sim-kpi-empregos">
+            <div class="kpi-icon">👥</div>
+            <div class="kpi-body">
+              <div class="kpi-label">Empregos Gerados</div>
+              <div class="kpi-value">—</div>
+              <span class="kpi-trend">Diretos + indiretos</span>
+            </div>
+          </div>
+          <div class="kpi-card c" id="sim-kpi-turistas">
+            <div class="kpi-icon">✈️</div>
+            <div class="kpi-body">
+              <div class="kpi-label">Turistas Adicionais</div>
+              <div class="kpi-value">—</div>
+              <span class="kpi-trend">Projeção incremental</span>
+            </div>
+          </div>
+          <div class="kpi-card d" id="sim-kpi-roi">
+            <div class="kpi-icon">📊</div>
+            <div class="kpi-body">
+              <div class="kpi-label">ROI Estimado</div>
+              <div class="kpi-value">—</div>
+              <span class="kpi-trend">Retorno sobre investimento</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-grid" style="margin-top:20px;">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Impacto: Cenário Atual vs. Pós-Investimento</div>
+                <div class="chart-subtitle">Comparação de indicadores antes e depois do aporte</div>
+              </div>
+              <span class="chart-badge" id="badge-sim">Simulação</span>
+            </div>
+            <div class="chart-wrap" style="height:260px;">
+              <canvas id="chart-sim-antes-depois" style="width:100%;height:100%;display:block;"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Eficiência Marginal por Estado</div>
+                <div class="chart-subtitle">Retorno por R$ 1 milhão investido</div>
+              </div>
+              <span class="chart-badge">Comparativo</span>
+            </div>
+            <div class="chart-wrap" style="height:260px;">
+              <canvas id="chart-sim-eficiencia" style="width:100%;height:100%;display:block;"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card" style="background:rgba(0,180,216,0.06); border:1px solid rgba(0,180,216,0.2); margin-top:16px;">
+          <div style="padding:8px; font-size:0.82rem; color:#b0bec5; line-height:1.7;">
+            <strong style="color:#00B4D8;">Nota Metodológica:</strong> Simulação baseada em multiplicadores turísticos do MTur/FGV.
+            Cada R$1 investido no turismo gera entre R$5 e R$7 na economia local (Conta Satélite do Turismo).
+            Estados com menor desenvolvimento turístico apresentam maior retorno marginal.
+            Resultados são estimativas para fins de planejamento estratégico.
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== SEÇÃO: Bubble Chart BCG ===== -->
+      <section class="dash-section" id="sec-bubble" style="display:none;">
+        <p class="section-title">Matriz BCG de Oportunidade Turística</p>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Crescimento × Eficiência × Volume</div>
+              <div class="chart-subtitle">CAGR 3a (eixo X) · Receita/turista (eixo Y) · Tamanho = volume de chegadas</div>
+            </div>
+            <span class="chart-badge" id="badge-bubble">2025</span>
+          </div>
+          <div class="chart-wrap" style="height:420px;">
+            <canvas id="chart-bubble" style="width:100%;height:100%;display:block;"></canvas>
+          </div>
+          <div class="bubble-quadrant-legend">
+            <span style="border-color:rgba(6,214,160,.4); color:#06D6A0;">Estrelas — alto crescimento + alta eficiência</span>
+            <span style="border-color:rgba(0,180,216,.4); color:#00B4D8;">Potenciais — alto crescimento + baixa eficiência</span>
+            <span style="border-color:rgba(244,162,97,.4); color:#F4A261;">Consolidados — baixo crescimento + alta eficiência</span>
+            <span style="border-color:rgba(231,111,81,.4); color:#E76F51;">Atenção — baixo crescimento + baixa eficiência</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== SEÇÃO: Heatmap de Sazonalidade ===== -->
+      <section class="dash-section" id="sec-heatmap" style="display:none;">
+        <p class="section-title">Mapa de Calor: Sazonalidade por Estado</p>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Intensidade Turística: 9 Estados × 12 Meses</div>
+              <div class="chart-subtitle">Índice relativo de chegadas · Gradiente frio→quente</div>
+            </div>
+            <span class="chart-badge">Jan–Dez</span>
+          </div>
+          <div class="chart-wrap" style="height:340px;">
+            <canvas id="chart-heatmap" style="width:100%;height:100%;display:block;"></canvas>
+          </div>
+          <div class="heatmap-legend">
+            <span>Baixa</span>
+            <div class="heatmap-legend-bar"></div>
+            <span>Alta</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== SEÇÃO: Radar Comparativo ===== -->
+      <section class="dash-section" id="sec-radar" style="display:none;">
+        <p class="section-title">Radar Comparativo de Competitividade</p>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Perfil Competitivo Multidimensional</div>
+                <div class="chart-subtitle" id="radar-subtitle">Estado selecionado vs. Média NE · 6 dimensões</div>
+              </div>
+              <span class="chart-badge" id="badge-radar">Nordeste</span>
+            </div>
+            <div class="chart-wrap" style="height:380px;">
+              <canvas id="chart-radar" style="width:100%;height:100%;display:block;"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Detalhamento por Eixo</div>
+                <div class="chart-subtitle">Scores normalizados 0–100</div>
+              </div>
+            </div>
+            <div id="radar-detail-list" style="margin-top:4px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== SEÇÃO: Insights Automáticos ===== -->
+      <section class="dash-section" id="sec-insights" style="display:none;">
+        <p class="section-title">Insights e Alertas Automáticos</p>
+        <div class="insights-summary" id="insights-summary"></div>
+        <div class="insights-grid" id="insights-grid"></div>
       </section>
 
     </div><!-- /content -->

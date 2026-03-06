@@ -1043,3 +1043,334 @@ text {
 .print-footer {
   display: none;
 }
+
+/* ── Simulador What-If ────────────────────────────────────── */
+.sim-controls {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.sim-control-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.sim-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.sim-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sim-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: var(--bg-card2);
+  border-radius: 3px;
+  outline: none;
+}
+
+.sim-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ocean), var(--sky));
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 180, 216, .5);
+  border: 2px solid var(--sky);
+}
+
+.sim-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ocean), var(--sky));
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 180, 216, .5);
+  border: 2px solid var(--sky);
+}
+
+.sim-input-number {
+  width: 80px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--sky);
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.sim-input-number:focus {
+  outline: none;
+  border-color: var(--sky);
+  box-shadow: 0 0 0 3px rgba(0, 180, 216, .15);
+}
+
+.sim-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Bubble Chart Legend ──────────────────────────────────── */
+.bubble-quadrant-legend {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding-top: 12px;
+}
+
+.bubble-quadrant-legend span {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 50px;
+  border: 1px solid var(--border);
+}
+
+/* ── Heatmap Legend ───────────────────────────────────────── */
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.heatmap-legend-bar {
+  width: 140px;
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #0D1526, #F4A261, #FF4757);
+}
+
+/* ── Radar Detail List ────────────────────────────────────── */
+.radar-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  margin-bottom: 6px;
+  transition: all var(--transition);
+}
+
+.radar-detail-item:hover {
+  border-color: rgba(0, 180, 216, .3);
+  transform: translateX(3px);
+}
+
+.radar-detail-axis {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+  min-width: 100px;
+}
+
+.radar-detail-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-base);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.radar-detail-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--ocean), var(--sky));
+  transition: width 0.6s ease;
+}
+
+.radar-detail-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sky);
+  width: 40px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Insights Cards ───────────────────────────────────────── */
+.insights-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.insights-summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.insights-summary-card .sum-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--sky);
+}
+
+.insights-summary-card .sum-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.insight-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all var(--transition);
+  border-left: 4px solid var(--sky);
+}
+
+.insight-card:hover {
+  border-color: rgba(0, 180, 216, .4);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.insight-card.success {
+  border-left-color: var(--growth);
+}
+
+.insight-card.warning {
+  border-left-color: var(--sand);
+}
+
+.insight-card.alert {
+  border-left-color: var(--sunset);
+}
+
+.insight-card.info {
+  border-left-color: var(--sky);
+}
+
+.insight-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.insight-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.insight-body {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.insight-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 50px;
+  margin-top: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.insight-tag.success {
+  background: rgba(6, 214, 160, .12);
+  color: var(--growth);
+}
+
+.insight-tag.warning {
+  background: rgba(244, 162, 97, .12);
+  color: var(--sand);
+}
+
+.insight-tag.alert {
+  background: rgba(231, 111, 81, .12);
+  color: var(--sunset);
+}
+
+.insight-tag.info {
+  background: rgba(0, 180, 216, .12);
+  color: var(--sky);
+}
+
+/* ── Report Button ────────────────────────────────────────── */
+.btn-report {
+  background: linear-gradient(135deg, #5b2c8a, #845EC2);
+  box-shadow: 0 3px 10px rgba(132, 94, 194, .3);
+}
+
+.btn-report:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 16px rgba(132, 94, 194, .45);
+}
+
+/* ── Responsive: Novas features ───────────────────────────── */
+@media (max-width: 1200px) {
+  .insights-summary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .sim-controls {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .insights-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .bubble-quadrant-legend {
+    flex-direction: column;
+    align-items: center;
+  }
+}

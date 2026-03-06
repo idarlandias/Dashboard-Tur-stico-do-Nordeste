@@ -11,6 +11,7 @@ let indicador = 'turistas';
 document.addEventListener('DOMContentLoaded', () => {
     populateSelects();
     initMap();
+    initSimulador();
     bindEvents();
     render();
 });
@@ -98,6 +99,10 @@ function bindEvents() {
 
     // ── Exportação PDF ────────────────────────────────────────
     document.getElementById('btn-export-pdf').addEventListener('click', exportPDF);
+
+    // ── Relatório Executivo ─────────────────────────────────
+    const btnReport = document.getElementById('btn-export-report');
+    if (btnReport) btnReport.addEventListener('click', generateExecutiveReport);
 }
 
 // ── Integração GeoViz (Mapa SVG) ──────────────────────────────
@@ -256,6 +261,11 @@ function render() {
     renderCharts();
     renderRanking();
     renderSazonalidade();
+    renderHeatmap();
+    renderBubbleChart();
+    renderRadarChart();
+    renderInsights();
+    renderSimulador();
     renderProspecoes2026();
     updateMapSelection();
 
@@ -461,6 +471,497 @@ function renderSazonalidade() {
     if (sub) sub.textContent = estado === 'Todos'
         ? 'Média consolidada · Nordeste · perfil estimado por mês'
         : `Perfil de sazonalidade · ${estado} · base estimada`;
+}
+
+// ── Heatmap de Sazonalidade ──────────────────────────────────
+function renderHeatmap() {
+    const canvas = document.getElementById('chart-heatmap');
+    if (!canvas) return;
+    const states = ESTADOS;
+    const months = sazonalidadePerEstado.labels;
+    const matrix = states.map(s => sazonalidadePerEstado[s]);
+    const shortNames = states.map(s => {
+        const parts = s.split(' ');
+        return parts.length > 2 ? UF_SIGLAS[s] : parts[0];
+    });
+    drawHeatmapChart('chart-heatmap', shortNames, months, matrix);
+}
+
+// ── Bubble Chart BCG ─────────────────────────────────────────
+function renderBubbleChart() {
+    const canvas = document.getElementById('chart-bubble');
+    if (!canvas) return;
+    const idx = periodoIdx(periodo);
+    const bubbles = ESTADOS.map(est => {
+        const p = prospecoes2026.find(p => p.estado === est);
+        const vol = chegadasInt[est][idx];
+        const rec = receita[est][idx];
+        const efficiency = vol > 0 ? (rec / vol) * 1000000 : 0;
+        return {
+            label: UF_SIGLAS[est],
+            x: p ? p.cagr : 0,
+            y: Math.round(efficiency),
+            size: vol,
+            color: p ? p.cor : '#00B4D8'
+        };
+    });
+    drawBubbleChart('chart-bubble', bubbles, {
+        xLabel: 'CAGR 3 anos (%)',
+        yLabel: 'Receita por Turista (R$)',
+        xFormat: v => v.toFixed(0) + '%',
+        yFormat: v => 'R$' + (v / 1000).toFixed(0) + 'k'
+    });
+    const badge = document.getElementById('badge-bubble');
+    if (badge) badge.textContent = periodo;
+}
+
+// ── Radar Comparativo ────────────────────────────────────────
+function computeRadarScores(est, idx) {
+    // Normaliza cada eixo para 0-100 com base nos valores do NE
+    const allCagr = ESTADOS.map(e => {
+        const p = prospecoes2026.find(pr => pr.estado === e);
+        return p ? p.cagr : 0;
+    });
+    const allEff = ESTADOS.map(e => {
+        const vol = chegadasInt[e][idx];
+        return vol > 0 ? (receita[e][idx] / vol) * 1000000 : 0;
+    });
+    const allVol = ESTADOS.map(e => chegadasInt[e][idx]);
+    const allInfra = ESTADOS.map(e => ocupacao[e][idx]);
+    const allPot = ESTADOS.map(e => {
+        const p = prospecoes2026.find(pr => pr.estado === e);
+        return p ? p.indice : 0;
+    });
+    const allSaz = ESTADOS.map(e => {
+        const data = sazonalidadePerEstado[e];
+        const mean = data.reduce((a, b) => a + b, 0) / data.length;
+        const variance = data.reduce((a, b) => a + (b - mean) ** 2, 0) / data.length;
+        const cv = Math.sqrt(variance) / mean;
+        return (1 - cv) * 100; // Lower CV = more regular = higher score
+    });
+
+    function normalize(arr, val) {
+        const min = Math.min(...arr);
+        const max = Math.max(...arr);
+        return max === min ? 50 : ((val - min) / (max - min)) * 100;
+    }
+
+    const p = prospecoes2026.find(pr => pr.estado === est);
+    const cagr = p ? p.cagr : 0;
+    const vol = chegadasInt[est][idx];
+    const eff = vol > 0 ? (receita[est][idx] / vol) * 1000000 : 0;
+    const infra = ocupacao[est][idx];
+    const pot = p ? p.indice : 0;
+    const sazData = sazonalidadePerEstado[est];
+    const sazMean = sazData.reduce((a, b) => a + b, 0) / sazData.length;
+    const sazVar = sazData.reduce((a, b) => a + (b - sazMean) ** 2, 0) / sazData.length;
+    const sazScore = (1 - Math.sqrt(sazVar) / sazMean) * 100;
+
+    return [
+        normalize(allCagr, cagr),
+        normalize(allEff, eff),
+        normalize(allVol, vol),
+        normalize(allInfra, infra),
+        normalize(allPot, pot),
+        normalize(allSaz, sazScore)
+    ];
+}
+
+function renderRadarChart() {
+    const canvas = document.getElementById('chart-radar');
+    if (!canvas) return;
+    const idx = periodoIdx(periodo);
+
+    // Average NE scores
+    const avgScores = RADAR_AXES.map((_, ai) => {
+        return ESTADOS.reduce((s, e) => s + computeRadarScores(e, idx)[ai], 0) / ESTADOS.length;
+    });
+
+    const datasets = [{
+        label: 'Média NE',
+        data: avgScores,
+        color: '#8896B3'
+    }];
+
+    if (estado !== 'Todos') {
+        const scores = computeRadarScores(estado, idx);
+        datasets.unshift({
+            label: estado,
+            data: scores,
+            color: '#00B4D8'
+        });
+    }
+
+    drawRadarChart('chart-radar', RADAR_AXES, datasets, { maxVal: 100, levels: 5 });
+
+    // Badge
+    const badge = document.getElementById('badge-radar');
+    if (badge) badge.textContent = estado === 'Todos' ? 'Nordeste' : UF_SIGLAS[estado] || estado;
+
+    // Subtitle
+    const sub = document.getElementById('radar-subtitle');
+    if (sub) sub.textContent = estado === 'Todos'
+        ? 'Selecione um estado para comparar com a média NE'
+        : `${estado} vs. Média NE · 6 dimensões`;
+
+    // Detail list
+    const list = document.getElementById('radar-detail-list');
+    if (!list) return;
+    const scores = estado !== 'Todos' ? computeRadarScores(estado, idx) : avgScores;
+    list.innerHTML = RADAR_AXES.map((axis, i) => `
+        <div class="radar-detail-item">
+            <span class="radar-detail-axis">${axis}</span>
+            <div class="radar-detail-bar">
+                <div class="radar-detail-bar-fill" style="width:${scores[i].toFixed(0)}%"></div>
+            </div>
+            <span class="radar-detail-value">${scores[i].toFixed(0)}</span>
+        </div>
+    `).join('');
+}
+
+// ── Insights Automáticos ─────────────────────────────────────
+function generateInsights() {
+    const idx = periodoIdx(periodo);
+    const idxPrev = idx > 0 ? idx - 1 : null;
+    const insights = [];
+
+    // 1. CAGR leaders
+    const sortedByCagr = [...prospecoes2026].sort((a, b) => b.cagr - a.cagr);
+    const avgCagr = prospecoes2026.reduce((s, p) => s + p.cagr, 0) / prospecoes2026.length;
+
+    sortedByCagr.slice(0, 2).forEach(d => {
+        if (d.cagr > avgCagr * INSIGHT_THRESHOLDS.highGrowth) {
+            insights.push({
+                type: 'success', icon: '🚀',
+                title: `${d.estado}: Crescimento ${(d.cagr / avgCagr).toFixed(1)}x acima da média`,
+                body: `CAGR de ${d.cagr}% contra média de ${avgCagr.toFixed(1)}% do Nordeste. Janela de investimento aberta para capturar crescimento acelerado.`,
+                state: d.estado
+            });
+        }
+    });
+
+    // 2. Efficiency leaders (receita/turista)
+    const effData = ESTADOS.map(e => ({
+        estado: e,
+        eff: chegadasInt[e][idx] > 0 ? (receita[e][idx] / chegadasInt[e][idx]) * 1000000 : 0
+    })).sort((a, b) => b.eff - a.eff);
+    const avgEff = effData.reduce((s, d) => s + d.eff, 0) / effData.length;
+
+    if (effData[0].eff > avgEff * INSIGHT_THRESHOLDS.highEfficiency) {
+        insights.push({
+            type: 'info', icon: '💎',
+            title: `${effData[0].estado}: Maior eficiência econômica do NE`,
+            body: `Receita de R$ ${Math.round(effData[0].eff).toLocaleString('pt-BR')} por turista — ${(effData[0].eff / avgEff).toFixed(1)}x a média regional. Perfil de turismo premium.`,
+            state: effData[0].estado
+        });
+    }
+
+    // 3. Seasonal concentration
+    ESTADOS.forEach(e => {
+        const data = sazonalidadePerEstado[e];
+        const mean = data.reduce((a, b) => a + b, 0) / data.length;
+        const variance = data.reduce((a, b) => a + (b - mean) ** 2, 0) / data.length;
+        const cv = Math.sqrt(variance) / mean;
+        if (cv > INSIGHT_THRESHOLDS.seasonalConcentration) {
+            const peakMonth = sazonalidadePerEstado.labels[data.indexOf(Math.max(...data))];
+            insights.push({
+                type: 'warning', icon: '📅',
+                title: `${e}: Alta concentração sazonal`,
+                body: `Coeficiente de variação de ${(cv * 100).toFixed(0)}%. Pico em ${peakMonth}. Oportunidade de investir em diversificação para meses de baixa.`,
+                state: e
+            });
+        }
+    });
+
+    // 4. Low occupancy = infrastructure opportunity
+    ESTADOS.forEach(e => {
+        if (ocupacao[e][idx] < INSIGHT_THRESHOLDS.lowOccupancy) {
+            insights.push({
+                type: 'alert', icon: '🏨',
+                title: `${e}: Ocupação hoteleira abaixo de ${INSIGHT_THRESHOLDS.lowOccupancy}%`,
+                body: `Taxa atual de ${ocupacao[e][idx]}%. Indica necessidade de investimento em marketing e conectividade aérea para elevar a demanda.`,
+                state: e
+            });
+        }
+    });
+
+    // 5. YoY acceleration
+    if (idxPrev !== null && idx >= 2) {
+        ESTADOS.forEach(e => {
+            const curr = chegadasInt[e][idx];
+            const prev = chegadasInt[e][idxPrev];
+            const prevPrev = chegadasInt[e][idx - 2];
+            const growthCurr = prev > 0 ? (curr - prev) / prev : 0;
+            const growthPrev = prevPrev > 0 ? (prev - prevPrev) / prevPrev : 0;
+            if (growthCurr > growthPrev * 1.5 && growthCurr > 0.15) {
+                insights.push({
+                    type: 'success', icon: '📈',
+                    title: `${e}: Aceleração de crescimento detectada`,
+                    body: `Crescimento de ${(growthCurr * 100).toFixed(1)}% em ${periodo} vs ${(growthPrev * 100).toFixed(1)}% no período anterior. Trajetória ascendente reforçada.`,
+                    state: e
+                });
+            }
+        });
+    }
+
+    // 6. Top opportunity index
+    const topOp = prospecoes2026[0];
+    insights.push({
+        type: 'info', icon: '🎯',
+        title: `${topOp.estado}: Líder no Índice de Oportunidade BNB`,
+        body: `Score de ${topOp.indice}/100. ${topOp.rationale.substring(0, 100)}`,
+        state: topOp.estado
+    });
+
+    // 7. Highest absolute growth
+    if (idxPrev !== null) {
+        const growths = ESTADOS.map(e => ({
+            estado: e,
+            abs: chegadasInt[e][idx] - chegadasInt[e][idxPrev]
+        })).sort((a, b) => b.abs - a.abs);
+        insights.push({
+            type: 'info', icon: '✈️',
+            title: `${growths[0].estado}: Maior ganho absoluto de turistas`,
+            body: `+${growths[0].abs.toLocaleString('pt-BR')} chegadas internacionais em ${periodo} vs ${PERIODOS[idxPrev]}. Volume bruto que sustenta a cadeia produtiva local.`,
+            state: growths[0].estado
+        });
+    }
+
+    // Filter by selected state if not "Todos"
+    if (estado !== 'Todos') {
+        return insights.filter(i => i.state === estado || !i.state);
+    }
+    return insights;
+}
+
+function renderInsights() {
+    const grid = document.getElementById('insights-grid');
+    const summary = document.getElementById('insights-summary');
+    if (!grid) return;
+
+    const insights = generateInsights();
+    const successCount = insights.filter(i => i.type === 'success').length;
+    const warningCount = insights.filter(i => i.type === 'warning').length;
+    const alertCount = insights.filter(i => i.type === 'alert').length;
+
+    if (summary) {
+        summary.innerHTML = `
+            <div class="insights-summary-card">
+                <div class="sum-value" style="color:#06D6A0;">${successCount}</div>
+                <div class="sum-label">Oportunidades</div>
+            </div>
+            <div class="insights-summary-card">
+                <div class="sum-value" style="color:#F4A261;">${warningCount}</div>
+                <div class="sum-label">Pontos de Atenção</div>
+            </div>
+            <div class="insights-summary-card">
+                <div class="sum-value" style="color:#E76F51;">${alertCount}</div>
+                <div class="sum-label">Alertas</div>
+            </div>
+        `;
+    }
+
+    grid.innerHTML = insights.map(ins => `
+        <div class="insight-card ${ins.type}">
+            <div class="insight-icon">${ins.icon}</div>
+            <div class="insight-title">${ins.title}</div>
+            <div class="insight-body">${ins.body}</div>
+            <span class="insight-tag ${ins.type}">${ins.type === 'success' ? 'oportunidade' : ins.type === 'warning' ? 'atenção' : ins.type === 'alert' ? 'alerta' : 'informação'}</span>
+        </div>
+    `).join('');
+}
+
+// ── Simulador de Investimento What-If ────────────────────────
+function initSimulador() {
+    const slider = document.getElementById('sim-slider');
+    const input = document.getElementById('sim-valor');
+    const selEst = document.getElementById('sim-estado');
+    if (!slider || !input || !selEst) return;
+
+    // Populate
+    selEst.innerHTML = ESTADOS.map(e => `<option value="${e}">${e}</option>`).join('');
+
+    slider.addEventListener('input', () => { input.value = slider.value; renderSimulador(); });
+    input.addEventListener('input', () => {
+        let v = Math.min(500, Math.max(1, parseInt(input.value) || 1));
+        input.value = v;
+        slider.value = v;
+        renderSimulador();
+    });
+    selEst.addEventListener('change', renderSimulador);
+}
+
+function renderSimulador() {
+    const valorEl = document.getElementById('sim-valor');
+    const estEl = document.getElementById('sim-estado');
+    if (!valorEl || !estEl) return;
+
+    const valor = parseFloat(valorEl.value) || 50;
+    const est = estEl.value;
+    const profile = STATE_INVESTMENT_PROFILE[est];
+    if (!profile) return;
+
+    const avgMult = (MULTIPLIERS.economicMultiplier.min + MULTIPLIERS.economicMultiplier.max) / 2;
+    const retornoEconomico = valor * avgMult * profile.efficiency;
+    const empregosGerados = Math.round(valor * profile.jobMult);
+    const turistasAdicionais = Math.round(valor * profile.touristMult);
+    const roi = ((retornoEconomico / valor - 1) * 100).toFixed(0);
+
+    function fmtBRL(n) {
+        if (n >= 1000) return 'R$ ' + (n / 1000).toFixed(1) + ' bi';
+        return 'R$ ' + n.toFixed(0) + ' mi';
+    }
+
+    setKPI('sim-kpi-retorno', fmtBRL(retornoEconomico), null);
+    setKPI('sim-kpi-empregos', empregosGerados.toLocaleString('pt-BR') + ' empregos', null);
+    setKPI('sim-kpi-turistas', turistasAdicionais.toLocaleString('pt-BR') + ' turistas', null);
+    setKPI('sim-kpi-roi', roi + '%', null);
+
+    // KPI trend texts
+    const trendRetorno = document.querySelector('#sim-kpi-retorno .kpi-trend');
+    if (trendRetorno) { trendRetorno.textContent = `Multiplicador ${(avgMult * profile.efficiency).toFixed(1)}x`; trendRetorno.className = 'kpi-trend'; trendRetorno.style.display = ''; }
+    const trendEmp = document.querySelector('#sim-kpi-empregos .kpi-trend');
+    if (trendEmp) { trendEmp.textContent = `${profile.jobMult} empregos/R$ mi`; trendEmp.className = 'kpi-trend'; trendEmp.style.display = ''; }
+    const trendTur = document.querySelector('#sim-kpi-turistas .kpi-trend');
+    if (trendTur) { trendTur.textContent = `${profile.touristMult.toLocaleString('pt-BR')} turistas/R$ mi`; trendTur.className = 'kpi-trend'; trendTur.style.display = ''; }
+    const trendRoi = document.querySelector('#sim-kpi-roi .kpi-trend');
+    if (trendRoi) { trendRoi.textContent = `Eficiência: ${profile.efficiency.toFixed(2)}x`; trendRoi.className = 'kpi-trend'; trendRoi.style.display = ''; }
+
+    // Antes vs Depois bar chart
+    const idx = periodoIdx(periodo);
+    const receitaAtual = receita[est][idx];
+    const empregosAtuais = empregos[est][idx];
+    const turistasAtuais = chegadasInt[est][idx];
+
+    const receitaPos = receitaAtual + retornoEconomico;
+    const empregosPos = empregosAtuais + empregosGerados;
+    const turistasPos = turistasAtuais + turistasAdicionais;
+
+    // Normalize for grouped chart
+    drawBarChart('chart-sim-antes-depois',
+        ['Receita (R$ mi)', 'Empregos', 'Turistas'],
+        [
+            { label: 'Atual', data: [receitaAtual, empregosAtuais, turistasAtuais / 100], color: '#8896B3', color2: '#4A5568' },
+            { label: 'Pós-Investimento', data: [receitaPos, empregosPos, turistasPos / 100], color: '#06D6A0', color2: '#00B4D8' }
+        ],
+        { yFormat: v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v) }
+    );
+
+    // Efficiency per state bar chart
+    const effLabels = ESTADOS.map(e => UF_SIGLAS[e]);
+    const effData = ESTADOS.map(e => {
+        const p = STATE_INVESTMENT_PROFILE[e];
+        return p ? p.efficiency * avgMult : 0;
+    });
+    drawBarChart('chart-sim-eficiencia', effLabels,
+        [{ label: 'Multiplicador efetivo', data: effData, color: '#00B4D8', color2: '#0077B6' }],
+        { yFormat: v => v.toFixed(1) + 'x' }
+    );
+
+    const badge = document.getElementById('badge-sim');
+    if (badge) badge.textContent = est.split(' ')[0];
+}
+
+// ── Relatório Executivo PDF ──────────────────────────────────
+function generateExecutiveReport() {
+    const idx = periodoIdx(periodo);
+    const estados = estado === 'Todos' ? ESTADOS : [estado];
+
+    const totalTuristas = estados.reduce((s, e) => s + chegadasInt[e][idx], 0);
+    const totalReceita = estados.reduce((s, e) => s + receita[e][idx], 0);
+    const mediaOcupacao = (estados.reduce((s, e) => s + ocupacao[e][idx], 0) / estados.length).toFixed(1);
+    const totalEmpregos = estados.reduce((s, e) => s + empregos[e][idx], 0);
+
+    // Capture visible charts
+    const chartImages = {};
+    ['chart-estados', 'chart-temporal', 'chart-bubble', 'chart-heatmap', 'chart-radar'].forEach(id => {
+        const c = document.getElementById(id);
+        if (c && c.width > 0) {
+            try { chartImages[id] = c.toDataURL('image/png'); } catch (e) { /* ignore */ }
+        }
+    });
+
+    const top4 = prospecoes2026.slice(0, 4);
+    const dataAtual = new Date().toLocaleDateString('pt-BR', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Relatório Executivo ObIT-NE · BNB</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; color: #222; max-width: 210mm; margin: 0 auto; padding: 20mm 16mm; line-height: 1.6; }
+  .cover { text-align: center; page-break-after: always; padding-top: 25vh; }
+  .cover .brand { color: #0077B6; font-size: 11pt; letter-spacing: 4px; text-transform: uppercase; }
+  .cover h1 { color: #0077B6; font-size: 28pt; margin: 16px 0 8px; }
+  .cover .sub { color: #666; font-size: 13pt; }
+  .cover .date { color: #999; font-size: 10pt; margin-top: 24px; }
+  .cover .line { width: 80px; height: 3px; background: linear-gradient(90deg, #0077B6, #00B4D8); margin: 20px auto; border-radius: 2px; }
+  h2 { color: #0077B6; border-bottom: 2px solid #0077B6; padding-bottom: 4px; margin-top: 28px; font-size: 14pt; }
+  .kpi-row { display: flex; gap: 12px; margin: 16px 0; flex-wrap: wrap; }
+  .kpi-box { flex: 1; min-width: 120px; padding: 14px; background: #f0f8ff; border: 1px solid #b0d4ea; border-radius: 8px; text-align: center; }
+  .kpi-box h3 { color: #0077B6; font-size: 20pt; margin: 0; }
+  .kpi-box p { color: #555; font-size: 8pt; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .op-card { padding: 12px 16px; margin: 8px 0; background: #fffbe6; border-left: 4px solid #FFA502; border-radius: 4px; }
+  .op-card strong { color: #0077B6; }
+  .op-card .score { float: right; font-weight: bold; color: #FF4757; }
+  .chart-img { max-width: 100%; margin: 12px 0; border: 1px solid #ddd; border-radius: 8px; }
+  .footer { text-align: center; font-size: 8pt; color: #888; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 8px; }
+  .nota { font-size: 9pt; color: #555; background: #f8f9fa; padding: 12px; border-radius: 6px; margin-top: 16px; }
+  @page { size: A4 portrait; margin: 16mm; }
+  @media print { body { padding: 0; } .cover { padding-top: 30vh; } }
+</style>
+</head>
+<body>
+  <div class="cover">
+    <p class="brand">Banco do Nordeste do Brasil</p>
+    <div class="line"></div>
+    <h1>Relatório Executivo<br>Inteligência Turística</h1>
+    <p class="sub">Observatório do Turismo do Nordeste (ObIT-NE)</p>
+    <p class="date">${dataAtual}</p>
+    <p style="color:#999; font-size:9pt; margin-top:40px;">Período de análise: ${periodo} · ${estado === 'Todos' ? 'Todos os estados do NE' : estado}</p>
+  </div>
+
+  <h2>1. Resumo Executivo</h2>
+  <div class="kpi-row">
+    <div class="kpi-box"><h3>${totalTuristas.toLocaleString('pt-BR')}</h3><p>Chegadas Internacionais</p></div>
+    <div class="kpi-box"><h3>R$ ${(totalReceita / 1000).toFixed(1)} bi</h3><p>Receita Turística</p></div>
+    <div class="kpi-box"><h3>${mediaOcupacao}%</h3><p>Ocupação Hoteleira</p></div>
+    <div class="kpi-box"><h3>${totalEmpregos.toLocaleString('pt-BR')} mil</h3><p>Empregos Diretos</p></div>
+  </div>
+
+  <h2>2. Top 4 Oportunidades de Investimento BNB</h2>
+  ${top4.map((d, i) => `
+  <div class="op-card">
+    <span class="score">${d.indice}/100</span>
+    <strong>${i + 1}. ${d.estado} (${d.uf})</strong> — CAGR: ${d.cagr}% · Classificação: ${d.classificacao}
+    <p style="margin:4px 0 0; color:#555; font-size:9pt;">${d.rationale}</p>
+  </div>`).join('')}
+
+  <h2>3. Análise Visual</h2>
+  ${Object.entries(chartImages).map(([id, src]) => {
+    const titles = { 'chart-estados': 'Comparativo por Estado', 'chart-temporal': 'Evolução Temporal', 'chart-bubble': 'Matriz BCG', 'chart-heatmap': 'Heatmap Sazonalidade', 'chart-radar': 'Radar Comparativo' };
+    return `<p style="font-size:10pt;color:#0077B6;font-weight:bold;margin-top:12px;">${titles[id] || id}</p><img class="chart-img" src="${src}" alt="${id}">`;
+  }).join('')}
+
+  <h2>4. Nota Metodológica</h2>
+  <div class="nota">
+    <strong>Projeções 2026:</strong> Regressão Linear OLS sobre série 2021–2025.<br>
+    <strong>Índice de Oportunidade BNB:</strong> CAGR 3 anos (35%) + Potencial não explorado (35%) + Eficiência econômica (30%).<br>
+    <strong>Fontes:</strong> EMBRATUR/Polícia Federal · PNAD Contínua Turismo IBGE 2024 · MTur.<br>
+    <strong>Multiplicadores:</strong> Conta Satélite do Turismo MTur/FGV — R$1 investido gera R$5–7 na economia local.<br>
+    <em>* Valores 2025/2026 são estimativas/projeções. Não constituem garantia de resultado.</em>
+  </div>
+
+  <div class="footer">
+    Gerado em ${new Date().toLocaleString('pt-BR')} · Dashboard ObIT-NE · Banco do Nordeste do Brasil<br>
+    Dados: EMBRATUR/PF + PNAD Contínua IBGE 2024 · Projeções por Regressão Linear OLS
+  </div>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
+    downloadBlob(blob, `relatorio_executivo_obit_ne_${periodo}.html`);
 }
 
 // ── Redimensionamento ─────────────────────────────────────────
