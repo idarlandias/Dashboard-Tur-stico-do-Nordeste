@@ -10,7 +10,8 @@
 
   <!-- Open Graph -->
   <meta property="og:title" content="ObIT-NE | Dashboard de Inteligência Turística do Nordeste" />
-  <meta property="og:description" content="Painel interativo de inteligência turística regional com dados EMBRATUR, IBGE e projeções 2026 para investimento BNB." />
+  <meta property="og:description"
+    content="Painel interativo de inteligência turística regional com dados EMBRATUR, IBGE e projeções 2026 para investimento BNB." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://idarlandias.github.io/Dashboard-Turistico-do-Nordeste/" />
   <meta property="og:locale" content="pt_BR" />
@@ -134,7 +135,8 @@
           <button class="btn-export btn-csv" id="btn-export-csv" title="Baixar dados em CSV">📄 CSV</button>
           <button class="btn-export btn-xls" id="btn-export-xls" title="Abrir no Excel">📊 Excel</button>
           <button class="btn-export btn-pdf" id="btn-export-pdf" title="Salvar como PDF">🖨️ PDF</button>
-          <button class="btn-export btn-report" id="btn-export-report" title="Relatório Executivo BNB">📑 Relatório</button>
+          <button class="btn-export btn-report" id="btn-export-report" title="Relatório Executivo BNB">📑
+            Relatório</button>
         </div>
       </div>
     </header>
@@ -389,8 +391,10 @@
         </div>
 
         <!-- Nota metodologica expandida -->
-        <div class="chart-card metodologia-panel" style="background:rgba(0,180,216,0.06); border:1px solid rgba(0,180,216,0.2);">
-          <button class="metodologia-toggle" id="btn-metodologia" aria-expanded="false" aria-controls="metodologia-body">
+        <div class="chart-card metodologia-panel"
+          style="background:rgba(0,180,216,0.06); border:1px solid rgba(0,180,216,0.2);">
+          <button class="metodologia-toggle" id="btn-metodologia" aria-expanded="false"
+            aria-controls="metodologia-body">
             <span>📋 Nota Metodológica e Limitações</span>
             <span class="metodologia-chevron" id="metodologia-chevron">▸</span>
           </button>
@@ -398,44 +402,97 @@
             <div class="metodologia-content">
 
               <h4>Modelo de Projeção</h4>
-              <p><strong>Regressão Linear OLS</strong> (Ordinary Least Squares) aplicada individualmente sobre a série histórica 2021–2025 de cada estado do Nordeste.</p>
+              <p><strong>Regressão Linear OLS</strong> (Ordinary Least Squares) aplicada individualmente sobre a série
+                histórica 2021–2025 de cada estado do Nordeste.</p>
 
               <h4>Limitações do Modelo</h4>
               <ul>
-                <li>Regressão linear assume tendência constante — não captura choques externos (pandemias, crises), sazonalidade ou aceleração/desaceleração.</li>
-                <li>Série curta (5 pontos) limita a robustez estatística. Intervalos de confiança não são reportados por insuficiência amostral.</li>
-                <li>Projeções para 2026 são extrapolações lineares e <strong>não constituem previsão</strong> — servem como cenário tendencial para planejamento.</li>
-                <li>O modelo não incorpora variáveis exógenas (câmbio, PIB, conectividade aérea) que impactam diretamente o turismo.</li>
+                <li>Regressão linear assume tendência constante — não captura choques externos (pandemias, crises),
+                  sazonalidade ou aceleração/desaceleração.</li>
+                <li>Série curta (5 pontos) limita a robustez estatística. Intervalos de confiança não são reportados por
+                  insuficiência amostral.</li>
+                <li>Projeções para 2026 são extrapolações lineares e <strong>não constituem previsão</strong> — servem
+                  como cenário tendencial para planejamento.</li>
+                <li>O modelo não incorpora variáveis exógenas (câmbio, PIB, conectividade aérea) que impactam
+                  diretamente o turismo.</li>
               </ul>
 
               <h4>Índice de Oportunidade BNB</h4>
               <p>Índice composto ponderado (0–100) com três componentes:</p>
               <table class="metodologia-table">
                 <thead>
-                  <tr><th>Componente</th><th>Peso</th><th>Descrição</th></tr>
+                  <tr>
+                    <th>Componente</th>
+                    <th>Peso</th>
+                    <th>Descrição</th>
+                  </tr>
                 </thead>
                 <tbody>
-                  <tr><td>CAGR 3 anos</td><td>35%</td><td>Taxa composta de crescimento anual de chegadas internacionais</td></tr>
-                  <tr><td>Potencial não explorado</td><td>35%</td><td>Inverso da participação de mercado — estados menores pontuam mais</td></tr>
-                  <tr><td>Eficiência econômica</td><td>30%</td><td>Receita gerada por chegada internacional (gasto médio)</td></tr>
+                  <tr>
+                    <td>CAGR 3 anos</td>
+                    <td>35%</td>
+                    <td>Taxa composta de crescimento anual de chegadas internacionais</td>
+                  </tr>
+                  <tr>
+                    <td>Potencial não explorado</td>
+                    <td>35%</td>
+                    <td>Inverso da participação de mercado — estados menores pontuam mais</td>
+                  </tr>
+                  <tr>
+                    <td>Eficiência econômica</td>
+                    <td>30%</td>
+                    <td>Receita gerada por chegada internacional (gasto médio)</td>
+                  </tr>
                 </tbody>
               </table>
 
               <h4>Fontes de Dados</h4>
               <table class="metodologia-table">
                 <thead>
-                  <tr><th>Indicador</th><th>Fonte</th><th>Período</th><th>Confiança</th></tr>
+                  <tr>
+                    <th>Indicador</th>
+                    <th>Fonte</th>
+                    <th>Período</th>
+                    <th>Confiança</th>
+                  </tr>
                 </thead>
                 <tbody>
-                  <tr><td>Chegadas internacionais</td><td>EMBRATUR / Polícia Federal</td><td>2021–2024</td><td><span class="conf-badge conf-verificado">✓ Verificado</span></td></tr>
-                  <tr><td>Receita turística</td><td>PNAD Contínua IBGE + MTur</td><td>2021–2024</td><td><span class="conf-badge conf-verificado">✓ Verificado</span></td></tr>
-                  <tr><td>Ocupação hoteleira</td><td>MTur / ABIH</td><td>2021–2025</td><td><span class="conf-badge conf-estimativa">≈ Estimativa</span></td></tr>
-                  <tr><td>Empregos diretos</td><td>EMBRATUR / MTur</td><td>2021–2025</td><td><span class="conf-badge conf-estimativa">≈ Estimativa</span></td></tr>
-                  <tr><td>Projeções 2026</td><td>Regressão Linear OLS</td><td>2026</td><td><span class="conf-badge conf-projecao">◇ Projeção</span></td></tr>
+                  <tr>
+                    <td>Chegadas internacionais</td>
+                    <td>EMBRATUR / Polícia Federal</td>
+                    <td>2021–2024</td>
+                    <td><span class="conf-badge conf-verificado">✓ Verificado</span></td>
+                  </tr>
+                  <tr>
+                    <td>Receita turística</td>
+                    <td>PNAD Contínua IBGE + MTur</td>
+                    <td>2021–2024</td>
+                    <td><span class="conf-badge conf-verificado">✓ Verificado</span></td>
+                  </tr>
+                  <tr>
+                    <td>Ocupação hoteleira</td>
+                    <td>MTur / ABIH</td>
+                    <td>2021–2025</td>
+                    <td><span class="conf-badge conf-estimativa">≈ Estimativa</span></td>
+                  </tr>
+                  <tr>
+                    <td>Empregos diretos</td>
+                    <td>EMBRATUR / MTur</td>
+                    <td>2021–2025</td>
+                    <td><span class="conf-badge conf-estimativa">≈ Estimativa</span></td>
+                  </tr>
+                  <tr>
+                    <td>Projeções 2026</td>
+                    <td>Regressão Linear OLS</td>
+                    <td>2026</td>
+                    <td><span class="conf-badge conf-projecao">◇ Projeção</span></td>
+                  </tr>
                 </tbody>
               </table>
 
-              <p class="metodologia-disclaimer">Os valores projetados para 2025 e 2026 são estimativas baseadas em modelagem estatística. Não constituem garantia de resultado e não devem ser utilizados como única base para decisões de investimento.</p>
+              <p class="metodologia-disclaimer">Os valores projetados para 2025 e 2026 são estimativas baseadas em
+                modelagem estatística. Não constituem garantia de resultado e não devem ser utilizados como única base
+                para decisões de investimento.</p>
             </div>
           </div>
         </div>
@@ -524,9 +581,11 @@
           </div>
         </div>
 
-        <div class="chart-card" style="background:rgba(0,180,216,0.06); border:1px solid rgba(0,180,216,0.2); margin-top:16px;">
+        <div class="chart-card"
+          style="background:rgba(0,180,216,0.06); border:1px solid rgba(0,180,216,0.2); margin-top:16px;">
           <div style="padding:8px; font-size:0.82rem; color:#b0bec5; line-height:1.7;">
-            <strong style="color:#00B4D8;">Nota Metodológica:</strong> Simulação baseada em multiplicadores turísticos do MTur/FGV.
+            <strong style="color:#00B4D8;">Nota Metodológica:</strong> Simulação baseada em multiplicadores turísticos
+            do MTur/FGV.
             Cada R$1 investido no turismo gera entre R$5 e R$7 na economia local (Conta Satélite do Turismo).
             Estados com menor desenvolvimento turístico apresentam maior retorno marginal.
             Resultados são estimativas para fins de planejamento estratégico.
@@ -541,7 +600,8 @@
           <div class="chart-header">
             <div>
               <div class="chart-title">Crescimento × Eficiência × Volume</div>
-              <div class="chart-subtitle">CAGR 3a (eixo X) · Receita/turista (eixo Y) · Tamanho = volume de chegadas</div>
+              <div class="chart-subtitle">CAGR 3a (eixo X) · Receita/turista (eixo Y) · Tamanho = volume de chegadas
+              </div>
             </div>
             <span class="chart-badge" id="badge-bubble">2025</span>
           </div>
@@ -549,10 +609,14 @@
             <canvas id="chart-bubble" style="width:100%;height:100%;display:block;"></canvas>
           </div>
           <div class="bubble-quadrant-legend">
-            <span style="border-color:rgba(6,214,160,.4); color:#06D6A0;">Estrelas — alto crescimento + alta eficiência</span>
-            <span style="border-color:rgba(0,180,216,.4); color:#00B4D8;">Potenciais — alto crescimento + baixa eficiência</span>
-            <span style="border-color:rgba(244,162,97,.4); color:#F4A261;">Consolidados — baixo crescimento + alta eficiência</span>
-            <span style="border-color:rgba(231,111,81,.4); color:#E76F51;">Atenção — baixo crescimento + baixa eficiência</span>
+            <span style="border-color:rgba(6,214,160,.4); color:#06D6A0;">Estrelas — alto crescimento + alta
+              eficiência</span>
+            <span style="border-color:rgba(0,180,216,.4); color:#00B4D8;">Potenciais — alto crescimento + baixa
+              eficiência</span>
+            <span style="border-color:rgba(244,162,97,.4); color:#F4A261;">Consolidados — baixo crescimento + alta
+              eficiência</span>
+            <span style="border-color:rgba(231,111,81,.4); color:#E76F51;">Atenção — baixo crescimento + baixa
+              eficiência</span>
           </div>
         </div>
       </section>
@@ -619,9 +683,9 @@
 
   <!-- Scripts -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-  <script src="data.js"></script>
-  <script src="mapa_nordeste.js"></script>
-  <script src="charts.js"></script>
+  <script src="data.js?v=2.0"></script>
+  <script src="mapa_nordeste.js?v=2.0"></script>
+  <script src="charts.js?v=2.0"></script>
   <script>
     // Preenche legenda do donut após carregar
     document.addEventListener('DOMContentLoaded', () => {
@@ -643,7 +707,7 @@
       });
     });
   </script>
-  <script src="app.js"></script>
+  <script src="app.js?v=2.0"></script>
 </body>
 
 </html>
