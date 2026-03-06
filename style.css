@@ -892,6 +892,77 @@ text {
     align-items: center;
     justify-content: center;
   }
+
+  /* ── Topbar mobile: compacto e limpo ── */
+  .topbar {
+    padding: 0 14px;
+    height: 58px;
+  }
+
+  /* Esconde export e status — acessíveis pelo menu lateral */
+  .export-group,
+  .last-updated {
+    display: none;
+  }
+
+  .topbar-right {
+    display: none;
+  }
+
+  .topbar-left {
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .topbar-left > div {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .topbar-left h2 {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .topbar-left p {
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* KPI grid: 2 colunas no tablet/mobile médio */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Mobile pequeno (smartphones ≤ 500px) ── */
+@media (max-width: 500px) {
+  .topbar {
+    padding: 0 12px;
+    height: 54px;
+  }
+
+  .topbar-left h2 {
+    font-size: 13px;
+  }
+
+  .topbar-left p {
+    display: none; /* subtítulo oculto em telas muito pequenas */
+  }
+
+  /* KPI em coluna única em telas bem pequenas */
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .content {
+    padding: 14px;
+    gap: 14px;
+  }
 }
 
 /* ── Print / PDF ────────────────────────────────────────────── */
@@ -1373,4 +1444,143 @@ text {
     flex-direction: column;
     align-items: center;
   }
+}
+
+/* ── Confidence Badges ────────────────────────────────────── */
+.kpi-confidence {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 50px;
+  margin-top: 4px;
+  letter-spacing: 0.3px;
+}
+
+.conf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 50px;
+  white-space: nowrap;
+}
+
+.conf-verificado {
+  background: rgba(6, 214, 160, .12);
+  color: #06D6A0;
+  border: 1px solid rgba(6, 214, 160, .25);
+}
+
+.conf-estimativa {
+  background: rgba(244, 162, 97, .12);
+  color: #F4A261;
+  border: 1px solid rgba(244, 162, 97, .25);
+}
+
+.conf-projecao {
+  background: rgba(132, 94, 194, .12);
+  color: #845EC2;
+  border: 1px solid rgba(132, 94, 194, .25);
+}
+
+/* ── Methodology Panel ────────────────────────────────────── */
+.metodologia-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  color: #00B4D8;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 16px 24px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.metodologia-toggle:hover {
+  color: #90E0EF;
+}
+
+.metodologia-toggle:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: -2px;
+  border-radius: var(--radius);
+}
+
+.metodologia-chevron {
+  font-size: 18px;
+  transition: transform var(--transition);
+}
+
+.metodologia-chevron.open {
+  transform: rotate(90deg);
+}
+
+.metodologia-content {
+  padding: 0 24px 20px;
+  font-size: 0.82rem;
+  color: #b0bec5;
+  line-height: 1.7;
+}
+
+.metodologia-content h4 {
+  color: #e0f0ff;
+  font-size: 0.88rem;
+  margin: 16px 0 6px;
+}
+
+.metodologia-content h4:first-child {
+  margin-top: 0;
+}
+
+.metodologia-content ul {
+  margin: 6px 0 6px 16px;
+}
+
+.metodologia-content li {
+  margin-bottom: 4px;
+}
+
+.metodologia-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0 12px;
+  font-size: 0.8rem;
+}
+
+.metodologia-table th {
+  background: rgba(0, 180, 216, 0.1);
+  color: #e0f0ff;
+  font-weight: 600;
+  padding: 8px 12px;
+  text-align: left;
+  border: 1px solid rgba(0, 180, 216, 0.15);
+}
+
+.metodologia-table td {
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #b0bec5;
+}
+
+.metodologia-table tbody tr:hover {
+  background: rgba(0, 180, 216, 0.05);
+}
+
+.metodologia-disclaimer {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(231, 111, 81, 0.08);
+  border: 1px solid rgba(231, 111, 81, 0.2);
+  border-radius: 8px;
+  color: #F4A261;
+  font-size: 0.78rem;
+  font-style: italic;
 }

@@ -2,10 +2,34 @@
 // ObIT-NE – Lógica principal: filtros, KPIs e render de seções
 // ============================================================
 
-// ── Estado global ─────────────────────────────────────────────
-let estado = 'Todos';
-let periodo = '2025';
-let indicador = 'turistas';
+// ── Estado centralizado ─────────────────────────────────────
+const DashboardState = {
+    _estado: 'Todos',
+    _periodo: '2025',
+    _indicador: 'turistas',
+    _listeners: [],
+
+    get estado()    { return this._estado; },
+    get periodo()   { return this._periodo; },
+    get indicador() { return this._indicador; },
+
+    set estado(v)    { if (this._estado !== v)    { this._estado = v;    this._notify(); } },
+    set periodo(v)   { if (this._periodo !== v)   { this._periodo = v;   this._notify(); } },
+    set indicador(v) { if (this._indicador !== v) { this._indicador = v; this._notify(); } },
+
+    /** Atualiza sem disparar render (para batch updates) */
+    setSilent(key, value) { this['_' + key] = value; },
+
+    /** Registra callback de mudança */
+    onChange(fn) { this._listeners.push(fn); },
+
+    _notify() {
+        this._listeners.forEach(fn => fn());
+    }
+};
+
+// Dispara render em cada mudança de estado
+DashboardState.onChange(() => render());
 
 // ── Inicialização ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -41,15 +65,18 @@ function populateSelects() {
 
 // ── Bind de eventos ───────────────────────────────────────────
 function bindEvents() {
-    document.getElementById('sel-estado').addEventListener('change', e => { estado = e.target.value; render(); });
-    document.getElementById('sel-periodo').addEventListener('change', e => { periodo = e.target.value; render(); });
+    document.getElementById('sel-estado').addEventListener('change', e => {
+        DashboardState.estado = e.target.value;
+    });
+    document.getElementById('sel-periodo').addEventListener('change', e => {
+        DashboardState.periodo = e.target.value;
+    });
 
     document.querySelectorAll('.chip').forEach(chip => {
         chip.addEventListener('click', () => {
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             chip.classList.add('active');
-            indicador = chip.dataset.ind;
-            render();
+            DashboardState.indicador = chip.dataset.ind;
         });
     });
 
@@ -61,8 +88,6 @@ function bindEvents() {
             document.querySelectorAll('.dash-section').forEach(s => {
                 s.style.display = s.id === target ? '' : 'none';
             });
-            // requestAnimationFrame garante que o browser fez o reflow
-            // e o canvas tem dimensoes antes de desenhar
             requestAnimationFrame(() => requestAnimationFrame(render));
         });
     });
@@ -80,7 +105,6 @@ function bindEvents() {
         btnMenu.addEventListener('click', toggleMenu);
         overlay.addEventListener('click', toggleMenu);
 
-        // Fecha ao clicar em um item
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => {
                 if (window.innerWidth <= 900) {
@@ -91,18 +115,27 @@ function bindEvents() {
         });
     }
 
-    // ── Exportação CSV ────────────────────────────────────────
+    // ── Exportação ──────────────────────────────────────────────
     document.getElementById('btn-export-csv').addEventListener('click', exportCSV);
-
-    // ── Exportação Excel ──────────────────────────────────────
     document.getElementById('btn-export-xls').addEventListener('click', exportExcel);
-
-    // ── Exportação PDF ────────────────────────────────────────
     document.getElementById('btn-export-pdf').addEventListener('click', exportPDF);
 
     // ── Relatório Executivo ─────────────────────────────────
     const btnReport = document.getElementById('btn-export-report');
     if (btnReport) btnReport.addEventListener('click', generateExecutiveReport);
+
+    // ── Metodologia toggle ──────────────────────────────────────
+    const btnMetodologia = document.getElementById('btn-metodologia');
+    if (btnMetodologia) {
+        btnMetodologia.addEventListener('click', () => {
+            const body = document.getElementById('metodologia-body');
+            const chevron = document.getElementById('metodologia-chevron');
+            const expanded = btnMetodologia.getAttribute('aria-expanded') === 'true';
+            btnMetodologia.setAttribute('aria-expanded', !expanded);
+            body.style.display = expanded ? 'none' : 'block';
+            chevron.classList.toggle('open', !expanded);
+        });
+    }
 }
 
 // ── Integração GeoViz (Mapa SVG) ──────────────────────────────
@@ -112,13 +145,11 @@ function initMap() {
 
     container.innerHTML = mapaNordesteSVG;
 
-    // Ajusta viewBox dinamicamente se necessário para o container
     const svg = container.querySelector('svg');
     svg.style.width = '100%';
     svg.style.height = '100%';
     svg.style.filter = 'drop-shadow(0px 8px 16px rgba(0,0,0,0.4))';
 
-    // Mapeamento das siglas dos paths SVG para a string "Estado" do seletor
     const estadoToUf = {
         "Maranhão": "MA", "Piauí": "PI", "Ceará": "CE",
         "Rio Grande do Norte": "RN", "Paraíba": "PB", "Pernambuco": "PE",
@@ -127,29 +158,25 @@ function initMap() {
 
     const ufToEstado = Object.fromEntries(Object.entries(estadoToUf).map(([k, v]) => [v, k]));
 
-    // Eventos de clique nos estados do mapa
     const shapes = svg.querySelectorAll('.estado-shape');
     shapes.forEach(shape => {
-        shape.addEventListener('click', (e) => {
+        shape.addEventListener('click', () => {
             const sigla = shape.id;
             const nomeEstado = ufToEstado[sigla];
             if (!nomeEstado) return;
 
-            // Toggle logic: se clicou no que já tá selecionado, desmarca (volta para "Todos")
-            if (estado === nomeEstado) {
-                estado = 'Todos';
+            if (DashboardState.estado === nomeEstado) {
+                DashboardState.setSilent('estado', 'Todos');
             } else {
-                estado = nomeEstado;
+                DashboardState.setSilent('estado', nomeEstado);
             }
 
-            // Syncrona a UI (Select do Topo) com o estado do Mapa
             const selEstado = document.getElementById('sel-estado');
-            if (selEstado) selEstado.value = estado;
+            if (selEstado) selEstado.value = DashboardState.estado;
 
             render();
         });
 
-        // Tooltips nativos SVG Title para ajudar no UX
         const nome = shape.getAttribute('data-nome');
         if (nome) {
             const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
@@ -171,8 +198,8 @@ function updateMapSelection() {
         "Alagoas": "AL", "Sergipe": "SE", "Bahia": "BA"
     };
 
-    if (estado !== 'Todos') {
-        const uf = estadoToUf[estado];
+    if (DashboardState.estado !== 'Todos') {
+        const uf = estadoToUf[DashboardState.estado];
         if (uf) {
             const shapeSel = document.getElementById(uf);
             if (shapeSel) shapeSel.classList.add('selected');
@@ -182,7 +209,6 @@ function updateMapSelection() {
 
 // ── Helpers de exportação ─────────────────────────────────────
 function buildDataRows() {
-    // Monta array de objetos com todos os dados por estado e período
     const rows = [];
     ESTADOS.forEach(est => {
         PERIODOS.forEach((ano, idx) => {
@@ -192,7 +218,7 @@ function buildDataRows() {
                 Chegadas_Int: (chegadasInt[est] || [])[idx] || '',
                 Receita_Mi_BRL: (receita[est] || [])[idx] || '',
                 Ocupacao_Pct: (ocupacao[est] || [])[idx] || '',
-                Empregos: (empregos[est] || [])[idx] || '',
+                Empregos_Mil: (empregos[est] || [])[idx] || '',
             });
         });
     });
@@ -203,14 +229,80 @@ function exportCSV() {
     const rows = buildDataRows();
     const header = Object.keys(rows[0]).join(';');
     const body = rows.map(r => Object.values(r).join(';')).join('\n');
-    const bom = '\uFEFF'; // BOM UTF-8 para Excel abrir com acentos
+    const bom = '\uFEFF';
     const blob = new Blob([bom + header + '\n' + body], { type: 'text/csv;charset=utf-8;' });
     downloadBlob(blob, 'obit-ne_turismo_nordeste.csv');
 }
 
 function exportExcel() {
+    // Usa SheetJS se disponível, senão fallback para HTML-table
+    if (typeof XLSX !== 'undefined') {
+        exportExcelSheetJS();
+    } else {
+        exportExcelFallback();
+    }
+}
+
+function exportExcelSheetJS() {
     const rows = buildDataRows();
-    // Constrói tabela HTML — Excel abre .xls com HTML nativo
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Dados
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Larguras de coluna
+    ws['!cols'] = [
+        { wch: 24 }, // Estado
+        { wch: 8 },  // Ano
+        { wch: 14 }, // Chegadas
+        { wch: 16 }, // Receita
+        { wch: 14 }, // Ocupação
+        { wch: 14 }, // Empregos
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, 'Dados Turísticos');
+
+    // Sheet 2: Metadata
+    const meta = [
+        { Campo: 'Projeto', Valor: 'ObIT-NE · Observatório do Turismo do Nordeste' },
+        { Campo: 'Instituição', Valor: 'Banco do Nordeste do Brasil (BNB)' },
+        { Campo: 'Fontes', Valor: 'EMBRATUR/PF · PNAD Contínua IBGE 2024 · MTur' },
+        { Campo: 'Período', Valor: '2021–2025 (verificados) + 2026 (projeção OLS)' },
+        { Campo: 'Gerado em', Valor: new Date().toLocaleString('pt-BR') },
+        { Campo: 'Confiança - Chegadas', Valor: '2021-2024: Verificado | 2025-2026: Projeção' },
+        { Campo: 'Confiança - Receita', Valor: '2021-2024: Verificado | 2025-2026: Projeção' },
+        { Campo: 'Confiança - Ocupação', Valor: '2021-2025: Estimativa | 2026: Projeção' },
+        { Campo: 'Confiança - Empregos', Valor: '2021-2025: Estimativa | 2026: Projeção' },
+    ];
+    const wsMeta = XLSX.utils.json_to_sheet(meta);
+    wsMeta['!cols'] = [{ wch: 26 }, { wch: 56 }];
+    XLSX.utils.book_append_sheet(wb, wsMeta, 'Metadados');
+
+    // Sheet 3: Prospecções 2026
+    if (typeof prospecoes2026 !== 'undefined') {
+        const prosp = prospecoes2026.map(d => ({
+            Estado: d.estado,
+            UF: d.uf,
+            'Índice Oportunidade': d.indice,
+            Classificação: d.classificacao,
+            'Chegadas Proj.': d.chegadas_proj,
+            'Receita Proj. (R$ mi)': d.receita_proj,
+            'CAGR 3a (%)': d.cagr,
+            'Variação (%)': d.variacao,
+            Análise: d.rationale,
+        }));
+        const wsProsp = XLSX.utils.json_to_sheet(prosp);
+        wsProsp['!cols'] = [
+            { wch: 24 }, { wch: 4 }, { wch: 18 }, { wch: 14 },
+            { wch: 14 }, { wch: 18 }, { wch: 12 }, { wch: 12 }, { wch: 60 },
+        ];
+        XLSX.utils.book_append_sheet(wb, wsProsp, 'Prospecções 2026');
+    }
+
+    XLSX.writeFile(wb, 'obit-ne_turismo_nordeste.xlsx');
+}
+
+function exportExcelFallback() {
+    const rows = buildDataRows();
     const header = `<tr>${Object.keys(rows[0]).map(h => `<th style="background:#0077B6;color:#fff;font-weight:bold;padding:6px 10px;">${h}</th>`).join('')}</tr>`;
     const body = rows.map((r, i) => {
         const bg = i % 2 === 0 ? '#EBF5FB' : '#fff';
@@ -233,12 +325,10 @@ function exportExcel() {
 }
 
 function exportPDF() {
-    // Mostra todas as seções temporariamente para o print
     const sections = document.querySelectorAll('.dash-section');
     const prevDisplay = [];
     sections.forEach((s, i) => { prevDisplay[i] = s.style.display; s.style.display = ''; });
     window.print();
-    // Restaura após print
     setTimeout(() => {
         sections.forEach((s, i) => { s.style.display = prevDisplay[i]; });
     }, 500);
@@ -258,6 +348,7 @@ function downloadBlob(blob, filename) {
 // ── Render principal ──────────────────────────────────────────
 function render() {
     renderKPIs();
+    renderConfidence();
     renderCharts();
     renderRanking();
     renderSazonalidade();
@@ -269,9 +360,28 @@ function render() {
     renderProspecoes2026();
     updateMapSelection();
 
-    // Update mapa badge se existir
     const badgeMapa = document.getElementById('badge-mapa');
-    if (badgeMapa) badgeMapa.textContent = estado === 'Todos' ? 'Nordeste' : estado;
+    if (badgeMapa) badgeMapa.textContent = DashboardState.estado === 'Todos' ? 'Nordeste' : DashboardState.estado;
+}
+
+// ── Confiança dos dados ──────────────────────────────────────
+function renderConfidence() {
+    if (typeof DATA_CONFIDENCE === 'undefined' || typeof CONFIDENCE_META === 'undefined') return;
+
+    const idx = periodoIdx(DashboardState.periodo);
+    document.querySelectorAll('.kpi-confidence').forEach(el => {
+        const ind = el.dataset.ind;
+        const conf = DATA_CONFIDENCE[ind];
+        if (!conf || idx < 0) return;
+
+        const nivel = conf.niveis[idx] || 'estimativa';
+        const meta = CONFIDENCE_META[nivel];
+        const cls = 'conf-' + nivel;
+
+        el.className = 'kpi-confidence conf-badge ' + cls;
+        el.innerHTML = `${meta.icon} ${meta.label}`;
+        el.title = meta.desc + ' · Fonte: ' + conf.fonte;
+    });
 }
 
 // ── Prospecoes 2026 ───────────────────────────────────────────
@@ -310,15 +420,14 @@ function renderProspecoes2026() {
 
 // ── KPIs ──────────────────────────────────────────────────────
 function renderKPIs() {
-    const idx = periodoIdx(periodo);
-    const estados = estado === 'Todos' ? ESTADOS : [estado];
+    const idx = periodoIdx(DashboardState.periodo);
+    const estados = DashboardState.estado === 'Todos' ? ESTADOS : [DashboardState.estado];
 
     const totalTuristas = estados.reduce((s, e) => s + turistas[e][idx], 0);
     const totalReceita = estados.reduce((s, e) => s + receita[e][idx], 0);
     const mediaOcupacao = estados.reduce((s, e) => s + ocupacao[e][idx], 0) / estados.length;
     const totalEmpregos = estados.reduce((s, e) => s + empregos[e][idx], 0);
 
-    // Variação vs ano anterior (se existir)
     const idxPrev = idx > 0 ? idx - 1 : null;
     function varPct(curr, prev) {
         if (prev === null) return null;
@@ -354,7 +463,7 @@ function setKPI(id, val, pct) {
     if (pct !== null) {
         const up = parseFloat(pct) >= 0;
         trend.className = 'kpi-trend' + (up ? '' : ' down');
-        trend.innerHTML = `${up ? '▲' : '▼'} ${Math.abs(pct)}% vs ${PERIODOS[periodoIdx(periodo) - 1] || ''}`;
+        trend.innerHTML = `${up ? '▲' : '▼'} ${Math.abs(pct)}% vs ${PERIODOS[periodoIdx(DashboardState.periodo) - 1] || ''}`;
         trend.style.display = '';
     } else {
         trend.style.display = 'none';
@@ -363,37 +472,33 @@ function setKPI(id, val, pct) {
 
 // ── Gráficos ──────────────────────────────────────────────────
 function renderCharts() {
-    const idx = periodoIdx(periodo);
-    const estados = estado === 'Todos' ? ESTADOS : [estado];
-    const ds = { turistas, receita, ocupacao, empregos }[indicador] || turistas;
+    const idx = periodoIdx(DashboardState.periodo);
+    const estados = DashboardState.estado === 'Todos' ? ESTADOS : [DashboardState.estado];
+    const ds = { turistas, receita, ocupacao, empregos }[DashboardState.indicador] || turistas;
 
-    // Chart 1: barras por estado no período selecionado
     const labels1 = estados.map(e => e.split(' ')[0]);
     const vals1 = estados.map(e => ds[e][idx]);
-    const indLabel = { turistas: 'Turistas (mil)', receita: 'Receita (R$ mi)', ocupacao: 'Ocupação (%)', empregos: 'Empregos (mil)' }[indicador];
+    const indLabel = { turistas: 'Turistas (mil)', receita: 'Receita (R$ mi)', ocupacao: 'Ocupação (%)', empregos: 'Empregos (mil)' }[DashboardState.indicador];
 
     drawBarChart('chart-estados', labels1, [{ label: indLabel, data: vals1, color: '#00B4D8', color2: '#0077B6' }], {
         yFormat: v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v),
     });
 
-    // Chart 2: linha de evolução temporal
     const timeData = PERIODOS.map(p => {
-        return estado === 'Todos'
+        return DashboardState.estado === 'Todos'
             ? ESTADOS.reduce((s, e) => s + ds[e][PERIODOS.indexOf(p)], 0)
-            : ds[estado][PERIODOS.indexOf(p)];
+            : ds[DashboardState.estado][PERIODOS.indexOf(p)];
     });
 
     drawLineChart('chart-temporal', PERIODOS, [{ label: indLabel, data: timeData, color: '#06D6A0' }], {
         yFormat: v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v),
     });
 
-    // Donut de categorias — dinâmico por estado selecionado
-    const perfilEstado = (atracoesPerEstado && atracoesPerEstado[estado])
-        ? atracoesPerEstado[estado]
+    const perfilEstado = (atracoesPerEstado && atracoesPerEstado[DashboardState.estado])
+        ? atracoesPerEstado[DashboardState.estado]
         : atracoesCategoria.data;
     drawDonutChart('chart-categorias', ATRACAO_LABELS || atracoesCategoria.labels, perfilEstado, ATRACAO_COLORS || atracoesCategoria.colors);
 
-    // Atualiza legenda do donut
     const legend = document.getElementById('donut-legend');
     if (legend) {
         const labels = ATRACAO_LABELS || atracoesCategoria.labels;
@@ -407,16 +512,13 @@ function renderCharts() {
         `).join('');
     }
 
-    // Atualiza badge do donut com estado atual (seção principal)
     const badgeGeral = document.getElementById('badge-categorias-geral');
-    if (badgeGeral) badgeGeral.textContent = estado === 'Todos' ? 'Nordeste' : estado;
+    if (badgeGeral) badgeGeral.textContent = DashboardState.estado === 'Todos' ? 'Nordeste' : DashboardState.estado;
 
-    // Renderiza também o canvas da seção dedicada de categorias
     const labels = ATRACAO_LABELS || atracoesCategoria.labels;
     const colors = ATRACAO_COLORS || atracoesCategoria.colors;
     drawDonutChart('chart-categorias-sec', labels, perfilEstado, colors);
 
-    // Atualiza legend e badge da seção dedicada
     const legendSec = document.getElementById('donut-legend-sec');
     if (legendSec) {
         legendSec.innerHTML = labels.map((lbl, i) => `
@@ -428,11 +530,11 @@ function renderCharts() {
         `).join('');
     }
     const badgeSec = document.getElementById('badge-categorias');
-    if (badgeSec) badgeSec.textContent = estado === 'Todos' ? 'Nordeste' : estado;
+    if (badgeSec) badgeSec.textContent = DashboardState.estado === 'Todos' ? 'Nordeste' : DashboardState.estado;
     const subSec = document.getElementById('categorias-sub');
-    if (subSec) subSec.textContent = estado === 'Todos'
+    if (subSec) subSec.textContent = DashboardState.estado === 'Todos'
         ? 'Distribuição estimada do perfil turístico · Nordeste'
-        : `Perfil de atrações · ${estado} · estimativa`;
+        : `Perfil de atrações · ${DashboardState.estado} · estimativa`;
 }
 
 // ── Ranking ───────────────────────────────────────────────────
@@ -457,8 +559,8 @@ function renderRanking() {
 
 // ── Sazonalidade ──────────────────────────────────────────────
 function renderSazonalidade() {
-    const dadosMes = (typeof sazonalidadePerEstado !== 'undefined' && sazonalidadePerEstado[estado])
-        ? sazonalidadePerEstado[estado]
+    const dadosMes = (typeof sazonalidadePerEstado !== 'undefined' && sazonalidadePerEstado[DashboardState.estado])
+        ? sazonalidadePerEstado[DashboardState.estado]
         : sazonalidade.data;
 
     drawBarChart('chart-sazonalidade', sazonalidade.labels,
@@ -466,11 +568,10 @@ function renderSazonalidade() {
         { yFormat: v => Math.round(v) }
     );
 
-    // Atualiza subtítulo com estado atual
     const sub = document.querySelector('#sec-sazonalidade .chart-subtitle');
-    if (sub) sub.textContent = estado === 'Todos'
+    if (sub) sub.textContent = DashboardState.estado === 'Todos'
         ? 'Média consolidada · Nordeste · perfil estimado por mês'
-        : `Perfil de sazonalidade · ${estado} · base estimada`;
+        : `Perfil de sazonalidade · ${DashboardState.estado} · base estimada`;
 }
 
 // ── Heatmap de Sazonalidade ──────────────────────────────────

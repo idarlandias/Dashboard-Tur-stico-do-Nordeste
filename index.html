@@ -7,6 +7,25 @@
   <title>ObIT-NE | Dashboard de Inteligência Turística do Nordeste</title>
   <meta name="description"
     content="Observatório do Turismo do Nordeste – painel interativo de dados turísticos por estado, período e indicadores. Protótipo para candidatura BNB/ObIT-NE." />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="ObIT-NE | Dashboard de Inteligência Turística do Nordeste" />
+  <meta property="og:description" content="Painel interativo de inteligência turística regional com dados EMBRATUR, IBGE e projeções 2026 para investimento BNB." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://idarlandias.github.io/Dashboard-Turistico-do-Nordeste/" />
+  <meta property="og:locale" content="pt_BR" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ObIT-NE | Dashboard Turístico do Nordeste" />
+  <meta name="twitter:description" content="Inteligência turística regional com dados verificados e projeções 2026." />
+
+  <!-- Theme & Canonical -->
+  <meta name="theme-color" content="#0077B6" />
+  <link rel="canonical" href="https://idarlandias.github.io/Dashboard-Turistico-do-Nordeste/" />
+  <meta name="author" content="Idarlan Dias" />
+  <meta name="robots" content="index, follow" />
+
   <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -108,7 +127,7 @@
       <div class="topbar-right">
         <div class="last-updated">
           <span class="status-dot"></span>
-          Dados simulados · Atualizado em tempo real
+          Fontes oficiais · Atualizado em tempo real
         </div>
         <div class="export-group">
           <span style="font-size:0.75rem;color:#90a4ae;margin-right:6px;">Exportar:</span>
@@ -155,6 +174,7 @@
               <div class="kpi-label">Chegada de Turistas</div>
               <div class="kpi-value">—</div>
               <span class="kpi-trend">— vs —</span>
+              <span class="kpi-confidence" data-ind="turistas"></span>
             </div>
           </div>
 
@@ -164,6 +184,7 @@
               <div class="kpi-label">Receita Turística</div>
               <div class="kpi-value">—</div>
               <span class="kpi-trend">— vs —</span>
+              <span class="kpi-confidence" data-ind="receita"></span>
             </div>
           </div>
 
@@ -173,6 +194,7 @@
               <div class="kpi-label">Ocupação Hoteleira</div>
               <div class="kpi-value">—</div>
               <span class="kpi-trend">— vs —</span>
+              <span class="kpi-confidence" data-ind="ocupacao"></span>
             </div>
           </div>
 
@@ -182,6 +204,7 @@
               <div class="kpi-label">Empregos Diretos</div>
               <div class="kpi-value">—</div>
               <span class="kpi-trend">— vs —</span>
+              <span class="kpi-confidence" data-ind="empregos"></span>
             </div>
           </div>
 
@@ -365,29 +388,55 @@
           <div id="matriz-investimento" style="padding:8px 0;"></div>
         </div>
 
-        <!-- Nota metodologica -->
-        <div class="chart-card" style="background:rgba(0,180,216,0.06); border:1px solid rgba(0,180,216,0.2);">
-          <div class="chart-header">
-            <div>
-              <div class="chart-title" style="color:#00B4D8;">📋 Nota Metodológica</div>
+        <!-- Nota metodologica expandida -->
+        <div class="chart-card metodologia-panel" style="background:rgba(0,180,216,0.06); border:1px solid rgba(0,180,216,0.2);">
+          <button class="metodologia-toggle" id="btn-metodologia" aria-expanded="false" aria-controls="metodologia-body">
+            <span>📋 Nota Metodológica e Limitações</span>
+            <span class="metodologia-chevron" id="metodologia-chevron">▸</span>
+          </button>
+          <div class="metodologia-body" id="metodologia-body" style="display:none;">
+            <div class="metodologia-content">
+
+              <h4>Modelo de Projeção</h4>
+              <p><strong>Regressão Linear OLS</strong> (Ordinary Least Squares) aplicada individualmente sobre a série histórica 2021–2025 de cada estado do Nordeste.</p>
+
+              <h4>Limitações do Modelo</h4>
+              <ul>
+                <li>Regressão linear assume tendência constante — não captura choques externos (pandemias, crises), sazonalidade ou aceleração/desaceleração.</li>
+                <li>Série curta (5 pontos) limita a robustez estatística. Intervalos de confiança não são reportados por insuficiência amostral.</li>
+                <li>Projeções para 2026 são extrapolações lineares e <strong>não constituem previsão</strong> — servem como cenário tendencial para planejamento.</li>
+                <li>O modelo não incorpora variáveis exógenas (câmbio, PIB, conectividade aérea) que impactam diretamente o turismo.</li>
+              </ul>
+
+              <h4>Índice de Oportunidade BNB</h4>
+              <p>Índice composto ponderado (0–100) com três componentes:</p>
+              <table class="metodologia-table">
+                <thead>
+                  <tr><th>Componente</th><th>Peso</th><th>Descrição</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>CAGR 3 anos</td><td>35%</td><td>Taxa composta de crescimento anual de chegadas internacionais</td></tr>
+                  <tr><td>Potencial não explorado</td><td>35%</td><td>Inverso da participação de mercado — estados menores pontuam mais</td></tr>
+                  <tr><td>Eficiência econômica</td><td>30%</td><td>Receita gerada por chegada internacional (gasto médio)</td></tr>
+                </tbody>
+              </table>
+
+              <h4>Fontes de Dados</h4>
+              <table class="metodologia-table">
+                <thead>
+                  <tr><th>Indicador</th><th>Fonte</th><th>Período</th><th>Confiança</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Chegadas internacionais</td><td>EMBRATUR / Polícia Federal</td><td>2021–2024</td><td><span class="conf-badge conf-verificado">✓ Verificado</span></td></tr>
+                  <tr><td>Receita turística</td><td>PNAD Contínua IBGE + MTur</td><td>2021–2024</td><td><span class="conf-badge conf-verificado">✓ Verificado</span></td></tr>
+                  <tr><td>Ocupação hoteleira</td><td>MTur / ABIH</td><td>2021–2025</td><td><span class="conf-badge conf-estimativa">≈ Estimativa</span></td></tr>
+                  <tr><td>Empregos diretos</td><td>EMBRATUR / MTur</td><td>2021–2025</td><td><span class="conf-badge conf-estimativa">≈ Estimativa</span></td></tr>
+                  <tr><td>Projeções 2026</td><td>Regressão Linear OLS</td><td>2026</td><td><span class="conf-badge conf-projecao">◇ Projeção</span></td></tr>
+                </tbody>
+              </table>
+
+              <p class="metodologia-disclaimer">Os valores projetados para 2025 e 2026 são estimativas baseadas em modelagem estatística. Não constituem garantia de resultado e não devem ser utilizados como única base para decisões de investimento.</p>
             </div>
-          </div>
-          <div style="padding:0 8px 8px; font-size:0.82rem; color:#b0bec5; line-height:1.7;">
-            <p><strong style="color:#e0f0ff;">Projeções 2026</strong> calculadas por <em>Regressão Linear OLS</em> sobre
-              a série histórica 2021–2025 de cada estado.</p>
-            <p><strong style="color:#e0f0ff;">Índice de Oportunidade BNB</strong> = composito ponderado de três fatores:
-            </p>
-            <ul style="margin:6px 0 6px 16px;">
-              <li><strong>CAGR 3 anos (35%)</strong> — crescimento recente de chegadas internacionais</li>
-              <li><strong>Potencial não explorado (35%)</strong> — estados com menor participação têm mais espaço de
-                crescimento</li>
-              <li><strong>Eficiência econômica (30%)</strong> — receita gerada por chegada (gasto médio por turista)
-              </li>
-            </ul>
-            <p><strong style="color:#e0f0ff;">Fontes base:</strong> EMBRATUR/Polícia Federal · PNAD Contínua Turismo
-              IBGE 2024 · MTur</p>
-            <p style="color:#90a4ae;">* Valores 2025 e 2026 são estimativas/projeções. Não constituem garantia de
-              resultado.</p>
           </div>
         </div>
       </section>
@@ -569,6 +618,7 @@
   </main>
 
   <!-- Scripts -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="data.js"></script>
   <script src="mapa_nordeste.js"></script>
   <script src="charts.js"></script>
