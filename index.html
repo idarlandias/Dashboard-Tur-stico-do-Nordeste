@@ -38,6 +38,63 @@
       person_profiles: 'always', // or 'always' to create profiles for anonymous users as well
     })
   </script>
+  
+<!-- PostHog Identify: Modal de identificação voluntária -->
+<script>
+  window.addEventListener('DOMContentLoaded', function() {
+    // Verifica se visitante já se identificou antes
+    var savedName = localStorage.getItem('ph_visitor_name');
+    var savedEmail = localStorage.getItem('ph_visitor_email');
+
+    if (savedName || savedEmail) {
+      // Já se identificou: apenas re-identifica no PostHog
+      posthog.identify(savedEmail || savedName, {
+        name: savedName || '',
+        email: savedEmail || ''
+      });
+      return;
+    }
+
+    // Cria o modal
+    var overlay = document.createElement('div');
+    overlay.id = 'ph-identify-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,50,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;';
+
+    overlay.innerHTML = [
+      '<div style="background:#0d1b2a;border:1px solid #0077B6;border-radius:12px;padding:32px;max-width:400px;width:90%;color:#fff;font-family:sans-serif;">',
+      '  <h2 style="margin:0 0 8px;color:#00b4d8;font-size:1.2rem;">Bem-vindo ao ObIT-NE</h2>',
+      '  <p style="margin:0 0 20px;font-size:0.9rem;color:#adb5bd;">Identifique-se para personalizar sua experiência (opcional).</p>',
+      '  <input id="ph-name" type="text" placeholder="Seu nome" style="width:100%;padding:10px;margin-bottom:10px;background:#1a2a3a;border:1px solid #0077B6;border-radius:6px;color:#fff;box-sizing:border-box;"/>',
+      '  <input id="ph-email" type="email" placeholder="Seu e-mail (opcional)" style="width:100%;padding:10px;margin-bottom:20px;background:#1a2a3a;border:1px solid #0077B6;border-radius:6px;color:#fff;box-sizing:border-box;"/>',
+      '  <div style="display:flex;gap:10px;">',
+      '    <button id="ph-identify-btn" style="flex:1;padding:10px;background:#0077B6;border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:1rem;">Entrar</button>',
+      '    <button id="ph-skip-btn" style="flex:1;padding:10px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;cursor:pointer;font-size:1rem;">Pular</button>',
+      '  </div>',
+      '</div>'
+    ].join('');
+
+    document.body.appendChild(overlay);
+
+    function identify(name, email) {
+      var uid = email || name || ('anon_' + Date.now());
+      posthog.identify(uid, { name: name, email: email });
+      if (name) localStorage.setItem('ph_visitor_name', name);
+      if (email) localStorage.setItem('ph_visitor_email', email);
+      overlay.remove();
+    }
+
+    document.getElementById('ph-identify-btn').addEventListener('click', function() {
+      var name = document.getElementById('ph-name').value.trim();
+      var email = document.getElementById('ph-email').value.trim();
+      identify(name, email);
+    });
+
+    document.getElementById('ph-skip-btn').addEventListener('click', function() {
+      localStorage.setItem('ph_visitor_name', 'anonimo');
+      overlay.remove();
+    });
+  });
+</script>
 </head>
 
 <body>
