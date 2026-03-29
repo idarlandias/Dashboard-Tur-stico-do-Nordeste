@@ -280,9 +280,10 @@ function chartOcupacaoCidade() {
                     callbacks: { label: ctx => fmt.pct(ctx.raw) }
                 }
             },
+            layout: { padding: { left: 8 } },
             scales: {
                 x: { ...chartDefaults.scales.x, max: 100, ticks: { ...chartDefaults.scales.x.ticks, callback: v => v + '%' } },
-                y: { ...chartDefaults.scales.y, grid: { display: false }, ticks: { font: { size: 11, family: 'Inter' }, color: '#64748b' } }
+                y: { ...chartDefaults.scales.y, grid: { display: false }, ticks: { font: { size: 11, family: 'Inter' }, color: '#64748b', autoSkip: false, padding: 4 }, afterFit: axis => { axis.width = 130; } }
             }
         }
     });
@@ -360,9 +361,10 @@ function chartAvaliacaoCidade() {
                     callbacks: { label: ctx => fmt.nota(ctx.raw) + ' / 5.0' }
                 }
             },
+            layout: { padding: { left: 8 } },
             scales: {
                 x: { ...chartDefaults.scales.x, min: 2.5, max: 5, ticks: { ...chartDefaults.scales.x.ticks, stepSize: 0.5 } },
-                y: { ...chartDefaults.scales.y, grid: { display: false }, ticks: { font: { size: 11, family: 'Inter' }, color: '#64748b' } }
+                y: { ...chartDefaults.scales.y, grid: { display: false }, ticks: { font: { size: 11, family: 'Inter' }, color: '#64748b', autoSkip: false, padding: 4 }, afterFit: axis => { axis.width = 130; } }
             }
         }
     });
