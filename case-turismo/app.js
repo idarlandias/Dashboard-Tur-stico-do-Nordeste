@@ -283,7 +283,7 @@ function chartOcupacaoCidade() {
             layout: { padding: { left: 8 } },
             scales: {
                 x: { ...chartDefaults.scales.x, max: 100, ticks: { ...chartDefaults.scales.x.ticks, callback: v => v + '%' } },
-                y: { ...chartDefaults.scales.y, grid: { display: false }, ticks: { font: { size: 11, family: 'Inter' }, color: '#64748b', autoSkip: false, padding: 4 }, afterFit: axis => { axis.width = 130; } }
+                y: { ...chartDefaults.scales.y, grid: { display: false }, ticks: { font: { size: 11, family: 'Inter' }, color: '#64748b', autoSkip: false, padding: 4 }, afterFit: axis => { axis.width = window.innerWidth < 480 ? 100 : 130; } }
             }
         }
     });
@@ -364,7 +364,7 @@ function chartAvaliacaoCidade() {
             layout: { padding: { left: 8 } },
             scales: {
                 x: { ...chartDefaults.scales.x, min: 2.5, max: 5, ticks: { ...chartDefaults.scales.x.ticks, stepSize: 0.5 } },
-                y: { ...chartDefaults.scales.y, grid: { display: false }, ticks: { font: { size: 11, family: 'Inter' }, color: '#64748b', autoSkip: false, padding: 4 }, afterFit: axis => { axis.width = 130; } }
+                y: { ...chartDefaults.scales.y, grid: { display: false }, ticks: { font: { size: 11, family: 'Inter' }, color: '#64748b', autoSkip: false, padding: 4 }, afterFit: axis => { axis.width = window.innerWidth < 480 ? 100 : 130; } }
             }
         }
     });
@@ -503,4 +503,10 @@ function atualizarDashboard() {
 document.addEventListener('DOMContentLoaded', () => {
     inicializarFiltros();
     atualizarDashboard();
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => atualizarDashboard(), 250);
+    });
 });

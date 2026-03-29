@@ -232,16 +232,82 @@ body {
 .footer-small { font-size: 0.75rem; margin-top: 4px; opacity: .7; }
 
 /* ========== RESPONSIVE ========== */
+
+/* Tablet landscape / iPad (1024px) */
 @media (max-width: 1024px) {
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .charts-grid-2 { grid-template-columns: 1fr; }
+    .container { padding: 0 16px; }
 }
 
-@media (max-width: 640px) {
-    .kpi-grid { grid-template-columns: 1fr; }
-    .header-content { flex-direction: column; align-items: flex-start; }
-    .filters-bar { flex-direction: column; }
+/* Tablet portrait / iPad mini (768px) */
+@media (max-width: 768px) {
+    .header { padding: 20px 0; }
+    .header h1 { font-size: 1.25rem; }
+    .subtitle { font-size: 0.8rem; }
+    .header-content { gap: 12px; }
+
+    .filters-section { padding: 12px 0; }
+    .filters-bar { flex-direction: column; gap: 10px; }
     .filter-group { min-width: 100%; }
+    .filter-group select { padding: 10px 12px; font-size: 1rem; }
+    .btn-limpar { width: 100%; padding: 10px; text-align: center; }
+
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 16px 0; }
+    .kpi-card { padding: 16px; gap: 12px; }
+    .kpi-value { font-size: 1.25rem; }
+    .kpi-icon { width: 40px; height: 40px; }
+
+    .chart-body { height: 280px; padding: 12px 16px 16px; }
+    .chart-header { padding: 16px 16px 0; }
+    .chart-header h3 { font-size: 0.95rem; }
+
+    .insights-header { padding: 16px; }
+    .insights-body { padding: 16px; }
+    .insight-text { font-size: 0.85rem; }
+}
+
+/* Smartphone (480px) */
+@media (max-width: 480px) {
+    .container { padding: 0 12px; }
+
+    .header { padding: 16px 0; }
+    .header-content { flex-direction: column; align-items: flex-start; padding: 0 12px; }
+    .header h1 { font-size: 1.1rem; }
+    .header-left { gap: 12px; }
+    .logo svg { width: 28px; height: 28px; }
+    .header-right { width: 100%; }
+    .badge { font-size: 0.7rem; padding: 3px 10px; }
+
+    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+    .kpi-card { padding: 12px; gap: 10px; flex-direction: column; align-items: flex-start; }
+    .kpi-icon { width: 36px; height: 36px; }
+    .kpi-icon svg { width: 18px; height: 18px; }
+    .kpi-label { font-size: 0.65rem; }
+    .kpi-value { font-size: 1.15rem; }
+
+    .charts-grid-2 { gap: 12px; margin-bottom: 12px; }
+    .chart-body { height: 260px; padding: 10px 12px 14px; }
+    .chart-header { padding: 14px 14px 0; }
+    .chart-header h3 { font-size: 0.9rem; }
+    .chart-header p { font-size: 0.75rem; }
+
+    .insights-header { padding: 14px; }
+    .insights-body { padding: 14px; }
+    .insight-text { font-size: 0.82rem; line-height: 1.5; }
+    .insight-item { padding: 8px 0; }
+
+    .footer { padding: 24px 12px; font-size: 0.8rem; }
+    .footer-small { font-size: 0.7rem; }
+}
+
+/* Smartphone pequeno (360px) */
+@media (max-width: 360px) {
+    .header h1 { font-size: 1rem; }
+    .kpi-grid { grid-template-columns: 1fr; gap: 8px; }
+    .kpi-card { flex-direction: row; align-items: center; }
+    .kpi-value { font-size: 1.1rem; }
+    .chart-body { height: 240px; }
 }
 
 /* ========== PRINT ========== */
