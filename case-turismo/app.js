@@ -503,10 +503,109 @@ function atualizarDashboard() {
     gerarInsights();
 }
 
+// ========== EXPORTAÇÃO PDF ==========
+function exportarPDF() {
+    window.print();
+}
+
+// ========== EXPORTAÇÃO EXCEL ==========
+function exportarExcel() {
+    const mesesOrdem = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const mesesPt = { January:'Janeiro', February:'Fevereiro', March:'Março', April:'Abril', May:'Maio', June:'Junho', July:'Julho', August:'Agosto', September:'Setembro', October:'Outubro', November:'Novembro', December:'Dezembro' };
+
+    // Aba 1: Dados completos (filtrados)
+    const dadosExport = dadosFiltrados
+        .sort((a, b) => a.mesIdx - b.mesIdx || a.estado.localeCompare(b.estado) || a.cidade.localeCompare(b.cidade))
+        .map(d => ({
+            'Mês': mesesPt[d.mes],
+            'Estado': NOMES_ESTADO[d.estado] || d.estado,
+            'Cidade': d.cidade,
+            'Tipo': d.tipo,
+            'Receita (R$)': d.receita,
+            'Clientes': d.clientes,
+            'Ocupação (%)': d.ocupacao,
+            'Avaliação (1-5)': d.avaliacao
+        }));
+
+    // Aba 2: Resumo por Estado
+    const porEstado = agrupar(dadosFiltrados, 'estado');
+    const resumoEstado = Object.keys(porEstado).sort().map(e => ({
+        'Estado': NOMES_ESTADO[e] || e,
+        'Receita Total (R$)': Math.round(soma(porEstado[e], 'receita')),
+        'Total Clientes': soma(porEstado[e], 'clientes'),
+        'Ocupação Média (%)': Math.round(media(porEstado[e], 'ocupacao') * 10) / 10,
+        'Avaliação Média': Math.round(media(porEstado[e], 'avaliacao') * 10) / 10,
+        '% Receita Total': Math.round(soma(porEstado[e], 'receita') / soma(dadosFiltrados, 'receita') * 1000) / 10
+    }));
+
+    // Aba 3: Resumo por Cidade
+    const porCidade = agrupar(dadosFiltrados, 'cidade');
+    const resumoCidade = Object.keys(porCidade).sort().map(c => {
+        const items = porCidade[c];
+        const estado = items[0].estado;
+        return {
+            'Cidade': c,
+            'Estado': NOMES_ESTADO[estado] || estado,
+            'Receita Total (R$)': Math.round(soma(items, 'receita')),
+            'Total Clientes': soma(items, 'clientes'),
+            'Ocupação Média (%)': Math.round(media(items, 'ocupacao') * 10) / 10,
+            'Avaliação Média': Math.round(media(items, 'avaliacao') * 10) / 10
+        };
+    });
+
+    // Aba 4: Resumo por Tipo
+    const porTipo = agrupar(dadosFiltrados, 'tipo');
+    const resumoTipo = Object.keys(porTipo).sort().map(t => ({
+        'Tipo': t,
+        'Receita Total (R$)': Math.round(soma(porTipo[t], 'receita')),
+        'Receita Média (R$)': Math.round(soma(porTipo[t], 'receita') / porTipo[t].length),
+        'Total Clientes': soma(porTipo[t], 'clientes'),
+        'Ocupação Média (%)': Math.round(media(porTipo[t], 'ocupacao') * 10) / 10,
+        'Avaliação Média': Math.round(media(porTipo[t], 'avaliacao') * 10) / 10
+    }));
+
+    // Aba 5: Resumo Mensal
+    const porMes = agrupar(dadosFiltrados, 'mes');
+    const resumoMensal = mesesOrdem.filter(m => porMes[m]).map(m => ({
+        'Mês': mesesPt[m],
+        'Receita Total (R$)': Math.round(soma(porMes[m], 'receita')),
+        'Total Clientes': soma(porMes[m], 'clientes'),
+        'Ocupação Média (%)': Math.round(media(porMes[m], 'ocupacao') * 10) / 10,
+        'Avaliação Média': Math.round(media(porMes[m], 'avaliacao') * 10) / 10
+    }));
+
+    const wb = XLSX.utils.book_new();
+
+    const ws1 = XLSX.utils.json_to_sheet(dadosExport);
+    ws1['!cols'] = [{ wch: 12 }, { wch: 22 }, { wch: 18 }, { wch: 10 }, { wch: 14 }, { wch: 10 }, { wch: 14 }, { wch: 14 }];
+    XLSX.utils.book_append_sheet(wb, ws1, 'Dados Completos');
+
+    const ws2 = XLSX.utils.json_to_sheet(resumoEstado);
+    ws2['!cols'] = [{ wch: 22 }, { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 14 }, { wch: 14 }];
+    XLSX.utils.book_append_sheet(wb, ws2, 'Por Estado');
+
+    const ws3 = XLSX.utils.json_to_sheet(resumoCidade);
+    ws3['!cols'] = [{ wch: 18 }, { wch: 22 }, { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 14 }];
+    XLSX.utils.book_append_sheet(wb, ws3, 'Por Cidade');
+
+    const ws4 = XLSX.utils.json_to_sheet(resumoTipo);
+    ws4['!cols'] = [{ wch: 10 }, { wch: 18 }, { wch: 16 }, { wch: 14 }, { wch: 16 }, { wch: 14 }];
+    XLSX.utils.book_append_sheet(wb, ws4, 'Por Tipo');
+
+    const ws5 = XLSX.utils.json_to_sheet(resumoMensal);
+    ws5['!cols'] = [{ wch: 12 }, { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 14 }];
+    XLSX.utils.book_append_sheet(wb, ws5, 'Por Mês');
+
+    XLSX.writeFile(wb, 'relatorio_turismo_nordeste.xlsx');
+}
+
 // ========== INIT ==========
 document.addEventListener('DOMContentLoaded', () => {
     inicializarFiltros();
     atualizarDashboard();
+
+    document.getElementById('btnPDF').addEventListener('click', exportarPDF);
+    document.getElementById('btnExcel').addEventListener('click', exportarExcel);
 
     let resizeTimer;
     window.addEventListener('resize', () => {

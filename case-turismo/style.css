@@ -69,10 +69,6 @@ body::before {
     100% { background-position: 200% center; }
 }
 
-@keyframes pulse-glow {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
-}
 
 @keyframes gradient-shift {
     0% { background-position: 0% 50%; }
@@ -242,6 +238,51 @@ body::before {
     box-shadow: 0 0 20px rgba(251, 113, 133, 0.1);
 }
 
+/* ========== EXPORT BUTTONS ========== */
+.export-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-export {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .25s;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.btn-pdf {
+    background: rgba(251, 113, 133, 0.08);
+    color: var(--rose);
+    border-color: rgba(251, 113, 133, 0.2);
+}
+.btn-pdf:hover {
+    background: rgba(251, 113, 133, 0.15);
+    box-shadow: 0 0 20px rgba(251, 113, 133, 0.1);
+    border-color: rgba(251, 113, 133, 0.4);
+}
+
+.btn-excel {
+    background: rgba(52, 211, 153, 0.08);
+    color: var(--green);
+    border-color: rgba(52, 211, 153, 0.2);
+}
+.btn-excel:hover {
+    background: rgba(52, 211, 153, 0.15);
+    box-shadow: 0 0 20px rgba(52, 211, 153, 0.1);
+    border-color: rgba(52, 211, 153, 0.4);
+}
+
 /* ========== KPIs ========== */
 .kpi-grid {
     display: grid;
@@ -298,10 +339,9 @@ body::before {
     position: absolute;
     inset: -3px;
     border-radius: 16px;
-    opacity: 0.4;
+    opacity: 0.35;
     filter: blur(10px);
     z-index: -1;
-    animation: pulse-glow 3s ease-in-out infinite;
 }
 
 .kpi-receita { background: var(--green-glow); color: var(--green); border: 1px solid rgba(52, 211, 153, 0.15); }
@@ -446,6 +486,8 @@ body::before {
     .filter-group { min-width: 100%; }
     .filter-group select { padding: 10px 12px; font-size: 1rem; }
     .btn-limpar { width: 100%; padding: 10px; text-align: center; }
+    .export-group { width: 100%; }
+    .btn-export { flex: 1; justify-content: center; padding: 10px; }
 
     .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 16px 0; }
     .kpi-card { padding: 16px; gap: 12px; }
@@ -512,7 +554,7 @@ body::before {
     .filters-section { position: static; backdrop-filter: none; }
     .kpi-card, .chart-card, .insights-card { break-inside: avoid; backdrop-filter: none; }
     .header { backdrop-filter: none; }
-    .btn-limpar { display: none; }
+    .btn-limpar, .export-group { display: none; }
     .footer { margin-top: 32px; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
