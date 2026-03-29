@@ -208,8 +208,10 @@ function chartReceitaEstado() {
 // ========== GRÁFICO 2: Receita por Tipo (Barras) ==========
 function chartReceitaTipo() {
     const porTipo = agrupar(dadosFiltrados, 'tipo');
-    const labels = Object.keys(porTipo).sort();
-    const valores = labels.map(t => soma(porTipo[t], 'receita'));
+    const items = Object.keys(porTipo).map(t => ({ tipo: t, total: soma(porTipo[t], 'receita') }));
+    items.sort((a, b) => b.total - a.total);
+    const labels = items.map(i => i.tipo);
+    const valores = items.map(i => i.total);
     const cores = labels.map(t => CORES_TIPO[t]);
 
     criarOuAtualizar('chartReceitaTipo', {
