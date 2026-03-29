@@ -1,7 +1,7 @@
 // ========== CONSTANTES ==========
 const MESES_ORDEM = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const CORES_ESTADO = { CE: '#0ea5e9', RN: '#8b5cf6', PE: '#f59e0b', PI: '#10b981' };
-const CORES_TIPO = { Hotel: '#0ea5e9', Pousada: '#f59e0b', Agencia: '#8b5cf6' };
+const CORES_ESTADO = { CE: '#38bdf8', RN: '#a78bfa', PE: '#fbbf24', PI: '#34d399' };
+const CORES_TIPO = { Hotel: '#38bdf8', Pousada: '#fbbf24', Agencia: '#a78bfa' };
 const NOMES_ESTADO = { CE: 'Ceará', RN: 'Rio Grande do Norte', PE: 'Pernambuco', PI: 'Piauí' };
 
 // ========== ESTADO GLOBAL ==========
@@ -132,14 +132,18 @@ const chartDefaults = {
     plugins: {
         legend: {
             position: 'bottom',
-            labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10, font: { size: 11, family: 'Inter' } }
+            labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10, font: { size: 11, family: 'Inter' }, color: '#94a3b8' }
         },
         tooltip: {
-            backgroundColor: '#1e293b',
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
             titleFont: { family: 'Inter', size: 12 },
+            titleColor: '#f1f5f9',
             bodyFont: { family: 'Inter', size: 11 },
-            padding: 10,
-            cornerRadius: 8,
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 10,
+            borderColor: 'rgba(255,255,255,0.08)',
+            borderWidth: 1,
             displayColors: true
         }
     },
@@ -149,7 +153,7 @@ const chartDefaults = {
             ticks: { font: { size: 11, family: 'Inter' }, color: '#64748b' }
         },
         y: {
-            grid: { color: '#f1f5f9' },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
             ticks: { font: { size: 11, family: 'Inter' }, color: '#64748b' },
             border: { display: false }
         }
@@ -253,7 +257,7 @@ function chartOcupacaoCidade() {
 
     const cores = items.map((_, i) => {
         const t = i / Math.max(items.length - 1, 1);
-        return t < 0.33 ? '#10b981' : t < 0.66 ? '#f59e0b' : '#ef4444';
+        return t < 0.33 ? '#34d399' : t < 0.66 ? '#fbbf24' : '#fb7185';
     });
 
     criarOuAtualizar('chartOcupacaoCidade', {
@@ -300,8 +304,8 @@ function chartClientesMes() {
             labels: MESES_ORDEM,
             datasets: [{
                 data: valores,
-                backgroundColor: '#0ea5e9CC',
-                borderColor: '#0ea5e9',
+                backgroundColor: '#38bdf8AA',
+                borderColor: '#38bdf8',
                 borderWidth: 2,
                 borderRadius: 6,
                 barPercentage: 0.65
@@ -332,9 +336,9 @@ function chartAvaliacaoCidade() {
     items.sort((a, b) => b.media - a.media);
 
     const cores = items.map(i => {
-        if (i.media >= 4.3) return '#10b981';
-        if (i.media >= 3.8) return '#f59e0b';
-        return '#ef4444';
+        if (i.media >= 4.3) return '#34d399';
+        if (i.media >= 3.8) return '#fbbf24';
+        return '#fb7185';
     });
 
     criarOuAtualizar('chartAvaliacaoCidade', {
