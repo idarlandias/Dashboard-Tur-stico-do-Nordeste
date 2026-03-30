@@ -1,315 +1,432 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Desempenho — Turismo Nordeste | Case Prático Inova Talentos</title>
-    <meta name="description" content="Dashboard de desempenho do turismo no Nordeste brasileiro. Análise de receita, ocupação, clientes e avaliações em 4 estados e 12 cidades.">
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Turístico do Nordeste</title>
+  <meta name="description"
+    content="Painel interativo de dados turísticos do Nordeste — CE, RN, PE, PI — com dados reais de receita, clientes, ocupação e avaliação." />
+  <meta name="theme-color" content="#0077B6" />
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-    <!-- Capa do Relatório (visível apenas no print) -->
-    <div class="relatorio-capa" id="relatorioCapa">
-        <div class="capa-conteudo">
-            <div class="capa-logo">
-                <svg width="48" height="48" viewBox="0 0 32 32" fill="none">
-                    <rect width="32" height="32" rx="8" fill="#0369a1"/>
-                    <path d="M8 20 L16 10 L24 20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                    <circle cx="16" cy="8" r="2" fill="#fbbf24"/>
-                </svg>
-            </div>
-            <h1 class="capa-titulo">Relatório de Desempenho</h1>
-            <h2 class="capa-subtitulo">Turismo no Nordeste Brasileiro</h2>
-            <div class="capa-linha"></div>
-            <div class="capa-meta">
-                <p><strong>Projeto:</strong> Inova Talentos — Case Prático</p>
-                <p><strong>Analista:</strong> Idarlan Dias</p>
-                <p><strong>Período:</strong> Janeiro a Dezembro (12 meses)</p>
-                <p><strong>Abrangência:</strong> 4 estados, 12 cidades, 3 segmentos</p>
-                <p><strong>Data de emissão:</strong> <span id="capaData"></span></p>
-            </div>
-            <div class="capa-linha"></div>
-            <p class="capa-rodape">Este relatório apresenta a análise de desempenho de empreendimentos turísticos no Nordeste, com foco em receita, ocupação, volume de clientes e satisfação, visando apoiar decisões estratégicas do gestor.</p>
-        </div>
+
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-badge">🌊 Turismo NE</div>
+      <h1>Dashboard<br>Turístico do<br>Nordeste</h1>
+      <p>CE · RN · PE · PI</p>
     </div>
 
-    <!-- Sumário Executivo (visível apenas no print) -->
-    <div class="relatorio-sumario" id="relatorioSumario">
-        <h2 class="sumario-titulo">Sumário Executivo</h2>
-        <div class="sumario-conteudo" id="sumarioConteudo">
-            <!-- Preenchido via JS -->
-        </div>
-    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Painel Principal</div>
 
-    <!-- Cabeçalho de seção para gráficos no relatório -->
-    <div class="relatorio-secao-titulo" id="relatorioSecaoGraficos">
-        <h2>Análise Visual dos Indicadores</h2>
-        <p>Visualizações interativas dos principais indicadores de desempenho do setor turístico</p>
-    </div>
+      <a class="nav-item active" data-section="sec-overview" href="#">
+        <span class="nav-icon">📊</span> Visão Geral
+      </a>
+      <a class="nav-item" data-section="sec-sazonalidade" href="#">
+        <span class="nav-icon">📅</span> Sazonalidade
+      </a>
+      <a class="nav-item" data-section="sec-heatmap" href="#">
+        <span class="nav-icon">🌡️</span> Mapa de Calor
+      </a>
+      <a class="nav-item" data-section="sec-ranking" href="#">
+        <span class="nav-icon">🏆</span> Ranking Cidades
+      </a>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="logo">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                        <defs>
-                            <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-                                <stop offset="0%" stop-color="#38bdf8"/>
-                                <stop offset="100%" stop-color="#a78bfa"/>
-                            </linearGradient>
-                        </defs>
-                        <rect width="32" height="32" rx="8" fill="url(#logoGrad)"/>
-                        <path d="M8 20 L16 10 L24 20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                        <circle cx="16" cy="8" r="2" fill="#fbbf24"/>
-                    </svg>
-                </div>
-                <div>
-                    <h1>Painel de Desempenho &mdash; Turismo Nordeste</h1>
-                    <p class="subtitle">Case Prático &mdash; Projeto Inova Talentos | Idarlan Dias</p>
-                </div>
-            </div>
-            <div class="header-right">
-                <span class="badge">Análise Anual</span>
-                <span class="badge badge-outline">4 Estados &bull; 12 Cidades</span>
-                <button class="btn-tema" id="btnTema" title="Alternar tema claro/escuro">
-                    <svg class="icon-sol" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="4"/><line x1="9" y1="1" x2="9" y2="3"/><line x1="9" y1="15" x2="9" y2="17"/><line x1="1" y1="9" x2="3" y2="9"/><line x1="15" y1="9" x2="17" y2="9"/><line x1="3.34" y1="3.34" x2="4.76" y2="4.76"/><line x1="13.24" y1="13.24" x2="14.66" y2="14.66"/><line x1="3.34" y1="14.66" x2="4.76" y2="13.24"/><line x1="13.24" y1="4.76" x2="14.66" y2="3.34"/></svg>
-                    <svg class="icon-lua" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 11.5a7 7 0 1 1-10-10 7 7 0 0 0 10 10z"/></svg>
-                </button>
-            </div>
+      <div class="nav-section-label" style="margin-top:16px;">Análises</div>
+
+      <a class="nav-item" data-section="sec-categorias" href="#">
+        <span class="nav-icon">🎯</span> Tipos de Empreendimento
+      </a>
+      <a class="nav-item" data-section="sec-evolucao" href="#">
+        <span class="nav-icon">📈</span> Evolução Mensal
+      </a>
+      <a class="nav-item" data-section="sec-radar" href="#">
+        <span class="nav-icon">🕸️</span> Radar Comparativo
+      </a>
+
+      <div class="nav-section-label" style="margin-top:16px;">Inteligência</div>
+
+      <a class="nav-item" data-section="sec-bubble" href="#">
+        <span class="nav-icon">🫧</span> Análise Comparativa
+      </a>
+      <a class="nav-item" data-section="sec-insights" href="#">
+        <span class="nav-icon">💡</span> Insights Automáticos
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <strong>Turismo NE</strong><br>
+      Dados: base_case_turismo.xlsx<br>
+      4 Estados · 12 Cidades · 3 Tipos<br>
+      <span style="color:#00B4D8">Dashboard Analítico</span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="mobile-menu-btn" id="btn-menu" aria-label="Abrir menu lateral">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div>
+          <h2>Dashboard Turístico do Nordeste</h2>
+          <p>Indicadores por estado, cidade e tipo de empreendimento</p>
         </div>
+      </div>
+      <div class="topbar-right">
+        <div class="export-group">
+          <span style="font-size:0.75rem;color:#90a4ae;margin-right:6px;">Exportar:</span>
+          <button class="btn-export btn-csv" id="btn-export-csv" title="Baixar dados em CSV">📄 CSV</button>
+          <button class="btn-export btn-xls" id="btn-export-xls" title="Abrir no Excel">📊 Excel</button>
+          <button class="btn-export btn-pdf" id="btn-export-pdf" title="Salvar como PDF">🖨️ PDF</button>
+        </div>
+      </div>
     </header>
 
-    <!-- Filtros -->
-    <section class="filters-section">
-        <div class="container">
-            <div class="filters-bar">
-                <div class="filter-group">
-                    <label for="filtroEstado">Estado</label>
-                    <select id="filtroEstado">
-                        <option value="todos">Todos os Estados</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="filtroCidade">Cidade</label>
-                    <select id="filtroCidade">
-                        <option value="todos">Todas as Cidades</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="filtroTipo">Tipo</label>
-                    <select id="filtroTipo">
-                        <option value="todos">Todos os Tipos</option>
-                    </select>
-                </div>
-                <button class="btn-limpar" id="btnLimpar">Limpar Filtros</button>
-                <div class="export-group">
-                    <button class="btn-export btn-pdf" id="btnPDF" title="Gerar relatório em PDF">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 1H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2z"/><polyline points="6 1 6 5"/><line x1="8" y1="9" x2="12" y2="9"/><line x1="8" y1="12" x2="12" y2="12"/></svg>
-                        Gerar Relatório
-                    </button>
-                    <button class="btn-export btn-excel" id="btnExcel" title="Exportar dados em Excel">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="1" width="14" height="14" rx="2"/><line x1="1" y1="5" x2="15" y2="5"/><line x1="1" y1="9" x2="15" y2="9"/><line x1="5" y1="1" x2="5" y2="15"/><line x1="10" y1="1" x2="10" y2="15"/></svg>
-                        Excel
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <span class="filter-label">Filtros</span>
+      <div class="filter-group">
+        <select class="filter-select" id="sel-estado" aria-label="Filtrar por estado" title="Filtrar por estado">
+        </select>
+        <select class="filter-select" id="sel-cidade" aria-label="Filtrar por cidade" title="Filtrar por cidade">
+        </select>
+        <select class="filter-select" id="sel-tipo" aria-label="Filtrar por tipo" title="Filtrar por tipo">
+        </select>
+        <select class="filter-select" id="sel-mes" aria-label="Filtrar por mês" title="Filtrar por mês">
+        </select>
+      </div>
+      <div class="filter-chips">
+        <button class="chip active" data-ind="clientes" title="Número de clientes">👥 Clientes</button>
+        <button class="chip" data-ind="receita" title="Receita mensal">💰 Receita</button>
+        <button class="chip" data-ind="ocupacao" title="Taxa de ocupação">🏨 Ocupação</button>
+        <button class="chip" data-ind="avaliacao" title="Avaliação média">⭐ Avaliação</button>
+      </div>
+    </div>
 
-    <!-- KPIs -->
-    <section class="container">
+    <!-- Content -->
+    <div class="content">
+
+      <!-- VISÃO GERAL -->
+      <section class="dash-section" id="sec-overview">
+
+        <p class="section-title">Indicadores-chave</p>
         <div class="kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-icon kpi-receita">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                </div>
-                <div class="kpi-info">
-                    <span class="kpi-label">Receita Total</span>
-                    <span class="kpi-value" id="kpiReceita">--</span>
-                    <span class="kpi-variacao" id="kpiReceitaVar"></span>
-                </div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon kpi-clientes">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                </div>
-                <div class="kpi-info">
-                    <span class="kpi-label">Total de Clientes</span>
-                    <span class="kpi-value" id="kpiClientes">--</span>
-                    <span class="kpi-variacao" id="kpiClientesVar"></span>
-                </div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon kpi-ocupacao">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-                </div>
-                <div class="kpi-info">
-                    <span class="kpi-label">Ocupação Média</span>
-                    <span class="kpi-value" id="kpiOcupacao">--</span>
-                    <span class="kpi-variacao" id="kpiOcupacaoVar"></span>
-                </div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon kpi-avaliacao">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                </div>
-                <div class="kpi-info">
-                    <span class="kpi-label">Avaliação Média</span>
-                    <span class="kpi-value" id="kpiAvaliacao">--</span>
-                    <span class="kpi-variacao" id="kpiAvaliacaoVar"></span>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Charts Row Donuts (nova) -->
-    <section class="container">
-        <div class="charts-grid-3">
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3>Participação por Estado</h3>
-                    <p>% da receita total por estado</p>
-                </div>
-                <div class="chart-body chart-body-donut">
-                    <canvas id="chartDonutEstado"></canvas>
-                </div>
+          <div class="kpi-card a" id="kpi-clientes">
+            <div class="kpi-icon">👥</div>
+            <div class="kpi-body">
+              <div class="kpi-label">Total de Clientes</div>
+              <div class="kpi-value">—</div>
+              <div class="kpi-minmax">
+                <span class="kpi-best">▲ Melhor: —</span>
+                <span class="kpi-worst">▼ Menor: —</span>
+              </div>
             </div>
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3>Participação por Tipo</h3>
-                    <p>% da receita total por tipo</p>
-                </div>
-                <div class="chart-body chart-body-donut">
-                    <canvas id="chartDonutTipo"></canvas>
-                </div>
-            </div>
-            <div class="chart-card resumo-rapido-card">
-                <div class="chart-header">
-                    <h3>
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        Resumo Rápido
-                    </h3>
-                    <p>Destaques dos dados filtrados</p>
-                </div>
-                <div class="resumo-rapido-body" id="resumoRapidoBody">
-                    <!-- Preenchido via JS -->
-                </div>
-            </div>
-        </div>
-    </section>
+          </div>
 
-    <!-- Charts Row 1 -->
-    <section class="container">
-        <div class="charts-grid-2">
-            <div class="chart-card" id="cardReceitaEstado">
-                <div class="chart-header">
-                    <h3>Receita Mensal por Estado</h3>
-                    <p>Evolução ao longo dos 12 meses</p>
-                </div>
-                <div class="chart-body">
-                    <canvas id="chartReceitaEstado"></canvas>
-                </div>
+          <div class="kpi-card b" id="kpi-receita">
+            <div class="kpi-icon">💰</div>
+            <div class="kpi-body">
+              <div class="kpi-label">Receita Total</div>
+              <div class="kpi-value">—</div>
+              <div class="kpi-minmax">
+                <span class="kpi-best">▲ Melhor: —</span>
+                <span class="kpi-worst">▼ Menor: —</span>
+              </div>
             </div>
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3>Receita por Tipo de Empreendimento</h3>
-                    <p>Comparativo acumulado anual</p>
-                </div>
-                <div class="chart-body">
-                    <canvas id="chartReceitaTipo"></canvas>
-                </div>
-            </div>
-        </div>
-    </section>
+          </div>
 
-    <!-- Charts Row 2 -->
-    <section class="container">
-        <div class="charts-grid-2">
-            <div class="chart-card" id="cardOcupacao">
-                <div class="chart-header">
-                    <h3>Taxa de Ocupação por Cidade</h3>
-                    <p>Média anual (%)</p>
-                </div>
-                <div class="chart-body">
-                    <canvas id="chartOcupacaoCidade"></canvas>
-                </div>
+          <div class="kpi-card c" id="kpi-ocupacao">
+            <div class="kpi-icon">🏨</div>
+            <div class="kpi-body">
+              <div class="kpi-label">Ocupação Média</div>
+              <div class="kpi-value">—</div>
+              <div class="kpi-minmax">
+                <span class="kpi-best">▲ Melhor: —</span>
+                <span class="kpi-worst">▼ Menor: —</span>
+              </div>
             </div>
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3>Clientes por Mês</h3>
-                    <p>Volume total mensal</p>
-                </div>
-                <div class="chart-body">
-                    <canvas id="chartClientesMes"></canvas>
-                </div>
-            </div>
-        </div>
-    </section>
+          </div>
 
-    <!-- Charts Row 3 -->
-    <section class="container">
-        <div class="charts-grid-2">
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3>Avaliação Média por Cidade</h3>
-                    <p>Satisfação do cliente (1 a 5)</p>
-                </div>
-                <div class="chart-body">
-                    <canvas id="chartAvaliacaoCidade"></canvas>
-                </div>
+          <div class="kpi-card d" id="kpi-avaliacao">
+            <div class="kpi-icon">⭐</div>
+            <div class="kpi-body">
+              <div class="kpi-label">Avaliação Média</div>
+              <div class="kpi-value">—</div>
+              <div class="kpi-minmax">
+                <span class="kpi-best">▲ Melhor: —</span>
+                <span class="kpi-worst">▼ Menor: —</span>
+              </div>
             </div>
-            <div class="chart-card" id="cardScatter">
-                <div class="chart-header">
-                    <h3>Receita Total vs Ocupação por Cidade</h3>
-                    <p>Relação entre ocupação média e receita total por cidade</p>
-                </div>
-                <div class="chart-body">
-                    <canvas id="chartScatter"></canvas>
-                </div>
-            </div>
-        </div>
-    </section>
+          </div>
 
-    <!-- Insights Dinâmicos -->
-    <section class="container">
-        <div class="insights-card">
-            <div class="insights-header">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                <h3>Principais Insights</h3>
-            </div>
-            <div class="insights-body" id="insightsBody">
-                <!-- Preenchido via JS -->
-            </div>
         </div>
-    </section>
 
-    <!-- Seção Analítica Estática (Melhoria 6) -->
-    <section class="container">
-        <div class="insights-card insights-analitica">
-            <div class="insights-header">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                <h3>Descrição Analítica — Entrega do Case</h3>
+        <!-- Charts row -->
+        <div class="charts-grid">
+
+          <!-- Mapa GeoViz -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Mapa Interativo</div>
+                <div class="chart-subtitle">Clique em um estado para filtrar</div>
+              </div>
+              <span class="chart-badge" id="badge-mapa">Nordeste</span>
             </div>
-            <div class="insights-body analitica-body">
-                <p>A análise dos dados de 432 registros mensais revela que o <span class="insight-highlight">Ceará</span> concentra a maior fatia da receita regional (<span class="insight-highlight">25,5%</span>), impulsionado principalmente por Fortaleza e Jericoacoara. A sazonalidade é um fator relevante: <span class="insight-highlight">maio</span> apresenta o maior faturamento, enquanto <span class="insight-highlight">novembro</span> registra o menor movimento — indicando oportunidade para campanhas de incentivo na baixa temporada. Entre os tipos de empreendimento, as <span class="insight-highlight">agências</span> lideram em receita média por unidade, sugerindo maior ticket médio nesse segmento. <span class="insight-highlight">Genipabu (RN)</span> se destaca com a maior taxa de ocupação (<span class="insight-highlight">73,2%</span>), enquanto <span class="insight-highlight">Pipa</span> apresenta a menor (<span class="insight-highlight">61,1%</span>), apontando potencial de crescimento com estratégias de marketing direcionadas. Em satisfação do cliente, <span class="insight-highlight">Canoa Quebrada</span> lidera com avaliação <span class="insight-highlight">4,2/5</span>, demonstrando excelência no atendimento que pode servir de benchmark para as demais localidades. A correlação entre ocupação e receita, visualizada no scatter plot, confirma que ocupação elevada não garante alta receita — o tipo de empreendimento e o perfil do destino influenciam diretamente o faturamento.</p>
+            <div class="svg-map-wrap" id="mapa-container"
+              style="height:240px; display:flex; justify-content:center; align-items:center;">
             </div>
-        </div>
-    </section>
+          </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>Dashboard desenvolvido para o Case Prático &mdash; Projeto Inova Talentos</p>
-            <p class="footer-small">Dados fictícios | 4 estados, 12 cidades, 432 registros</p>
-        </div>
-    </footer>
+          <!-- Barras por estado/cidade -->
+          <div class="chart-card" id="sec-estados">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Comparativo por Estado / Cidade</div>
+                <div class="chart-subtitle">Indicador selecionado · Anual</div>
+              </div>
+            </div>
+            <div class="chart-wrap" style="height:240px;">
+              <canvas id="chart-estados" style="width:100%;height:100%;display:block;"></canvas>
+            </div>
+          </div>
 
-    <script src="dados.js"></script>
-    <script src="app.js"></script>
+          <!-- Donut tipos -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Distribuição por Tipo</div>
+                <div class="chart-subtitle">% da receita por tipo de empreendimento</div>
+              </div>
+              <span class="chart-badge" id="badge-categorias-geral">Nordeste</span>
+            </div>
+            <div class="donut-wrap" style="min-height:200px; margin-top:8px;">
+              <div class="donut-chart-container">
+                <canvas id="chart-categorias" style="width:180px;height:180px;display:block;"></canvas>
+              </div>
+              <div class="donut-legend" id="donut-legend"></div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- EVOLUÇÃO MENSAL -->
+      <section class="dash-section" id="sec-evolucao" style="display:none;">
+        <p class="section-title">Evolução Mensal (Jan–Dez)</p>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Série Mensal</div>
+              <div class="chart-subtitle">Indicador filtrado · Todos os meses</div>
+            </div>
+            <span class="chart-badge">Jan–Dez</span>
+          </div>
+          <div class="chart-wrap" style="height:260px;">
+            <canvas id="chart-temporal" style="width:100%;height:100%;display:block;"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- SAZONALIDADE -->
+      <section class="dash-section" id="sec-sazonalidade" style="display:none;">
+        <p class="section-title">Sazonalidade Mensal</p>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Clientes por Mês</div>
+              <div class="chart-subtitle">Total consolidado · Nordeste</div>
+            </div>
+            <span class="chart-badge">Jan–Dez</span>
+          </div>
+          <div class="chart-wrap" style="height:260px;">
+            <canvas id="chart-sazonalidade" style="width:100%;height:100%;display:block;"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- RANKING -->
+      <section class="dash-section" id="sec-ranking" style="display:none;">
+        <p class="section-title">Ranking de Cidades por Receita Anual</p>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Top 12 Cidades Turísticas</div>
+              <div class="chart-subtitle">Receita anual total em R$ milhões</div>
+            </div>
+            <span class="chart-badge">Anual</span>
+          </div>
+          <div class="ranking-list" id="ranking-list" style="margin-top:4px;"></div>
+        </div>
+      </section>
+
+      <!-- TIPOS DE EMPREENDIMENTO -->
+      <section class="dash-section" id="sec-categorias" style="display:none;">
+        <p class="section-title">Distribuição por Tipo de Empreendimento</p>
+        <div class="charts-grid">
+          <div class="chart-card chart-card--full" style="grid-column:1/-1;">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Mix de Empreendimentos por Estado</div>
+                <div class="chart-subtitle" id="categorias-sub">Distribuição da receita por tipo · Nordeste</div>
+              </div>
+              <span class="chart-badge" id="badge-categorias">Nordeste</span>
+            </div>
+            <div
+              style="display:flex; align-items:center; gap:32px; padding:16px 0; flex-wrap:wrap; justify-content:center;">
+              <div style="width:220px; height:220px; flex-shrink:0;">
+                <canvas id="chart-categorias-sec" style="width:220px;height:220px;display:block;"></canvas>
+              </div>
+              <div id="donut-legend-sec" class="donut-legend" style="flex:1; min-width:180px;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BUBBLE CHART -->
+      <section class="dash-section" id="sec-bubble" style="display:none;">
+        <p class="section-title">Análise Comparativa: Clientes × Ticket Médio</p>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Clientes × Ticket Médio × Receita</div>
+              <div class="chart-subtitle">Total de clientes (eixo X) · Ticket médio (eixo Y) · Tamanho = receita total
+              </div>
+            </div>
+            <span class="chart-badge">Anual</span>
+          </div>
+          <div class="chart-wrap" style="height:420px;">
+            <canvas id="chart-bubble" style="width:100%;height:100%;display:block;"></canvas>
+          </div>
+          <div class="bubble-quadrant-legend">
+            <span style="border-color:rgba(6,214,160,.4); color:#06D6A0;">Estrelas — muitos clientes + alto
+              ticket</span>
+            <span style="border-color:rgba(0,180,216,.4); color:#00B4D8;">Potenciais — muitos clientes + baixo
+              ticket</span>
+            <span style="border-color:rgba(244,162,97,.4); color:#F4A261;">Premium — poucos clientes + alto
+              ticket</span>
+            <span style="border-color:rgba(231,111,81,.4); color:#E76F51;">Atenção — poucos clientes + baixo
+              ticket</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- HEATMAP -->
+      <section class="dash-section" id="sec-heatmap" style="display:none;">
+        <p class="section-title">Mapa de Calor: Clientes por Estado × Mês</p>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Intensidade Mensal: 4 Estados × 12 Meses</div>
+              <div class="chart-subtitle">Número de clientes · Gradiente frio → quente</div>
+            </div>
+            <span class="chart-badge">Jan–Dez</span>
+          </div>
+          <div class="chart-wrap" style="height:260px;">
+            <canvas id="chart-heatmap" style="width:100%;height:100%;display:block;"></canvas>
+          </div>
+          <div class="heatmap-legend">
+            <span>Baixa</span>
+            <div class="heatmap-legend-bar"></div>
+            <span>Alta</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- RADAR -->
+      <section class="dash-section" id="sec-radar" style="display:none;">
+        <p class="section-title">Radar Comparativo de Competitividade</p>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Perfil Competitivo Multidimensional</div>
+                <div class="chart-subtitle" id="radar-subtitle">Estado selecionado vs. Média · 6 dimensões</div>
+              </div>
+              <span class="chart-badge" id="badge-radar">Nordeste</span>
+            </div>
+            <div class="chart-wrap" style="height:380px;">
+              <canvas id="chart-radar" style="width:100%;height:100%;display:block;"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Detalhamento por Eixo</div>
+                <div class="chart-subtitle">Scores normalizados 0–100</div>
+              </div>
+            </div>
+            <div id="radar-detail-list" style="margin-top:4px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INSIGHTS -->
+      <section class="dash-section" id="sec-insights" style="display:none;">
+        <p class="section-title">Insights e Alertas Automáticos</p>
+        <div class="insights-summary" id="insights-summary"></div>
+        <div class="insights-grid" id="insights-grid"></div>
+      </section>
+
+      <!-- PRINCIPAIS INSIGHTS + DESCRIÇÃO ANALÍTICA -->
+      <section class="dash-section" id="sec-analise">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:1.3rem;">ℹ️</span>
+              <div class="chart-title">Principais Insights</div>
+            </div>
+          </div>
+          <ul class="insights-list">
+            <li><span class="insight-dot red"></span><span class="insight-text"><span class="hl">Ceará</span> lidera em receita com R$ 19.336.349, representando <span class="hl-num">25,5%</span> do faturamento total.</span></li>
+            <li><span class="insight-dot green"></span><span class="insight-text"><span class="hl">Genipabu</span> tem a maior taxa de ocupação média (73,2%), enquanto <span class="hl">Pipa</span> apresenta a menor (61,1%) — uma diferença de 12,1% pontos percentuais.</span></li>
+            <li><span class="insight-dot green"></span><span class="insight-text">O segmento <span class="hl">Agência</span> apresenta a maior receita média por unidade (R$ 179.494), sugerindo maior potencial de retorno por empreendimento.</span></li>
+            <li><span class="insight-dot yellow"></span><span class="insight-text">A sazonalidade mostra que <span class="hl-num">Maio</span> é o mês de maior faturamento e <span class="hl-num">Novembro</span> o de menor, indicando oportunidades de ações promocionais em períodos de baixa.</span></li>
+            <li><span class="insight-dot purple"></span><span class="insight-text"><span class="hl">Canoa Quebrada</span> destaca-se na satisfação do cliente com nota média 4,2/5, um indicador importante para fidelização e marketing boca-a-boca.</span></li>
+          </ul>
+        </div>
+
+        <div class="chart-card" style="margin-top:20px;">
+          <div class="chart-header">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:1.3rem;">📋</span>
+              <div class="chart-title">Descrição Analítica — Entrega do Case</div>
+            </div>
+          </div>
+          <div class="analise-text">
+            <p>A análise dos dados de 432 registros mensais revela que o <span class="hl">Ceará</span> concentra a maior fatia da receita regional (<span class="hl-num">25,5%</span>), impulsionado principalmente por Fortaleza e Jericoacoara. A sazonalidade é um fator relevante: <span class="hl-num">maio</span> apresenta o maior faturamento, enquanto <span class="hl-num">novembro</span> registra o menor movimento — indicando oportunidade para campanhas de incentivo na baixa temporada. Entre os tipos de empreendimento, as <span class="hl">agências</span> lideram em receita média por unidade, sugerindo maior ticket médio nesse segmento. <span class="hl">Genipabu (RN)</span> se destaca com a maior taxa de ocupação (<span class="hl-num">73,2%</span>), enquanto <span class="hl">Pipa</span> apresenta a menor (<span class="hl-num">61,1%</span>), apontando potencial de crescimento com estratégias de marketing direcionadas. Em satisfação do cliente, <span class="hl">Canoa Quebrada</span> lidera com avaliação <span class="hl-num">4,2/5</span>, demonstrando excelência no atendimento que pode servir de benchmark para as demais localidades. A correlação entre ocupação e receita, visualizada no scatter plot, confirma que ocupação elevada não garante alta receita — o tipo de empreendimento e o perfil do destino influenciam diretamente o faturamento.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Relatório PDF (gerado dinamicamente, oculto por padrão) -->
+  <div id="relatorio-pdf"></div>
+
+  <!-- Scripts -->
+  <script src="data.js?v=4.0"></script>
+  <script src="mapa_nordeste.js?v=2.0"></script>
+  <script src="charts.js?v=2.0"></script>
+  <script src="app.js?v=4.0"></script>
 </body>
+
 </html>
