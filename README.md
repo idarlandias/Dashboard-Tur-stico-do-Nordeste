@@ -20,7 +20,7 @@
 ## 🎯 Sobre o Projeto
 
 Painel analítico interativo de inteligência turística desenvolvido como entrega do **Case Turismo — BNB / ObIT-NE**.
-O dashboard consolida **432 registros mensais** da base `base_case_turismo.xlsx`, cobrindo os estados do **Ceará, Rio Grande do Norte, Pernambuco e Piauí**, com 12 cidades e 3 categorias de empreendimento (Hotel, Pousada e Agência).
+O dashboard consolida **432 registros mensais** provenientes exclusivamente da base de dados oficial fornecida (`base_case_turismo.xlsx`), cobrindo os estados do **Ceará, Rio Grande do Norte, Pernambuco e Piauí**, com 12 cidades e 3 categorias de empreendimento (Hotel, Pousada e Agência).
 
 Toda a interface é construída com **HTML + CSS + JavaScript puro**, sem frameworks front-end, e publicada via GitHub Pages com deploy automático.
 
@@ -60,46 +60,6 @@ Toda a interface é construída com **HTML + CSS + JavaScript puro**, sem framew
 | **Distribuição por Tipo** | Donut chart — Hotel 33,0% · Pousada 32,9% · Agência 34,1% |
 | **Principais Insights** | Geração automática dos 5 insights mais relevantes da base |
 
-### Análises
-
-| Módulo | Descrição |
-|---|---|
-| **Sazonalidade** | Padrão mensal real por estado e indicador |
-| **Mapa de Calor** | Intensidade cruzada estado × mês |
-| **Ranking de Cidades** | Ordenação dinâmica por qualquer indicador selecionado |
-| **Tipos de Empreendimento** | Comparativo receita, ocupação e avaliação por categoria |
-| **Evolução Mensal** | Série temporal com linha de tendência |
-| **Radar Comparativo** | Perfil multidimensional por estado |
-
-### Inteligência
-
-| Módulo | Descrição |
-|---|---|
-| **Análise Comparativa** | Scatter plot ocupação × receita por cidade |
-| **Insights Automáticos** | Destaques gerados dinamicamente com base nos filtros ativos |
-| **Descrição Analítica** | Síntese completa da entrega do case com interpretação dos dados |
-
----
-
-## 🔍 Filtros Disponíveis
-
-- **Estado:** Todos · Ceará · Pernambuco · Rio Grande do Norte · Piauí
-- **Cidade:** Todas as 12 cidades cobertas
-- **Tipo:** Todos · Hotel · Pousada · Agência
-- **Mês:** Todos · Janeiro a Dezembro
-
-> Todos os filtros são combinados e atualizam os gráficos, KPIs e insights em tempo real.
-
----
-
-## 💡 Principais Insights
-
-- **Ceará** lidera em receita com **R$ 19.336.349**, representando **25,5%** do faturamento total
-- **Genipabu (RN)** tem a maior taxa de ocupação média (**73,2%**), enquanto **Pipa** apresenta a menor (**61,1%**) — diferença de 12,1 p.p.
-- O segmento **Agência** apresenta a maior receita média por unidade (**R$ 179.494**), sugerindo maior potencial de retorno por empreendimento
-- **Maio** é o mês de maior faturamento e **Novembro** o de menor — oportunidade para ações promocionais em períodos de baixa
-- **Canoa Quebrada** destaca-se na satisfação do cliente com nota média **4,2 / 5,0**, referência de benchmark para as demais localidades
-
 ---
 
 ## 🏗️ Estrutura do Projeto
@@ -110,15 +70,12 @@ Dashboard-Turistico-do-Nordeste/
 ├── entrevista-bnb.html    → SPA principal (Dashboard completo)
 ├── app.js                 → Filtros, KPIs, lógica de exportação
 ├── charts.js              → Engine de gráficos Canvas API (sem dependências)
-├── data.js                → Dataset consolidado (432 registros mensais)
+├── data.js                → Dataset consolidado baseado na planilha oficial
 │
 ├── fetch_map.py           → Geração de malha GeoJSON (IBGE)
 │
 ├── case-turismo/          → Materiais do case original
-└── dados_brutos/
-    ├── chegadas_internacionais_nordeste.csv   ← EMBRATUR / PF
-    ├── receitas_bcb_22741_mensal.csv          ← API Banco Central (SGS)
-    └── receita_turismo_domestico_nordeste.csv ← PNAD-IBGE
+└── dados_brutos/          → Base oficial fornecida para o case
 ```
 
 ---
@@ -132,7 +89,6 @@ Dashboard-Turistico-do-Nordeste/
 | **Mapa** | SVG interativo com malha GeoJSON real do IBGE |
 | **Design** | Dark mode · Paleta oceânica · Google Fonts Syne + Inter |
 | **Exportação** | CSV (Blob) · Excel (.xls) · PDF (print CSS A4) |
-| **ETL** | Python 3.8+ · `urllib`, `json`, `csv` — sem dependências pesadas |
 | **Deploy** | GitHub Pages — CI/CD automático via GitHub Actions |
 
 ---
@@ -145,9 +101,6 @@ Dashboard-Turistico-do-Nordeste/
 
 # Opção 2 — Localmente
 # Abrir entrevista-bnb.html no navegador (duplo clique)
-
-# Opção 3 — Atualizar malha do mapa (GeoJSON IBGE)
-python fetch_map.py
 ```
 
 ---
