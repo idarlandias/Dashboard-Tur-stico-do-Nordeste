@@ -1585,3 +1585,72 @@ text {
   font-size: 0.78rem;
   font-style: italic;
 }
+
+/* ── Principais Insights & Descrição Analítica ── */
+#sec-analise {
+  display: block !important;
+}
+
+.insights-list {
+  list-style: none;
+  padding: 20px 28px 28px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.insights-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: 0.92rem;
+  color: #cfd8dc;
+  line-height: 1.7;
+  text-align: left;
+}
+
+.insight-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 7px;
+}
+
+.insight-dot.red { background: #e74c3c; }
+.insight-dot.green { background: #2ecc71; }
+.insight-dot.yellow { background: #f39c12; }
+.insight-dot.purple { background: #9b59b6; }
+
+.insights-list .hl {
+  color: #00B4D8;
+  font-weight: 600;
+}
+
+.insights-list .hl-num {
+  color: #00B4D8;
+  font-weight: 700;
+}
+
+.analise-text {
+  padding: 20px 28px 28px;
+}
+
+.analise-text p {
+  font-size: 0.92rem;
+  color: #cfd8dc;
+  line-height: 1.85;
+  margin: 0;
+  text-align: justify;
+}
+
+.analise-text .hl {
+  color: #00B4D8;
+  font-weight: 600;
+}
+
+.analise-text .hl-num {
+  color: #00B4D8;
+  font-weight: 700;
+}

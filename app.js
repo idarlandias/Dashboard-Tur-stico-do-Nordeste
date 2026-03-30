@@ -116,6 +116,7 @@ function bindEvents() {
             item.classList.add('active');
             const target = item.dataset.section;
             document.querySelectorAll('.dash-section').forEach(s => {
+                if (s.id === 'sec-analise') return;
                 s.style.display = s.id === target ? '' : 'none';
             });
             requestAnimationFrame(() => requestAnimationFrame(render));
