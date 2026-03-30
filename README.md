@@ -67,7 +67,7 @@ Toda a interface é construída com **HTML + CSS + JavaScript puro**, sem framew
 ```
 Dashboard-Turistico-do-Nordeste/
 │
-├── entrevista-bnb.html    → SPA principal (Dashboard completo)
+├── index.html             → SPA principal (Dashboard completo)
 ├── app.js                 → Filtros, KPIs, lógica de exportação
 ├── charts.js              → Engine de gráficos Canvas API (sem dependências)
 ├── data.js                → Dataset consolidado baseado na planilha oficial
@@ -100,7 +100,7 @@ Dashboard-Turistico-do-Nordeste/
 # https://idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste/
 
 # Opção 2 — Localmente
-# Abrir entrevista-bnb.html no navegador (duplo clique)
+# Abrir index.html no navegador (duplo clique)
 ```
 
 ---
