@@ -531,8 +531,25 @@ body {
   font-size: clamp(18px, 2.5vw, 26px);
   font-weight: 800;
   line-height: 1.1;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   word-break: break-word;
+}
+
+.kpi-minmax {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: clamp(0.62rem, 1.1vw, 0.72rem);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.kpi-best {
+  color: #2ecc71;
+}
+
+.kpi-worst {
+  color: #e74c3c;
 }
 
 .kpi-card.a .kpi-value {

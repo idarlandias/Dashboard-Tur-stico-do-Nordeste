@@ -361,6 +361,37 @@ function renderKPIs() {
     setKPI('kpi-receita', fmtRec(totalReceita));
     setKPI('kpi-ocupacao', mediaOcupacao.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%');
     setKPI('kpi-avaliacao', mediaAvaliacao.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' / 5,0');
+
+    // Min/Max por mês
+    const mesSelected = DashboardState.mes !== 'Todos';
+    const metrics = [
+        { id: 'kpi-clientes', key: 'clientes', fmt: fmtNum },
+        { id: 'kpi-receita', key: 'receita', fmt: fmtRec },
+        { id: 'kpi-ocupacao', key: 'ocupacao', fmt: v => v.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%' },
+        { id: 'kpi-avaliacao', key: 'avaliacao', fmt: v => v.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) },
+    ];
+    metrics.forEach(({ id, key, fmt }) => {
+        const card = document.getElementById(id);
+        if (!card) return;
+        const bestEl = card.querySelector('.kpi-best');
+        const worstEl = card.querySelector('.kpi-worst');
+        if (!bestEl || !worstEl) return;
+
+        if (mesSelected) {
+            bestEl.textContent = '';
+            worstEl.textContent = '';
+            return;
+        }
+
+        const monthly = getFilteredMonthlyData(key);
+        let maxVal = -Infinity, minVal = Infinity, maxIdx = 0, minIdx = 0;
+        monthly.forEach((v, i) => {
+            if (v > maxVal) { maxVal = v; maxIdx = i; }
+            if (v < minVal) { minVal = v; minIdx = i; }
+        });
+        bestEl.textContent = '▲ Melhor: ' + PERIODOS[maxIdx] + ' (' + fmt(maxVal) + ')';
+        worstEl.textContent = '▼ Menor: ' + PERIODOS[minIdx] + ' (' + fmt(minVal) + ')';
+    });
 }
 
 function setKPI(id, val) {
