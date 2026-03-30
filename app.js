@@ -285,84 +285,118 @@ function exportCSV() {
 function exportExcel() {
     const d = computeReportData();
     const today = d.dateStr;
-
-    // ── Helpers XML ──
-    function esc(v) { return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-    function cell(v, sid, type) {
-        const t = type || (typeof v === 'number' ? 'Number' : 'String');
-        return `<Cell ss:StyleID="${sid}"><Data ss:Type="${t}">${esc(v)}</Data></Cell>`;
-    }
-    function cellMerge(v, sid, across, down) {
-        const ma = across ? ` ss:MergeAcross="${across}"` : '';
-        const md = down ? ` ss:MergeDown="${down}"` : '';
-        return `<Cell ss:StyleID="${sid}"${ma}${md}><Data ss:Type="String">${esc(v)}</Data></Cell>`;
-    }
-    function row(cells, h) { return `<Row${h ? ` ss:AutoFitHeight="0" ss:Height="${h}"` : ''}>${cells}</Row>`; }
-    function emptyRow(h) { return `<Row${h ? ` ss:Height="${h}"` : ''}></Row>`; }
-    function cols(widths) { return widths.map(w => `<Column ss:AutoFitWidth="0" ss:Width="${w}"/>`).join(''); }
-
-    // ── Estilos ──
-    const styles = `<Styles>
-<Style ss:ID="Default"><Alignment ss:Vertical="Center"/><Font ss:FontName="Calibri" ss:Size="10"/></Style>
-<Style ss:ID="title"><Font ss:FontName="Calibri" ss:Size="16" ss:Bold="1" ss:Color="#0A2540"/><Alignment ss:Horizontal="Left" ss:Vertical="Center"/></Style>
-<Style ss:ID="subtitle"><Font ss:FontName="Calibri" ss:Size="11" ss:Color="#555555"/><Alignment ss:Horizontal="Left" ss:Vertical="Center"/></Style>
-<Style ss:ID="date"><Font ss:FontName="Calibri" ss:Size="10" ss:Color="#0077B6" ss:Bold="1"/><Alignment ss:Horizontal="Left" ss:Vertical="Center"/></Style>
-<Style ss:ID="hdr"><Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#0A2540" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0A2540"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#1A3A5C"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#1A3A5C"/></Borders></Style>
-<Style ss:ID="hdr_l"><Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#0A2540" ss:Pattern="Solid"/><Alignment ss:Horizontal="Left" ss:Vertical="Center" ss:WrapText="1"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0A2540"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#1A3A5C"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#1A3A5C"/></Borders></Style>
-<Style ss:ID="hdr2"><Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#0077B6" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/></Borders></Style>
-<Style ss:ID="hdr2_l"><Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#0077B6" ss:Pattern="Solid"/><Alignment ss:Horizontal="Left" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/></Borders></Style>
-<Style ss:ID="d"><Alignment ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders></Style>
-<Style ss:ID="d_c"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders></Style>
-<Style ss:ID="d_r"><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders><NumberFormat ss:Format="#,##0"/></Style>
-<Style ss:ID="d_cur"><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders><NumberFormat ss:Format="R$ #,##0.00"/></Style>
-<Style ss:ID="d_pct"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders><NumberFormat ss:Format="0.0%"/></Style>
-<Style ss:ID="d_dec"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders><NumberFormat ss:Format="0.0"/></Style>
-<Style ss:ID="a"><Interior ss:Color="#F0F8FF" ss:Pattern="Solid"/><Alignment ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders></Style>
-<Style ss:ID="a_c"><Interior ss:Color="#F0F8FF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders></Style>
-<Style ss:ID="a_r"><Interior ss:Color="#F0F8FF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders><NumberFormat ss:Format="#,##0"/></Style>
-<Style ss:ID="a_cur"><Interior ss:Color="#F0F8FF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders><NumberFormat ss:Format="R$ #,##0.00"/></Style>
-<Style ss:ID="a_pct"><Interior ss:Color="#F0F8FF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders><NumberFormat ss:Format="0.0%"/></Style>
-<Style ss:ID="a_dec"><Interior ss:Color="#F0F8FF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders><NumberFormat ss:Format="0.0"/></Style>
-<Style ss:ID="tot"><Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#0077B6" ss:Pattern="Solid"/><Alignment ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#005f8a"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#005f8a"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/></Borders></Style>
-<Style ss:ID="tot_r"><Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#0077B6" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#005f8a"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#005f8a"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/></Borders><NumberFormat ss:Format="#,##0"/></Style>
-<Style ss:ID="tot_cur"><Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#0077B6" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#005f8a"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#005f8a"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/></Borders><NumberFormat ss:Format="R$ #,##0.00"/></Style>
-<Style ss:ID="tot_c"><Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#0077B6" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#005f8a"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#005f8a"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#005f8a"/></Borders><NumberFormat ss:Format="0.0"/></Style>
-<Style ss:ID="kpi_l"><Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#0A2540"/><Interior ss:Color="#E8F4FF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Left" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0D4EA"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0D4EA"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0D4EA"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0D4EA"/></Borders></Style>
-<Style ss:ID="kpi_v"><Font ss:FontName="Calibri" ss:Size="14" ss:Bold="1" ss:Color="#0077B6"/><Interior ss:Color="#E8F4FF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0D4EA"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0D4EA"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0D4EA"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0D4EA"/></Borders></Style>
-<Style ss:ID="best"><Font ss:FontName="Calibri" ss:Size="10" ss:Color="#0A8754" ss:Bold="1"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders></Style>
-<Style ss:ID="worst"><Font ss:FontName="Calibri" ss:Size="10" ss:Color="#C0392B" ss:Bold="1"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders></Style>
-<Style ss:ID="sec"><Font ss:FontName="Calibri" ss:Size="12" ss:Bold="1" ss:Color="#0A2540"/><Alignment ss:Horizontal="Left" ss:Vertical="Center"/></Style>
-<Style ss:ID="alta"><Font ss:FontName="Calibri" ss:Size="9" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#E74C3C" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders></Style>
-<Style ss:ID="media"><Font ss:FontName="Calibri" ss:Size="9" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#F39C12" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders></Style>
-<Style ss:ID="baixa"><Font ss:FontName="Calibri" ss:Size="9" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#27AE60" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0E4F0"/></Borders></Style>
-<Style ss:ID="foot"><Font ss:FontName="Calibri" ss:Size="8" ss:Italic="1" ss:Color="#999999"/><Alignment ss:Horizontal="Left" ss:Vertical="Center"/></Style>
-</Styles>`;
-
-    // ── ABA 1: Resumo Executivo ──
     const fmtR = v => 'R$ ' + (v / 1e6).toFixed(1) + 'M';
     const fmtN = v => Math.round(v).toLocaleString('pt-BR');
+
+    // ── Estilos reutilizáveis ──
+    const brd = { top:{style:'thin',color:{rgb:'D0E4F0'}}, bottom:{style:'thin',color:{rgb:'D0E4F0'}}, left:{style:'thin',color:{rgb:'D0E4F0'}}, right:{style:'thin',color:{rgb:'D0E4F0'}} };
+    const brdTot = { top:{style:'medium',color:{rgb:'005F8A'}}, bottom:{style:'medium',color:{rgb:'005F8A'}}, left:{style:'thin',color:{rgb:'005F8A'}}, right:{style:'thin',color:{rgb:'005F8A'}} };
+    const font = (sz, bold, color) => ({ name:'Calibri', sz, bold:!!bold, color:{rgb:color||'0A2540'} });
+
+    const sTitle = { font:font(16,true,'0A2540'), alignment:{horizontal:'left',vertical:'center'} };
+    const sSubtitle = { font:font(11,false,'555555'), alignment:{horizontal:'left',vertical:'center'} };
+    const sDate = { font:font(10,true,'0077B6'), alignment:{horizontal:'left',vertical:'center'} };
+    const sSec = { font:font(12,true,'0A2540'), alignment:{horizontal:'left',vertical:'center'} };
+    const sFoot = { font:{name:'Calibri',sz:8,italic:true,color:{rgb:'999999'}}, alignment:{horizontal:'left',vertical:'center'} };
+
+    const sHdr = { font:font(10,true,'FFFFFF'), fill:{fgColor:{rgb:'0A2540'}}, alignment:{horizontal:'center',vertical:'center',wrapText:true}, border:brd };
+    const sHdrL = { ...sHdr, alignment:{horizontal:'left',vertical:'center',wrapText:true} };
+    const sHdr2 = { font:font(10,true,'FFFFFF'), fill:{fgColor:{rgb:'0077B6'}}, alignment:{horizontal:'center',vertical:'center'}, border:brd };
+    const sHdr2L = { ...sHdr2, alignment:{horizontal:'left',vertical:'center'} };
+
+    const sKpiL = { font:font(11,true,'0A2540'), fill:{fgColor:{rgb:'E8F4FF'}}, alignment:{horizontal:'left',vertical:'center'}, border:brd };
+    const sKpiV = { font:font(14,true,'0077B6'), fill:{fgColor:{rgb:'E8F4FF'}}, alignment:{horizontal:'center',vertical:'center'}, border:brd };
+    const sBest = { font:font(10,true,'0A8754'), alignment:{horizontal:'center',vertical:'center'}, border:brd };
+    const sWorst = { font:font(10,true,'C0392B'), alignment:{horizontal:'center',vertical:'center'}, border:brd };
+
+    const sAlta = { font:font(9,true,'FFFFFF'), fill:{fgColor:{rgb:'E74C3C'}}, alignment:{horizontal:'center',vertical:'center'}, border:brd };
+    const sMedia = { font:font(9,true,'FFFFFF'), fill:{fgColor:{rgb:'F39C12'}}, alignment:{horizontal:'center',vertical:'center'}, border:brd };
+    const sBaixa = { font:font(9,true,'FFFFFF'), fill:{fgColor:{rgb:'27AE60'}}, alignment:{horizontal:'center',vertical:'center'}, border:brd };
+
+    const sTot = { font:font(10,true,'FFFFFF'), fill:{fgColor:{rgb:'0077B6'}}, alignment:{vertical:'center'}, border:brdTot };
+    const sTotR = { ...sTot, alignment:{horizontal:'right',vertical:'center'}, numFmt:'#,##0' };
+    const sTotCur = { ...sTot, alignment:{horizontal:'right',vertical:'center'}, numFmt:'R$ #,##0.00' };
+    const sTotC = { ...sTot, alignment:{horizontal:'center',vertical:'center'}, numFmt:'0.0' };
+
+    // Estilos de dados: d=branco, a=azul claro, com variantes de alinhamento/formato
+    function sD(alt, align, fmt) {
+        const s = { font:font(10,false,'0A2540'), border:brd, alignment:{horizontal:align||'left',vertical:'center'} };
+        if (alt) s.fill = { fgColor:{rgb:'F0F8FF'} };
+        if (fmt) s.numFmt = fmt;
+        return s;
+    }
+
+    // ── Helpers ──
+    const E = XLSX.utils.encode_cell;
+    function setCell(ws, r, c, v, s) {
+        const t = typeof v === 'number' ? 'n' : 's';
+        ws[E({r,c})] = { v, t, s };
+    }
+    function setRange(ws, maxR, maxC) {
+        ws['!ref'] = XLSX.utils.encode_range({s:{r:0,c:0},e:{r:maxR,c:maxC}});
+    }
+
+    function writeDataTable(ws, startRow, headers, rows, colTypes, colWidths) {
+        // headers
+        headers.forEach((h, c) => setCell(ws, startRow, c, h, c === 0 ? sHdrL : sHdr));
+        // data rows
+        rows.forEach((row, ri) => {
+            const alt = ri % 2 === 1;
+            row.forEach((v, c) => {
+                const ct = colTypes[c] || 'text';
+                let align = 'left', fmt = null;
+                if (ct === 'num') { align = 'right'; fmt = '#,##0'; }
+                else if (ct === 'cur') { align = 'right'; fmt = 'R$ #,##0.00'; }
+                else if (ct === 'dec') { align = 'center'; fmt = '0.0'; }
+                else if (ct === 'center') { align = 'center'; }
+                setCell(ws, startRow + 1 + ri, c, v, sD(alt, align, fmt));
+            });
+        });
+        return startRow + 1 + rows.length;
+    }
+
+    function writeTotalRow(ws, r, vals, styles) {
+        vals.forEach((v, c) => setCell(ws, r, c, v, styles[c]));
+    }
+
+    const wb = XLSX.utils.book_new();
+
+    // ═══════════════════════════════════════
+    // ABA 1: RESUMO EXECUTIVO
+    // ═══════════════════════════════════════
+    const ws1 = {};
+    let r = 0;
+    setCell(ws1, r, 0, 'RELATÓRIO GERENCIAL — TURISMO NORDESTE', sTitle); r++;
+    setCell(ws1, r, 0, 'Nordeste do Brasil — Desempenho | Tendências | Estratégia', sSubtitle); r++;
+    setCell(ws1, r, 0, 'Gerado em: ' + today, sDate); r++;
+    r++; // espaço
+    setCell(ws1, r, 0, 'INDICADORES-CHAVE', sSec); r++;
+    r++; // espaço
+    // KPI header
+    ['Indicador','Resultado','Descrição','Melhor Período','Pior Período'].forEach((h, c) => setCell(ws1, r, c, h, c === 0 ? sHdrL : sHdr));
+    r++;
+    // KPI rows
+    const kpis = [
+        ['Receita Total', fmtR(d.totalReceita), 'Soma anual', d.recBW.best, d.recBW.worst],
+        ['Clientes', fmtN(d.totalClientes), 'Total no período', d.cliBW.best, d.cliBW.worst],
+        ['Ocupação Média', d.mediaOcupacao.toFixed(1) + '%', 'Média 12 meses', d.ocuBW.best, d.ocuBW.worst],
+        ['Avaliação', d.mediaAvaliacao.toFixed(1) + ' / 5', 'Média satisfação', d.avaBW.best, d.avaBW.worst],
+    ];
+    kpis.forEach(kpi => {
+        setCell(ws1, r, 0, kpi[0], sKpiL);
+        setCell(ws1, r, 1, kpi[1], sKpiV);
+        setCell(ws1, r, 2, kpi[2], sD(false,'center'));
+        setCell(ws1, r, 3, kpi[3], sBest);
+        setCell(ws1, r, 4, kpi[4], sWorst);
+        r++;
+    });
+    r++; // espaço
+    setCell(ws1, r, 0, 'APOIO A DECISÕES ESTRATÉGICAS', sSec); r++;
+    r++;
+    ['Iniciativa','Prioridade','Ação Recomendada','Prazo'].forEach((h, c) => setCell(ws1, r, c, h, c === 0 ? sHdrL : sHdr));
+    r++;
     const cidTop = d.ocupacaoPorCidade[0];
     const cidBot = d.ocupacaoPorCidade[d.ocupacaoPorCidade.length - 1];
-
-    let s1 = `<Worksheet ss:Name="Resumo Executivo"><Table ss:DefaultRowHeight="18">`;
-    s1 += cols([200, 160, 160, 160, 160]);
-    s1 += row(cellMerge('RELATÓRIO GERENCIAL — TURISMO NORDESTE', 'title', 4), 28);
-    s1 += row(cellMerge('Nordeste do Brasil — Desempenho | Tendências | Estratégia', 'subtitle', 4), 20);
-    s1 += row(cellMerge('Gerado em: ' + today, 'date', 4), 20);
-    s1 += emptyRow(12);
-    // KPIs
-    s1 += row(cellMerge('INDICADORES-CHAVE', 'sec', 4), 24);
-    s1 += emptyRow(6);
-    s1 += row(cell('Indicador', 'hdr_l') + cell('Resultado', 'hdr') + cell('Descrição', 'hdr') + cell('Melhor Período', 'hdr') + cell('Pior Período', 'hdr'));
-    s1 += row(cell('Receita Total', 'kpi_l') + cell(fmtR(d.totalReceita), 'kpi_v') + cell('Soma anual', 'd_c') + cell(d.recBW.best, 'best') + cell(d.recBW.worst, 'worst'));
-    s1 += row(cell('Clientes', 'kpi_l') + cell(fmtN(d.totalClientes), 'kpi_v') + cell('Total no período', 'a_c') + cell(d.cliBW.best, 'best') + cell(d.cliBW.worst, 'worst'));
-    s1 += row(cell('Ocupação Média', 'kpi_l') + cell(d.mediaOcupacao.toFixed(1) + '%', 'kpi_v') + cell('Média 12 meses', 'd_c') + cell(d.ocuBW.best, 'best') + cell(d.ocuBW.worst, 'worst'));
-    s1 += row(cell('Avaliação', 'kpi_l') + cell(d.mediaAvaliacao.toFixed(1) + ' / 5', 'kpi_v') + cell('Média satisfação', 'a_c') + cell(d.avaBW.best, 'best') + cell(d.avaBW.worst, 'worst'));
-    s1 += emptyRow(16);
-    // Decisões estratégicas
-    s1 += row(cellMerge('APOIO A DECISÕES ESTRATÉGICAS', 'sec', 4), 24);
-    s1 += emptyRow(6);
-    s1 += row(cell('Iniciativa', 'hdr_l') + cell('Prioridade', 'hdr') + cell('Ação Recomendada', 'hdr') + cell('Prazo', 'hdr') + '');
     const decisoes = [
         ['Ocupar baixa temporada (Nov-Dez)', 'alta', 'Pacotes e descontos regionais', '1-2 meses'],
         ['Desenvolver ' + cidBot.nome + ' (' + cidBot.media.toFixed(1) + '% ocup.)', 'alta', 'Benchmarking com ' + cidTop.nome, '3-6 meses'],
@@ -372,141 +406,194 @@ function exportExcel() {
         ['Expansão Maranhão/Bahia', 'baixa', 'Estudo de viabilidade de mercado', '12+ meses'],
     ];
     decisoes.forEach((dec, i) => {
-        const bg = i % 2 === 0 ? 'd' : 'a';
-        s1 += row(cell(dec[0], bg) + cell(dec[1] === 'alta' ? 'ALTA' : dec[1] === 'media' ? 'MÉDIA' : 'BAIXA', dec[1]) + cell(dec[2], bg) + cell(dec[3], bg + '_c') + '');
+        const alt = i % 2 === 1;
+        setCell(ws1, r, 0, dec[0], sD(alt,'left'));
+        const ps = dec[1] === 'alta' ? sAlta : dec[1] === 'media' ? sMedia : sBaixa;
+        setCell(ws1, r, 1, dec[1] === 'alta' ? 'ALTA' : dec[1] === 'media' ? 'MÉDIA' : 'BAIXA', ps);
+        setCell(ws1, r, 2, dec[2], sD(alt,'left'));
+        setCell(ws1, r, 3, dec[3], sD(alt,'center'));
+        r++;
     });
-    s1 += emptyRow(16);
-    s1 += row(cellMerge('Fonte: Case Turismo — idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste', 'foot', 4));
-    s1 += '</Table></Worksheet>';
+    r++;
+    setCell(ws1, r, 0, 'Fonte: Case Turismo — idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste', sFoot);
 
-    // ── ABA 2: Dados por Estado ──
-    let s2 = `<Worksheet ss:Name="Por Estado"><Table ss:DefaultRowHeight="18">`;
-    s2 += cols([160, 100, 130, 100, 100, 120]);
-    s2 += row(cellMerge('DADOS AGREGADOS POR ESTADO', 'title', 5), 28);
-    s2 += emptyRow(8);
-    s2 += row(cell('Estado','hdr_l') + cell('Clientes','hdr') + cell('Receita (R$)','hdr') + cell('Ocupação (%)','hdr') + cell('Avaliação','hdr') + cell('Participação','hdr'));
-    ESTADOS.forEach((est, i) => {
-        const bg = i % 2 === 0 ? 'd' : 'a';
-        const tRec = receita[est].reduce((a, b) => a + b, 0);
-        const tCli = clientes[est].reduce((a, b) => a + b, 0);
-        const mOcu = ocupacao[est].reduce((a, b) => a + b, 0) / 12;
-        const mAva = avaliacao[est].reduce((a, b) => a + b, 0) / 12;
-        s2 += row(cell(est, bg) + cell(tCli, bg + '_r') + cell(tRec, bg + '_cur') + cell(mOcu, bg + '_dec') + cell(mAva, bg + '_dec') + cell((tRec / d.totalReceita * 100).toFixed(1) + '%', bg + '_c'));
+    ws1['!merges'] = [
+        {s:{r:0,c:0},e:{r:0,c:4}}, {s:{r:1,c:0},e:{r:1,c:4}}, {s:{r:2,c:0},e:{r:2,c:4}},
+        {s:{r:4,c:0},e:{r:4,c:4}}, {s:{r:r-2,c:0},e:{r:r-2,c:4}/*placeholder*/},
+    ];
+    setRange(ws1, r, 4);
+    ws1['!cols'] = [{wch:32},{wch:20},{wch:24},{wch:22},{wch:22}];
+    ws1['!rows'] = [{hpx:28},{hpx:20},{hpx:20}];
+    XLSX.utils.book_append_sheet(wb, ws1, 'Resumo Executivo');
+
+    // ═══════════════════════════════════════
+    // ABA 2: POR ESTADO
+    // ═══════════════════════════════════════
+    const ws2 = {};
+    r = 0;
+    setCell(ws2, r, 0, 'DADOS AGREGADOS POR ESTADO', sTitle);
+    ws2['!merges'] = [{s:{r:0,c:0},e:{r:0,c:5}}];
+    r += 2;
+    const estHeaders = ['Estado','Clientes','Receita (R$)','Ocupação (%)','Avaliação','Participação'];
+    const estTypes = ['text','num','cur','dec','dec','center'];
+    const estRows = ESTADOS.map(est => {
+        const tRec = receita[est].reduce((a,b)=>a+b,0);
+        const tCli = clientes[est].reduce((a,b)=>a+b,0);
+        const mOcu = ocupacao[est].reduce((a,b)=>a+b,0)/12;
+        const mAva = avaliacao[est].reduce((a,b)=>a+b,0)/12;
+        return [est, tCli, tRec, mOcu, mAva, (tRec/d.totalReceita*100).toFixed(1)+'%'];
     });
-    s2 += row(cell('TOTAL / MÉDIA', 'tot') + cell(d.totalClientes, 'tot_r') + cell(d.totalReceita, 'tot_cur') + cell(d.mediaOcupacao, 'tot_c') + cell(d.mediaAvaliacao, 'tot_c') + cell('100%', 'tot_c'));
-    s2 += emptyRow(16);
-    // Detalhamento mensal por estado
-    s2 += row(cellMerge('DETALHAMENTO MENSAL', 'sec', 5), 24);
-    s2 += emptyRow(6);
+    r = writeDataTable(ws2, r, estHeaders, estRows, estTypes);
+    writeTotalRow(ws2, r, ['TOTAL / MÉDIA', d.totalClientes, d.totalReceita, d.mediaOcupacao, d.mediaAvaliacao, '100%'], [sTot, sTotR, sTotCur, sTotC, sTotC, {...sTot,alignment:{horizontal:'center',vertical:'center'}}]);
+    r += 2;
+
+    // Detalhamento mensal
+    setCell(ws2, r, 0, 'DETALHAMENTO MENSAL', sSec);
+    ws2['!merges'].push({s:{r:r,c:0},e:{r:r,c:5}});
+    r += 2;
     ESTADOS.forEach(est => {
-        s2 += row(cellMerge(est + ' (' + UF_SIGLAS[est] + ')', 'hdr2_l', 5));
-        s2 += row(cell('Mês','hdr_l') + cell('Clientes','hdr') + cell('Receita (R$)','hdr') + cell('Ocupação (%)','hdr') + cell('Avaliação','hdr') + '');
-        PERIODOS.forEach((_, mi) => {
-            const bg = mi % 2 === 0 ? 'd' : 'a';
-            s2 += row(cell(MESES_FULL[mi], bg) + cell(clientes[est][mi], bg + '_r') + cell(receita[est][mi], bg + '_cur') + cell(ocupacao[est][mi], bg + '_dec') + cell(avaliacao[est][mi], bg + '_dec') + '');
+        setCell(ws2, r, 0, est + ' (' + UF_SIGLAS[est] + ')', sHdr2L);
+        for (let c=1;c<=5;c++) setCell(ws2, r, c, '', sHdr2);
+        ws2['!merges'].push({s:{r:r,c:0},e:{r:r,c:5}});
+        r++;
+        ['Mês','Clientes','Receita (R$)','Ocupação (%)','Avaliação'].forEach((h,c) => setCell(ws2, r, c, h, c===0?sHdrL:sHdr));
+        r++;
+        PERIODOS.forEach((_,mi) => {
+            const alt = mi%2===1;
+            setCell(ws2, r, 0, MESES_FULL[mi], sD(alt,'left'));
+            setCell(ws2, r, 1, clientes[est][mi], sD(alt,'right','#,##0'));
+            setCell(ws2, r, 2, receita[est][mi], sD(alt,'right','R$ #,##0.00'));
+            setCell(ws2, r, 3, ocupacao[est][mi], sD(alt,'center','0.0'));
+            setCell(ws2, r, 4, avaliacao[est][mi], sD(alt,'center','0.0'));
+            r++;
         });
-        const tRec = receita[est].reduce((a, b) => a + b, 0);
-        const tCli = clientes[est].reduce((a, b) => a + b, 0);
-        s2 += row(cell('Total/Média', 'tot') + cell(tCli, 'tot_r') + cell(tRec, 'tot_cur') + cell(ocupacao[est].reduce((a, b) => a + b, 0) / 12, 'tot_c') + cell(avaliacao[est].reduce((a, b) => a + b, 0) / 12, 'tot_c') + '');
-        s2 += emptyRow(10);
+        const tRec = receita[est].reduce((a,b)=>a+b,0);
+        const tCli = clientes[est].reduce((a,b)=>a+b,0);
+        writeTotalRow(ws2, r, ['Total/Média', tCli, tRec, ocupacao[est].reduce((a,b)=>a+b,0)/12, avaliacao[est].reduce((a,b)=>a+b,0)/12], [sTot, sTotR, sTotCur, sTotC, sTotC]);
+        r += 2;
     });
-    s2 += row(cellMerge('Fonte: Case Turismo — idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste', 'foot', 5));
-    s2 += '</Table></Worksheet>';
+    setCell(ws2, r, 0, 'Fonte: Case Turismo — idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste', sFoot);
+    setRange(ws2, r, 5);
+    ws2['!cols'] = [{wch:24},{wch:14},{wch:20},{wch:16},{wch:14},{wch:16}];
+    XLSX.utils.book_append_sheet(wb, ws2, 'Por Estado');
 
-    // ── ABA 3: Dados por Cidade ──
-    let s3 = `<Worksheet ss:Name="Por Cidade"><Table ss:DefaultRowHeight="18">`;
-    s3 += cols([160, 80, 100, 130, 90, 90]);
-    s3 += row(cellMerge('DADOS AGREGADOS POR CIDADE', 'title', 5), 28);
-    s3 += emptyRow(8);
-    s3 += row(cell('Cidade','hdr_l') + cell('Estado','hdr') + cell('Clientes','hdr') + cell('Receita (R$)','hdr') + cell('Ocupação (%)','hdr') + cell('Avaliação','hdr'));
-    const cidadesSorted = [...TODAS_CIDADES].sort((a, b) => {
-        const ra = dadosPorCidade[a].receita.reduce((s, v) => s + v, 0);
-        const rb = dadosPorCidade[b].receita.reduce((s, v) => s + v, 0);
+    // ═══════════════════════════════════════
+    // ABA 3: POR CIDADE
+    // ═══════════════════════════════════════
+    const ws3 = {};
+    r = 0;
+    setCell(ws3, r, 0, 'DADOS AGREGADOS POR CIDADE', sTitle);
+    ws3['!merges'] = [{s:{r:0,c:0},e:{r:0,c:5}}];
+    r += 2;
+    const cidHeaders = ['Cidade','Estado','Clientes','Receita (R$)','Ocupação (%)','Avaliação'];
+    const cidTypes = ['text','center','num','cur','dec','dec'];
+    const cidadesSorted = [...TODAS_CIDADES].sort((a,b) => {
+        const ra = dadosPorCidade[a].receita.reduce((s,v)=>s+v,0);
+        const rb = dadosPorCidade[b].receita.reduce((s,v)=>s+v,0);
         return rb - ra;
     });
-    cidadesSorted.forEach((cid, i) => {
-        const bg = i % 2 === 0 ? 'd' : 'a';
+    const cidRows = cidadesSorted.map(cid => {
         const cd = dadosPorCidade[cid];
-        const tRec = cd.receita.reduce((a, b) => a + b, 0);
-        const tCli = cd.clientes.reduce((a, b) => a + b, 0);
-        const mOcu = cd.ocupacao.reduce((a, b) => a + b, 0) / 12;
-        const mAva = cd.avaliacao.reduce((a, b) => a + b, 0) / 12;
-        const uf = Object.entries(CIDADES_POR_ESTADO).find(([_, cs]) => cs.includes(cid));
-        s3 += row(cell(cid, bg) + cell(uf ? UF_SIGLAS[uf[0]] : '', bg + '_c') + cell(tCli, bg + '_r') + cell(tRec, bg + '_cur') + cell(mOcu, bg + '_dec') + cell(mAva, bg + '_dec'));
+        const uf = Object.entries(CIDADES_POR_ESTADO).find(([_,cs])=>cs.includes(cid));
+        return [cid, uf?UF_SIGLAS[uf[0]]:'', cd.clientes.reduce((a,b)=>a+b,0), cd.receita.reduce((a,b)=>a+b,0), cd.ocupacao.reduce((a,b)=>a+b,0)/12, cd.avaliacao.reduce((a,b)=>a+b,0)/12];
     });
-    s3 += row(cell('TOTAL / MÉDIA', 'tot') + cell('', 'tot') + cell(d.totalClientes, 'tot_r') + cell(d.totalReceita, 'tot_cur') + cell(d.mediaOcupacao, 'tot_c') + cell(d.mediaAvaliacao, 'tot_c'));
-    s3 += emptyRow(16);
-    s3 += row(cellMerge('Fonte: Case Turismo — idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste', 'foot', 5));
-    s3 += '</Table></Worksheet>';
+    r = writeDataTable(ws3, r, cidHeaders, cidRows, cidTypes);
+    writeTotalRow(ws3, r, ['TOTAL / MÉDIA','',d.totalClientes,d.totalReceita,d.mediaOcupacao,d.mediaAvaliacao], [sTot,sTot,sTotR,sTotCur,sTotC,sTotC]);
+    r += 2;
+    setCell(ws3, r, 0, 'Fonte: Case Turismo — idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste', sFoot);
+    setRange(ws3, r, 5);
+    ws3['!cols'] = [{wch:22},{wch:12},{wch:14},{wch:20},{wch:16},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, ws3, 'Por Cidade');
 
-    // ── ABA 4: Dados por Tipo ──
-    let s4 = `<Worksheet ss:Name="Por Tipo"><Table ss:DefaultRowHeight="18">`;
-    s4 += cols([140, 110, 140, 100, 100, 130]);
-    s4 += row(cellMerge('DADOS POR TIPO DE EMPREENDIMENTO', 'title', 5), 28);
-    s4 += emptyRow(8);
-    s4 += row(cell('Tipo','hdr_l') + cell('Clientes','hdr') + cell('Receita (R$)','hdr') + cell('Ocupação (%)','hdr') + cell('Avaliação','hdr') + cell('Ticket Médio (R$)','hdr'));
-    d.tipoDados.forEach((t, i) => {
-        const bg = i % 2 === 0 ? 'd' : 'a';
-        s4 += row(cell(t.tipo, bg) + cell(t.clientes, bg + '_r') + cell(t.receita, bg + '_cur') + cell(t.ocupacao, bg + '_dec') + cell(t.avaliacao, bg + '_dec') + cell(Math.round(t.receita / t.clientes), bg + '_r'));
-    });
-    s4 += row(cell('TOTAL / MÉDIA', 'tot') + cell(d.totalClientes, 'tot_r') + cell(d.totalReceita, 'tot_cur') + cell(d.mediaOcupacao, 'tot_c') + cell(d.mediaAvaliacao, 'tot_c') + cell(Math.round(d.totalReceita / d.totalClientes), 'tot_r'));
-    s4 += emptyRow(12);
+    // ═══════════════════════════════════════
+    // ABA 4: POR TIPO
+    // ═══════════════════════════════════════
+    const ws4 = {};
+    r = 0;
+    setCell(ws4, r, 0, 'DADOS POR TIPO DE EMPREENDIMENTO', sTitle);
+    ws4['!merges'] = [{s:{r:0,c:0},e:{r:0,c:5}}];
+    r += 2;
+    const tipoHeaders = ['Tipo','Clientes','Receita (R$)','Ocupação (%)','Avaliação','Ticket Médio (R$)'];
+    const tipoTypes = ['text','num','cur','dec','dec','num'];
+    const tipoRows = d.tipoDados.map(t => [t.tipo, t.clientes, t.receita, t.ocupacao, t.avaliacao, Math.round(t.receita/t.clientes)]);
+    r = writeDataTable(ws4, r, tipoHeaders, tipoRows, tipoTypes);
+    writeTotalRow(ws4, r, ['TOTAL / MÉDIA',d.totalClientes,d.totalReceita,d.mediaOcupacao,d.mediaAvaliacao,Math.round(d.totalReceita/d.totalClientes)], [sTot,sTotR,sTotCur,sTotC,sTotC,sTotR]);
+    r += 2;
+
     // Detalhamento mensal por tipo
-    s4 += row(cellMerge('DETALHAMENTO MENSAL', 'sec', 5), 24);
-    s4 += emptyRow(6);
+    setCell(ws4, r, 0, 'DETALHAMENTO MENSAL', sSec);
+    ws4['!merges'].push({s:{r:r,c:0},e:{r:r,c:5}});
+    r += 2;
     TIPOS.forEach(tipo => {
         const td = dadosPorTipo[tipo];
-        s4 += row(cellMerge(tipo, 'hdr2_l', 5));
-        s4 += row(cell('Mês','hdr_l') + cell('Clientes','hdr') + cell('Receita (R$)','hdr') + cell('Ocupação (%)','hdr') + cell('Avaliação','hdr') + '');
-        PERIODOS.forEach((_, mi) => {
-            const bg = mi % 2 === 0 ? 'd' : 'a';
-            s4 += row(cell(MESES_FULL[mi], bg) + cell(td.clientes[mi], bg + '_r') + cell(td.receita[mi], bg + '_cur') + cell(td.ocupacao[mi], bg + '_dec') + cell(td.avaliacao[mi], bg + '_dec') + '');
+        setCell(ws4, r, 0, tipo, sHdr2L);
+        for(let c=1;c<=5;c++) setCell(ws4, r, c, '', sHdr2);
+        ws4['!merges'].push({s:{r:r,c:0},e:{r:r,c:5}});
+        r++;
+        ['Mês','Clientes','Receita (R$)','Ocupação (%)','Avaliação'].forEach((h,c) => setCell(ws4, r, c, h, c===0?sHdrL:sHdr));
+        r++;
+        PERIODOS.forEach((_,mi) => {
+            const alt = mi%2===1;
+            setCell(ws4, r, 0, MESES_FULL[mi], sD(alt,'left'));
+            setCell(ws4, r, 1, td.clientes[mi], sD(alt,'right','#,##0'));
+            setCell(ws4, r, 2, td.receita[mi], sD(alt,'right','R$ #,##0.00'));
+            setCell(ws4, r, 3, td.ocupacao[mi], sD(alt,'center','0.0'));
+            setCell(ws4, r, 4, td.avaliacao[mi], sD(alt,'center','0.0'));
+            r++;
         });
-        s4 += row(cell('Total/Média', 'tot') + cell(td.clientes.reduce((a, b) => a + b, 0), 'tot_r') + cell(td.receita.reduce((a, b) => a + b, 0), 'tot_cur') + cell(td.ocupacao.reduce((a, b) => a + b, 0) / 12, 'tot_c') + cell(td.avaliacao.reduce((a, b) => a + b, 0) / 12, 'tot_c') + '');
-        s4 += emptyRow(10);
+        writeTotalRow(ws4, r, ['Total/Média',td.clientes.reduce((a,b)=>a+b,0),td.receita.reduce((a,b)=>a+b,0),td.ocupacao.reduce((a,b)=>a+b,0)/12,td.avaliacao.reduce((a,b)=>a+b,0)/12], [sTot,sTotR,sTotCur,sTotC,sTotC]);
+        r += 2;
     });
-    s4 += row(cellMerge('Fonte: Case Turismo — idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste', 'foot', 5));
-    s4 += '</Table></Worksheet>';
+    setCell(ws4, r, 0, 'Fonte: Case Turismo — idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste', sFoot);
+    setRange(ws4, r, 5);
+    ws4['!cols'] = [{wch:18},{wch:14},{wch:20},{wch:16},{wch:14},{wch:20}];
+    XLSX.utils.book_append_sheet(wb, ws4, 'Por Tipo');
 
-    // ── ABA 5: Evolução Mensal ──
-    let s5 = `<Worksheet ss:Name="Evolução Mensal"><Table ss:DefaultRowHeight="18">`;
-    s5 += cols([110, 100, 130, 90, 90]);
-    s5 += row(cellMerge('EVOLUÇÃO MENSAL — NORDESTE CONSOLIDADO', 'title', 4), 28);
-    s5 += emptyRow(8);
-    s5 += row(cell('Mês','hdr_l') + cell('Clientes','hdr') + cell('Receita (R$)','hdr') + cell('Ocupação (%)','hdr') + cell('Avaliação','hdr'));
-    PERIODOS.forEach((_, mi) => {
-        const bg = mi % 2 === 0 ? 'd' : 'a';
-        s5 += row(cell(MESES_FULL[mi], bg) + cell(d.clientesMensal[mi], bg + '_r') + cell(d.receitaMensal[mi], bg + '_cur') + cell(d.ocupacaoMensal[mi], bg + '_dec') + cell(d.avaliacaoMensal[mi], bg + '_dec'));
-    });
-    s5 += row(cell('TOTAL / MÉDIA', 'tot') + cell(d.totalClientes, 'tot_r') + cell(d.totalReceita, 'tot_cur') + cell(d.mediaOcupacao, 'tot_c') + cell(d.mediaAvaliacao, 'tot_c'));
-    s5 += emptyRow(16);
-    s5 += row(cellMerge('Fonte: Case Turismo — idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste', 'foot', 4));
-    s5 += '</Table></Worksheet>';
+    // ═══════════════════════════════════════
+    // ABA 5: EVOLUÇÃO MENSAL
+    // ═══════════════════════════════════════
+    const ws5 = {};
+    r = 0;
+    setCell(ws5, r, 0, 'EVOLUÇÃO MENSAL — NORDESTE CONSOLIDADO', sTitle);
+    ws5['!merges'] = [{s:{r:0,c:0},e:{r:0,c:4}}];
+    r += 2;
+    const mesHeaders = ['Mês','Clientes','Receita (R$)','Ocupação (%)','Avaliação'];
+    const mesTypes = ['text','num','cur','dec','dec'];
+    const mesRows = PERIODOS.map((_,mi) => [MESES_FULL[mi], d.clientesMensal[mi], d.receitaMensal[mi], d.ocupacaoMensal[mi], d.avaliacaoMensal[mi]]);
+    r = writeDataTable(ws5, r, mesHeaders, mesRows, mesTypes);
+    writeTotalRow(ws5, r, ['TOTAL / MÉDIA',d.totalClientes,d.totalReceita,d.mediaOcupacao,d.mediaAvaliacao], [sTot,sTotR,sTotCur,sTotC,sTotC]);
+    r += 2;
+    setCell(ws5, r, 0, 'Fonte: Case Turismo — idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste', sFoot);
+    setRange(ws5, r, 4);
+    ws5['!cols'] = [{wch:16},{wch:14},{wch:20},{wch:16},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, ws5, 'Evolução Mensal');
 
-    // ── ABA 6: Dados Completos ──
-    let s6 = `<Worksheet ss:Name="Dados Completos"><Table ss:DefaultRowHeight="18">`;
-    s6 += cols([150, 70, 110, 100, 130, 90, 90]);
-    s6 += row(cellMerge('BASE DE DADOS COMPLETA — 48 REGISTROS (4 ESTADOS × 12 MESES)', 'title', 6), 28);
-    s6 += emptyRow(8);
-    s6 += row(cell('Estado','hdr_l') + cell('UF','hdr') + cell('Mês','hdr') + cell('Clientes','hdr') + cell('Receita (R$)','hdr') + cell('Ocupação (%)','hdr') + cell('Avaliação','hdr'));
-    let ri = 0;
+    // ═══════════════════════════════════════
+    // ABA 6: DADOS COMPLETOS
+    // ═══════════════════════════════════════
+    const ws6 = {};
+    r = 0;
+    setCell(ws6, r, 0, 'BASE DE DADOS COMPLETA — 48 REGISTROS (4 ESTADOS × 12 MESES)', sTitle);
+    ws6['!merges'] = [{s:{r:0,c:0},e:{r:0,c:6}}];
+    r += 2;
+    const compHeaders = ['Estado','UF','Mês','Clientes','Receita (R$)','Ocupação (%)','Avaliação'];
+    const compTypes = ['text','center','text','num','cur','dec','dec'];
+    const compRows = [];
     ESTADOS.forEach(est => {
-        PERIODOS.forEach((_, mi) => {
-            const bg = ri % 2 === 0 ? 'd' : 'a';
-            s6 += row(cell(est, bg) + cell(UF_SIGLAS[est], bg + '_c') + cell(MESES_FULL[mi], bg) + cell(clientes[est][mi], bg + '_r') + cell(receita[est][mi], bg + '_cur') + cell(ocupacao[est][mi], bg + '_dec') + cell(avaliacao[est][mi], bg + '_dec'));
-            ri++;
+        PERIODOS.forEach((_,mi) => {
+            compRows.push([est, UF_SIGLAS[est], MESES_FULL[mi], clientes[est][mi], receita[est][mi], ocupacao[est][mi], avaliacao[est][mi]]);
         });
     });
-    s6 += row(cell('TOTAL / MÉDIA', 'tot') + cell('', 'tot') + cell('', 'tot') + cell(d.totalClientes, 'tot_r') + cell(d.totalReceita, 'tot_cur') + cell(d.mediaOcupacao, 'tot_c') + cell(d.mediaAvaliacao, 'tot_c'));
-    s6 += emptyRow(16);
-    s6 += row(cellMerge('Fonte: Case Turismo — idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste', 'foot', 6));
-    s6 += '</Table></Worksheet>';
+    r = writeDataTable(ws6, r, compHeaders, compRows, compTypes);
+    writeTotalRow(ws6, r, ['TOTAL / MÉDIA','','',d.totalClientes,d.totalReceita,d.mediaOcupacao,d.mediaAvaliacao], [sTot,sTot,sTot,sTotR,sTotCur,sTotC,sTotC]);
+    r += 2;
+    setCell(ws6, r, 0, 'Fonte: Case Turismo — idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste', sFoot);
+    setRange(ws6, r, 6);
+    ws6['!cols'] = [{wch:22},{wch:8},{wch:14},{wch:14},{wch:20},{wch:16},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, ws6, 'Dados Completos');
 
-    // ── Montar workbook ──
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<?mso-application progid="Excel.Sheet"?>\n<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n xmlns:o="urn:schemas-microsoft-com:office:office"\n xmlns:x="urn:schemas-microsoft-com:office:excel"\n xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n<DocumentProperties xmlns="urn:schemas-microsoft-com:office:office"><Title>Relatório Gerencial — Turismo Nordeste</Title><Author>Idarlan Dias</Author><Created>${new Date().toISOString()}</Created></DocumentProperties>\n<ExcelWorkbook xmlns="urn:schemas-microsoft-com:office:excel"><WindowHeight>9000</WindowHeight><WindowWidth>16000</WindowWidth></ExcelWorkbook>\n${styles}\n${s1}\n${s2}\n${s3}\n${s4}\n${s5}\n${s6}\n</Workbook>`;
-
-    const blob = new Blob([xml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    downloadBlob(blob, 'Relatorio_Turismo_Nordeste.xls');
+    // ── Gerar arquivo .xlsx binário real ──
+    XLSX.writeFile(wb, 'Relatorio_Turismo_Nordeste.xlsx');
 }
 
 function exportPDF() {
