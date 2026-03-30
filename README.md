@@ -1,17 +1,28 @@
+# 📊 Painel de Desempenho — Turismo Nordeste
+
 <div align="center">
 
-# 🌊 Dashboard Turístico do Nordeste
+![Dashboard Preview](https://img.shields.io/badge/Status-Live-brightgreen?style=for-the-badge)
+![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Publicado-blue?style=for-the-badge&logo=github)
+![Versão](https://img.shields.io/badge/Versão-2.0-purple?style=for-the-badge)
+![Licença](https://img.shields.io/badge/Licença-MIT-orange?style=for-the-badge)
 
-![Stack](https://img.shields.io/badge/Stack-HTML_%7C_CSS_%7C_JavaScript-845EC2?style=for-the-badge)
-![Deploy](https://img.shields.io/badge/Deploy-GitHub_Pages-00B4D8?style=for-the-badge)
-![Dados](https://img.shields.io/badge/Dados-432_registros_mensais-06D6A0?style=for-the-badge)
-![Estados](https://img.shields.io/badge/Cobertura-CE_%C2%B7_RN_%C2%B7_PE_%C2%B7_PI-F4A261?style=for-the-badge)
+**Dashboard interativo de análise do desempenho turístico do Nordeste brasileiro**  
+Desenvolvido como entrega do Case Prático — Projeto Inova Talentos | BNB
 
-> **Painel interativo de inteligência turística do Nordeste brasileiro**
-> 4 Estados · 12 Cidades · 3 Tipos de Empreendimento · 432 Registros Mensais
-> Filtros por estado, cidade, tipo e mês com atualização em tempo real
+🌐 **[Acessar Dashboard ao Vivo](https://idarlandias.github.io/caseturismo/)**
 
-### [🔗 Abrir Dashboard ao Vivo](https://idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste/)
+</div>
+
+---
+
+## 📸 Preview
+
+<div align="center">
+
+| KPIs & Filtros | Gráficos de Participação |
+|---|---|
+| Receita, Clientes, Ocupação e Avaliação com indicadores de variação mensal | Donuts de participação por Estado e Tipo + Resumo Rápido |
 
 </div>
 
@@ -19,77 +30,149 @@
 
 ## 🎯 Sobre o Projeto
 
-Painel analítico interativo de inteligência turística desenvolvido como entrega do **Case Turismo — BNB / ObIT-NE**. O dashboard consolida **432 registros mensais** provenientes exclusivamente da base de dados oficial fornecida (`base_case_turismo.xlsx`), cobrindo os estados do **Ceará, Rio Grande do Norte, Pernambuco e Piauí**, com 12 cidades e 3 categorias de empreendimento (Hotel, Pousada e Agência).
+Este painel analítico foi desenvolvido para explorar e visualizar dados do setor de turismo em **4 estados do Nordeste brasileiro** (Ceará, Pernambuco, Rio Grande do Norte e Piauí), abrangendo **12 cidades** e **432 registros mensais**.
 
-Toda a interface é construída com **HTML + CSS + JavaScript puro**, sem frameworks front-end, e publicada via GitHub Pages com deploy automático.
+O objetivo é fornecer uma visão gerencial clara e interativa para tomada de decisões estratégicas no setor, com foco em receita, ocupação hoteleira, volume de clientes e satisfação.
 
-## 📊 Indicadores-Chave (KPIs)
-
-| Indicador | Valor | Melhor Mês | Menor Mês |
-| :--- | :--- | :--- | :--- |
-| **Total de Clientes** | 472.607 | Mar (44.302) | Set (32.181) |
-| **Receita Total** | R$ 75,8M | Mai (R$ 7,3M) | Nov (R$ 5,2M) |
-| **Ocupação Média** | 68% | Nov (71,1%) | Mar (60,6%) |
-| **Avaliação Média** | 4,0 / 5,0 | Jul (4,2) | Jan (3,9) |
-
-## 🗺️ Cobertura Geográfica
-
-| Estado | Cidades |
-| :--- | :--- |
-| **Ceará (CE)** | Fortaleza · Jericoacoara · Canoa Quebrada |
-| **Rio Grande do Norte (RN)** | Natal · Pipa · Genipabu |
-| **Pernambuco (PE)** | Recife · Porto de Galinhas · Olinda |
-| **Piauí (PI)** | Teresina · Luís Correia · Parnaíba |
+---
 
 ## ✨ Funcionalidades
 
-### Painel Principal
-| Módulo | Descrição |
-| :--- | :--- |
-| **Visão Geral** | KPIs consolidados com mín/máx por mês e comparativo anual |
-| **Mapa Interativo (GeoViz)** | Clique nos polígonos dos estados para cross-filtering em todo o dashboard |
-| **Comparativo por Estado / Cidade** | Gráfico de barras com indicador selecionado · Anual |
-| **Distribuição por Tipo** | Donut chart — % da receita por tipo de empreendimento |
-| **Principais Insights** | Geração automática dos 5 insights mais relevantes da base |
+### 📌 KPIs Principais
+- **Receita Total** — faturamento acumulado do período filtrado
+- **Total de Clientes** — volume de visitantes
+- **Ocupação Média** — taxa de ocupação dos empreendimentos
+- **Avaliação Média** — satisfação do cliente (escala 1–5)
+- 🆕 **Indicadores de variação** — melhor e pior mês para cada métrica
 
-## 🏗️ Estrutura do Projeto
+### 📊 Visualizações
+| Gráfico | Tipo | Descrição |
+|---|---|---|
+| Receita Mensal por Estado | Linha | Evolução ao longo dos 12 meses |
+| Receita por Tipo de Empreendimento | Barras | Comparativo acumulado anual |
+| Taxa de Ocupação por Cidade | Barras Horizontais | Ranking de ocupação média |
+| Clientes por Mês | Barras | Volume mensal de visitantes |
+| Avaliação Média por Cidade | Barras Horizontais | Ranking de satisfação |
+| Receita vs Ocupação | Scatter Plot | Correlação com labels de cidade |
+| Participação por Estado | Donut | % da receita total por estado |
+| Participação por Tipo | Donut | % da receita total por tipo |
 
-```text
-Dashboard-Turistico-do-Nordeste/
-│
-├── index.html → SPA principal (Dashboard completo)
-├── style.css → Estilização e layout responsivo (Dark Mode)
-├── app.js → Core: Filtros, KPIs e lógica de interação
-├── charts.js → Engine: Gráficos Canvas API customizados
-├── data.js → Dataset: Dados provenientes da base_case_turismo.xlsx
-└── mapa_nordeste.js → GeoData: Polígonos dos estados do Nordeste
-```
+### 🔍 Filtros Interativos
+- Filtro por **Estado** (CE, PE, RN, PI)
+- Filtro por **Cidade** (dinâmico conforme estado selecionado)
+- Filtro por **Tipo** (Hotel, Pousada, Agência)
+- Botão **Limpar Filtros**
 
-## 🛠️ Stack Tecnológica
-
-| Camada | Tecnologia |
-| :--- | :--- |
-| **Frontend** | HTML5 + CSS3 + JavaScript puro (ES6+) |
-| **Gráficos** | Canvas API nativa — sem bibliotecas externas |
-| **Mapa** | SVG interativo com malha GeoJSON real do IBGE |
-| **Design** | Dark mode · Google Fonts Syne + Inter |
-| **Exportação** | CSV (Blob) · Excel (.xls) · PDF (print CSS A4) |
-| **Deploy** | GitHub Pages — CI/CD automático via GitHub Actions |
-
-## 🚀 Como Executar
-
-### Opção 1 — Acesso direto (sem instalação)
-Acesse: [https://idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste/](https://idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste/)
-
-### Opção 2 — Localmente
-1. Clone o repositório ou baixe os arquivos.
-2. Abra o arquivo `index.html` em qualquer navegador moderno.
-
-## 📋 Descrição Analítica
-
-A análise dos dados revela que o **Ceará** concentra a maior fatia da receita regional (25,5%), impulsionado principalmente por Fortaleza e Jericoacoara. A sazonalidade é um fator relevante: **maio** apresenta o maior faturamento, enquanto **novembro** registra o menor movimento.
-
-Entre os tipos de empreendimento, as **agências** lideram em receita média por unidade. **Genipabu (RN)** se destaca com a maior taxa de ocupação (73,2%), e **Canoa Quebrada** lidera na satisfação do cliente com avaliação 4,2/5.
+### 📤 Exportação
+- **📄 PDF** — captura completa do dashboard em múltiplas páginas via `html2canvas` + `jsPDF`
+- **📊 Excel** — 5 abas: Dados Completos, Por Estado, Por Cidade, Por Tipo e Por Mês
 
 ---
-**Desenvolvido com dedicação para o Nordeste · CE · RN · PE · PI · 2026**
+
+## 🗂 Estrutura de Dados
+
+```
+432 registros = 4 estados × 3 tipos × 12 meses × 3 cidades por estado
+```
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `mes` | String | Mês em português (Janeiro–Dezembro) |
+| `mesAbrev` | String | Abreviação (Jan–Dez) |
+| `mesIdx` | Number | Índice do mês (0–11) |
+| `estado` | String | Sigla do estado (CE, PE, RN, PI) |
+| `cidade` | String | Nome da cidade |
+| `tipo` | String | Hotel / Pousada / Agência |
+| `receita` | Number | Receita em R$ |
+| `clientes` | Number | Total de visitantes |
+| `ocupacao` | Number | Taxa de ocupação em % |
+| `avaliacao` | Number | Nota média (1.0–5.0) |
+
+---
+
+## 🛠 Tecnologias Utilizadas
+
+| Tecnologia | Versão | Uso |
+|---|---|---|
+| **HTML5** | — | Estrutura semântica |
+| **CSS3** | — | Glassmorphism, animações, responsividade |
+| **JavaScript** | Vanilla ES6+ | Lógica, filtros e renderização |
+| **Chart.js** | 4.4.7 | Todos os gráficos interativos |
+| **chartjs-plugin-datalabels** | 2.x | Labels no scatter plot |
+| **SheetJS (XLSX)** | 0.18.5 | Exportação para Excel |
+| **html2canvas** | 1.4.1 | Captura do dashboard para PDF |
+| **jsPDF** | 2.5.1 | Geração do arquivo PDF |
+| **Google Fonts (Inter)** | — | Tipografia moderna |
+
+---
+
+## 🚀 Como Executar Localmente
+
+Não há dependências de servidor — o projeto roda diretamente no navegador:
+
+```bash
+# Clone o repositório
+git clone https://github.com/idarlandias/caseturismo.git
+
+# Acesse a pasta
+cd caseturismo
+
+# Abra no navegador
+# Basta abrir o arquivo index.html no seu navegador
+```
+
+> **Requer conexão com internet** para carregar as bibliotecas via CDN (Chart.js, jsPDF, etc.)
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+caseturismo/
+├── index.html      # Estrutura HTML do dashboard
+├── style.css       # Estilos: tema dark, glassmorphism, responsividade
+├── app.js          # Lógica: filtros, gráficos, exportação, insights
+├── dados.js        # Base de dados (432 registros estáticos)
+└── .gitignore      # Arquivos ignorados pelo Git
+```
+
+---
+
+## 💡 Principais Insights Analíticos
+
+- 🏆 **Ceará** concentra ~25,5% da receita regional, liderado por Fortaleza e Jericoacoara
+- 📅 **Maio** é o mês de maior faturamento; **Novembro** registra o menor movimento
+- 🏨 **Agências** apresentam o maior ticket médio por unidade de empreendimento
+- 📍 **Genipabu (RN)** lidera em taxa de ocupação média (73,2%)
+- ⭐ **Canoa Quebrada** destaca-se em satisfação do cliente (4,2/5)
+- 📊 Ocupação elevada não garante alta receita — o tipo de empreendimento é determinante
+
+---
+
+## 🎨 Design
+
+- **Tema:** Dark mode com glassmorphism
+- **Paleta:** Azul (`#38bdf8`), Roxo (`#a78bfa`), Âmbar (`#fbbf24`), Verde (`#34d399`)
+- **Tipografia:** Inter (Google Fonts)
+- **Responsividade:** Desktop, tablet e mobile
+
+---
+
+## 📬 Autor
+
+<div align="center">
+
+**Idarlan Dias**  
+Case Prático — Projeto Inova Talentos | BNB  
+
+[![GitHub](https://img.shields.io/badge/GitHub-idarlandias-181717?style=flat-square&logo=github)](https://github.com/idarlandias)
+
+</div>
+
+---
+
+<div align="center">
+
+*Desenvolvido com dedicação para o Projeto Inova Talentos — Banco do Nordeste do Brasil*
+
+</div>
