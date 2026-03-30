@@ -1,283 +1,212 @@
 // ============================================================
-// ObIT-NE - Dados Turisticos do Nordeste
-// DADOS VERIFICADOS - Fontes documentadas por campo
-// Elaborado para candidatura Perfil 2 - ObIT-NE / BNB
-// ============================================================
-// FONTES:
-//  [A] EMBRATUR/PF - Chegadas Internacionais 2021-2024
-//      Jan-Set 2024 NE = 380.223 (Panrotas/ne9.com.br/gov.br)
-//      Anuario Embratur 2025: BR total 2024 = 6.657.377
-//  [B] PNAD Continua Turismo IBGE 2024
-//      Gastos: AL=R$3.790, CE=R$3.006, BA=R$2.711 per capita
-//      NE = 30,4% dos gastos turist. nacionais (R$9,8bi)
-//  [C] Projecoes 2026 - Regressao Linear OLS sobre 2021-2025
-//      Indice Oportunidade BNB = CAGR(35%) + Potencial(35%) + Eficiencia(30%)
+// Dashboard Turístico do Nordeste
+// Dados reais — base_case_turismo.xlsx
+// Estados: CE, RN, PE, PI · 12 cidades · 3 tipos
 // ============================================================
 
-const ESTADOS = ["Ceará", "Bahia", "Pernambuco", "Rio Grande do Norte", "Alagoas", "Paraíba", "Maranhão", "Piauí", "Sergipe"];
-const PERIODOS = ["2021", "2022", "2023", "2024", "2025", "2026*"];
-const PERIODOS_HIST = ["2021", "2022", "2023", "2024", "2025"];
+const ESTADOS = ["Ceará", "Pernambuco", "Rio Grande do Norte", "Piauí"];
+const PERIODOS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const MESES_FULL = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+const TIPOS = ["Hotel", "Pousada", "Agência"];
 
-// Chegadas internacionais (numero absoluto) - EMBRATUR/Policia Federal
-// 2021-2024 verificados; 2025 projetado (+53% CAGR nacional gov.br)
-// 2026* projecao por regressao linear OLS
-const chegadasInt = {
-  "Ceará": [52340, 72180, 88340, 94500, 112643, 135171],
-  "Bahia": [54210, 68430, 80000, 95816, 154265, 185118],
-  "Pernambuco": [35670, 42340, 50000, 60063, 108115, 129738],
-  "Rio Grande do Norte": [12410, 15920, 20000, 25906, 32383, 38859],
-  "Alagoas": [4218, 8940, 10000, 12632, 16801, 20161],
-  "Paraíba": [2890, 4120, 4890, 5315, 7200, 8640],
-  "Maranhão": [3120, 4580, 5780, 6810, 8500, 10200],
-  "Piauí": [980, 1340, 1590, 1740, 2200, 2640],
-  "Sergipe": [1740, 2180, 2940, 3451, 4300, 5160],
-};
-
-// Receita turistica (R$ milhoes) - PNAD-IBGE 2024 + MTur estimativas
-const receita = {
-  "Ceará": [4376, 6840, 11273, 14429, 17500, 21035],
-  "Bahia": [6099, 8920, 13338, 16537, 20000, 23604],
-  "Pernambuco": [3364, 5210, 7301, 9870, 12000, 14129],
-  "Rio Grande do Norte": [1602, 2890, 3357, 4888, 6000, 6986],
-  "Alagoas": [1493, 2340, 3988, 6142, 7800, 9277],
-  "Paraíba": [885, 1310, 1765, 2262, 2800, 3239],
-  "Maranhão": [967, 1420, 1911, 2496, 3100, 3581],
-  "Piauí": [540, 780, 1042, 1420, 1750, 2024],
-  "Sergipe": [597, 870, 1049, 1351, 1680, 1904],
-};
-
-// Taxa de ocupacao hoteleira (%) - estimativas MTur/ABIH pro-rata
-const ocupacao = {
-  "Ceará": [62, 68, 74, 79, 83, 86],
-  "Bahia": [65, 72, 78, 82, 86, 88],
-  "Pernambuco": [58, 64, 70, 75, 80, 83],
-  "Rio Grande do Norte": [55, 61, 67, 73, 78, 82],
-  "Alagoas": [52, 58, 64, 70, 75, 79],
-  "Paraíba": [48, 54, 60, 66, 72, 76],
-  "Maranhão": [44, 50, 56, 62, 68, 73],
-  "Piauí": [40, 46, 52, 58, 64, 69],
-  "Sergipe": [42, 48, 54, 60, 66, 71],
-};
-
-// Empregos diretos no turismo (mil) - estimativas EMBRATUR/MTur
-const empregos = {
-  "Ceará": [48, 53, 61, 68, 76, 84],
-  "Bahia": [72, 80, 91, 103, 116, 128],
-  "Pernambuco": [39, 44, 51, 58, 66, 73],
-  "Rio Grande do Norte": [28, 32, 37, 43, 49, 55],
-  "Alagoas": [19, 22, 26, 30, 35, 40],
-  "Paraíba": [14, 16, 19, 22, 26, 30],
-  "Maranhão": [12, 14, 17, 20, 24, 28],
-  "Piauí": [8, 10, 12, 14, 17, 20],
-  "Sergipe": [7, 9, 11, 13, 16, 19],
-};
-
-// Alias legados (compatibilidade com app.js anterior)
-const turistas = chegadasInt;
-
-// ============================================================
-// CONFIANÇA DOS DADOS - Classificação por indicador e período
-// ============================================================
-// Níveis: "verificado" (fontes oficiais), "estimativa" (modelos/pro-rata), "projecao" (OLS)
-const DATA_CONFIDENCE = {
-  turistas:  { niveis: ["verificado","verificado","verificado","verificado","projecao","projecao"],   fonte: "EMBRATUR / Polícia Federal" },
-  receita:   { niveis: ["verificado","verificado","verificado","verificado","projecao","projecao"],   fonte: "PNAD Contínua Turismo IBGE 2024 + MTur" },
-  ocupacao:  { niveis: ["estimativa","estimativa","estimativa","estimativa","estimativa","projecao"], fonte: "MTur / ABIH (estimativa pro-rata)" },
-  empregos:  { niveis: ["estimativa","estimativa","estimativa","estimativa","estimativa","projecao"], fonte: "EMBRATUR / MTur (estimativa)" },
-};
-
-const CONFIDENCE_META = {
-  verificado: { label: "Verificado",  icon: "✓", color: "#06D6A0", desc: "Dados oficiais verificados em fontes primárias" },
-  estimativa: { label: "Estimativa",  icon: "≈", color: "#F4A261", desc: "Estimativa baseada em modelos e dados pro-rata" },
-  projecao:   { label: "Projeção",    icon: "◇", color: "#845EC2", desc: "Projeção por Regressão Linear OLS (2021–2025)" },
-};
-
-// ============================================================
-// PROSPECOES 2026 E INDICE DE OPORTUNIDADE DE INVESTIMENTO BNB
-// Metodologia: Regressao Linear OLS + Indice Composto
-// ============================================================
-const prospecoes2026 = [
-  {
-    uf: "SE", estado: "Sergipe",
-    indice: 93.0, classificacao: "ALTA",
-    chegadas_proj: 5160, receita_proj: 1904, cagr: 25.4, variacao: 12.6,
-    rationale: "Menor estado do NE. Alto potencial em turismo gastronômico, arqueológico e de natureza com infraestrutura subexplorada.",
-    cor: "#FF4757"
-  },
-  {
-    uf: "MA", estado: "Maranhão",
-    indice: 88.4, classificacao: "ALTA",
-    chegadas_proj: 10200, receita_proj: 3581, cagr: 22.9, variacao: 13.6,
-    rationale: "Lençóis Maranhenses: destino único e insubstituível. Infraestrutura ainda limitada = janela de oportunidade ampla para o BNB.",
-    cor: "#FF4757"
-  },
-  {
-    uf: "PB", estado: "Paraíba",
-    indice: 86.1, classificacao: "ALTA",
-    chegadas_proj: 8640, receita_proj: 3239, cagr: 20.5, variacao: 8.7,
-    rationale: "Mercado emergente com infraestrutura em formação. Turismo pedagógico, CT&I e João Pessoa como polo cultural crescente.",
-    cor: "#FF4757"
-  },
-  {
-    uf: "PI", estado: "Piauí",
-    indice: 85.1, classificacao: "ALTA",
-    chegadas_proj: 2640, receita_proj: 2024, cagr: 18.0, variacao: 10.1,
-    rationale: "Menor volume absoluto mas crescimento consistente. Serra da Capivara (Patrimônio UNESCO) e Delta do Parnaíba subexplorados.",
-    cor: "#FF4757"
-  },
-  {
-    uf: "AL", estado: "Alagoas",
-    indice: 64.7, classificacao: "MEDIA-ALTA",
-    chegadas_proj: 20161, receita_proj: 9277, cagr: 48.5, variacao: 22.5,
-    rationale: "Maior gasto per capita do NE (R$ 3.790). CAGR explosivo de 48,5%. Nicho premium com crescimento rápido — destino prioritário.",
-    cor: "#FFA502"
-  },
-  {
-    uf: "BA", estado: "Bahia",
-    indice: 47.8, classificacao: "MEDIA-ALTA",
-    chegadas_proj: 185118, receita_proj: 23604, cagr: 28.7, variacao: 11.5,
-    rationale: "Líder em volume com sinais de maturação. Investir em diversificação interna: Chapada Diamantina, Costa das Baleias, turismo cultural.",
-    cor: "#FFA502"
-  },
-  {
-    uf: "RN", estado: "Rio Grande do Norte",
-    indice: 46.7, classificacao: "MEDIA-ALTA",
-    chegadas_proj: 38859, receita_proj: 6986, cagr: 27.1, variacao: 14.9,
-    rationale: "Crescimento acelerado com base competitiva. Alto potencial para expansão da malha aérea internacional e kitesurf/turismo náutico.",
-    cor: "#FFA502"
-  },
-  {
-    uf: "CE", estado: "Ceará",
-    indice: 43.3, classificacao: "MEDIA",
-    chegadas_proj: 135171, receita_proj: 21035, cagr: 18.3, variacao: 12.5,
-    rationale: "Forte eficiência econômica por chegada. Fortaleza como hub regional. Excelente ROI em infraestrutura de conectividade aérea.",
-    cor: "#ECCC68"
-  },
-  {
-    uf: "PE", estado: "Pernambuco",
-    indice: 40.3, classificacao: "MEDIA",
-    chegadas_proj: 129738, receita_proj: 14129, cagr: 23.1, variacao: 11.2,
-    rationale: "Mercado robusto e crescente. Oportunidade em ecoturismo (Fernando de Noronha), turismo de negócios (Porto Digital/Recife).",
-    cor: "#ECCC68"
-  },
-];
-
-// ============================================================
-// DADOS AUXILIARES - Categorias, Ranking, Sazonalidade
-// ============================================================
-const ATRACAO_LABELS = ["Praia / Litoral", "Ecoturismo", "Cultura / Patrimônio", "Gastronomia", "Eventos / Festas", "Aventura"];
-const ATRACAO_COLORS = ["#00B4D8", "#06D6A0", "#FFB703", "#FF6B6B", "#845EC2", "#FF9671"];
-
-// Perfis de atração por estado (baseados no perfil turístico real de cada UF)
-const atracoesPerEstado = {
-  "Todos": [38, 22, 18, 10, 8, 4],  // Nordeste geral
-  "Ceará": [42, 14, 20, 12, 8, 4],  // Fortaleza + praias de Jericoacoara
-  "Bahia": [30, 14, 34, 12, 8, 2],  // Salvador (Pelourinho) domina
-  "Pernambuco": [22, 18, 36, 10, 8, 6],  // Recife/Olinda + Noronha (eco)
-  "Rio Grande do Norte": [50, 8, 12, 6, 6, 18],  // Natal, Genipabu, kitesurf
-  "Alagoas": [64, 8, 8, 10, 6, 4],  // Maceió - praias = produto principal
-  "Paraíba": [34, 10, 28, 14, 10, 4],  // João Pessoa + praia do Jacaré
-  "Maranhão": [10, 52, 24, 8, 4, 2],  // Lençóis Maranhenses domina
-  "Piauí": [4, 32, 44, 8, 4, 8],  // Serra da Capivara (UNESCO)
-  "Sergipe": [28, 12, 26, 22, 8, 4],  // Gastronomia + cultura
-};
-
-// Alias para compatibilidade (Visão Geral usa "Todos" por padrão)
-const atracoesCategoria = {
-  labels: ATRACAO_LABELS,
-  data: atracoesPerEstado["Todos"],
-  colors: ATRACAO_COLORS,
-};
-
-const kpis2025 = {
-  turistas_total: "627 mil",
-  receita_total: "R$ 70,1 bi",
-  ocupacao_media: "75,8%",
-  empregos_total: "424 mil",
-};
-
-const kpis2026 = {
-  chegadas_proj: "712 mil",
-  receita_proj: "R$ 85,8 bi",
-  crescimento_med: "+13,6%",
-  estados_alta_oportunidade: 4,
-};
-
-const rankingDestinos = [
-  { nome: "Fortaleza – CE", visitas: 3.2, icon: "🏖️" },
-  { nome: "Salvador – BA", visitas: 2.8, icon: "🎭" },
-  { nome: "Recife / Olinda – PE", visitas: 2.1, icon: "🎨" },
-  { nome: "Natal – RN", visitas: 1.6, icon: "🌅" },
-  { nome: "Maceió – AL", visitas: 1.3, icon: "🐠" },
-  { nome: "Porto Seguro – BA", visitas: 1.1, icon: "🌴" },
-  { nome: "João Pessoa – PB", visitas: 0.9, icon: "🌊" },
-  { nome: "Lençóis Maranhenses–MA", visitas: 0.7, icon: "🏜️" },
-];
-
-// Sazonalidade mensal por estado (indice relativo, base 100 = media anual)
-// Padroes baseados no perfil turistico real de cada UF
-const sazonalidadePerEstado = {
-  labels: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
-  "Todos": [310, 280, 245, 198, 175, 190, 260, 220, 185, 210, 245, 340], // NE geral
-  "Ceará": [340, 310, 220, 180, 160, 170, 280, 240, 190, 210, 250, 360], // pico jan+jul+dez
-  "Bahia": [300, 380, 220, 190, 160, 180, 310, 250, 190, 230, 260, 320], // Carnaval fev, jul
-  "Pernambuco": [280, 420, 210, 185, 155, 175, 300, 240, 185, 215, 250, 310], // Carnaval fev fortissimo
-  "Rio Grande do Norte": [320, 270, 230, 190, 170, 200, 290, 260, 210, 230, 260, 350], // kitesurf todo ano
-  "Alagoas": [380, 340, 200, 170, 150, 165, 300, 270, 200, 220, 270, 390], // verao nordestino
-  "Paraíba": [300, 360, 220, 185, 160, 175, 280, 235, 185, 210, 245, 310], // Carnaval + jul
-  "Maranhão": [240, 220, 200, 180, 160, 370, 410, 380, 310, 220, 200, 230], // Lencois: jun-ago
-  "Piauí": [220, 200, 190, 175, 160, 340, 380, 360, 290, 210, 195, 215], // Delta+Capivara: jun-ago
-  "Sergipe": [290, 340, 215, 185, 160, 175, 270, 230, 185, 210, 245, 300], // Carnaval + verao
-};
-
-const sazonalidade = {
-  labels: sazonalidadePerEstado.labels,
-  data: sazonalidadePerEstado["Todos"],
-};
-
-// ============================================================
-// MAPEAMENTO UF ↔ ESTADO (reutilizável)
-// ============================================================
 const UF_SIGLAS = {
-  "Ceará": "CE", "Bahia": "BA", "Pernambuco": "PE",
-  "Rio Grande do Norte": "RN", "Alagoas": "AL", "Paraíba": "PB",
-  "Maranhão": "MA", "Piauí": "PI", "Sergipe": "SE"
+  "Ceará": "CE", "Pernambuco": "PE",
+  "Rio Grande do Norte": "RN", "Piauí": "PI"
+};
+
+const CIDADES_POR_ESTADO = {
+  "Ceará": ["Fortaleza", "Jericoacoara", "Canoa Quebrada"],
+  "Rio Grande do Norte": ["Natal", "Pipa", "Genipabu"],
+  "Pernambuco": ["Recife", "Porto de Galinhas", "Olinda"],
+  "Piauí": ["Teresina", "Luis Correia", "Parnaíba"],
+};
+
+const TODAS_CIDADES = Object.values(CIDADES_POR_ESTADO).flat();
+
+// ============================================================
+// DADOS AGREGADOS POR ESTADO (soma mensal de todas cidades/tipos)
+// ============================================================
+
+// Número de clientes por mês
+const clientes = {
+  "Ceará": [8282, 10595, 9944, 8165, 10193, 10306, 8168, 10362, 7374, 12202, 9786, 10310],
+  "Rio Grande do Norte": [7399, 6799, 11432, 10399, 9654, 11712, 9550, 11393, 8120, 9114, 11540, 10700],
+  "Pernambuco": [9006, 8566, 11864, 10709, 9419, 11544, 8927, 9613, 7059, 8444, 9404, 11720],
+  "Piauí": [11042, 8929, 11062, 10008, 10169, 7872, 9508, 9349, 9628, 12761, 11576, 10929],
+};
+
+// Receita mensal (R$)
+const receita = {
+  "Ceará": [1304474.65, 1418130.13, 1923512.01, 1736787.81, 1744715.92, 1598043.32, 1689685.17, 1660320.61, 2151624.12, 1362408.89, 1411930.21, 1334716.62],
+  "Rio Grande do Norte": [1421367.52, 1431945.78, 1387924.80, 1931041.88, 1667625.53, 1371159.57, 1664585.83, 1746406.72, 1265050.63, 1533152.10, 1378953.61, 1785796.30],
+  "Pernambuco": [1640804.73, 1288524.74, 1457483.14, 1515872.75, 2019242.97, 1412916.35, 2069482.63, 1704931.40, 1404957.89, 1627320.56, 1132306.17, 1763152.00],
+  "Piauí": [1852534.26, 1166249.35, 1908515.80, 1459452.89, 1828454.42, 1572420.86, 1659071.05, 1556540.34, 1604537.01, 1443754.18, 1280504.92, 1472561.93],
+};
+
+// Taxa de ocupação média (%)
+const ocupacao = {
+  "Ceará": [65.4, 70.9, 64.9, 68.3, 60.5, 65.0, 68.3, 61.1, 68.5, 65.8, 71.4, 63.4],
+  "Rio Grande do Norte": [72.9, 67.7, 53.3, 67.5, 71.2, 63.8, 72.7, 64.1, 68.8, 70.6, 67.8, 70.7],
+  "Pernambuco": [72.4, 64.7, 67.8, 59.2, 70.8, 73.6, 71.8, 74.1, 67.7, 65.8, 73.7, 74.5],
+  "Piauí": [60.7, 73.9, 56.6, 73.3, 73.5, 80.0, 61.4, 69.7, 71.1, 71.6, 71.4, 62.5],
+};
+
+// Avaliação média (1-5)
+const avaliacao = {
+  "Ceará": [4.5, 4.2, 4.0, 4.0, 4.1, 4.0, 4.1, 3.9, 4.1, 4.0, 4.4, 4.1],
+  "Rio Grande do Norte": [3.7, 3.9, 4.3, 4.2, 4.2, 3.7, 3.9, 3.8, 4.2, 4.1, 4.3, 4.0],
+  "Pernambuco": [3.7, 3.9, 3.8, 3.9, 3.7, 3.9, 4.2, 3.8, 4.1, 4.2, 4.0, 4.0],
+  "Piauí": [3.8, 4.0, 4.0, 4.0, 4.0, 3.9, 4.5, 4.0, 3.8, 4.0, 4.0, 4.0],
+};
+
+// Alias legado
+const turistas = clientes;
+
+// ============================================================
+// DADOS POR CIDADE (soma mensal dos 3 tipos)
+// ============================================================
+const dadosPorCidade = {
+  "Fortaleza": {
+    clientes: [2940, 3384, 3131, 2839, 3284, 3588, 2774, 3447, 2367, 3789, 3098, 3561],
+    receita: [682854.88, 519247.35, 748285.14, 684000.44, 578703.71, 640193.82, 561760.22, 476506.34, 825858.55, 401506.76, 506792.43, 436891.80],
+    ocupacao: [61.2, 77.3, 56.6, 67.2, 56.3, 60.8, 66.3, 49.8, 63.2, 66.1, 79.1, 62.0],
+    avaliacao: [4.5, 4.3, 4.0, 3.8, 4.0, 3.7, 3.8, 3.7, 4.0, 4.0, 4.3, 4.0]
+  },
+  "Jericoacoara": {
+    clientes: [3458, 4113, 3816, 2673, 3718, 3720, 2870, 3604, 2634, 4367, 3553, 3495],
+    receita: [376895.12, 489137.32, 584541.05, 523927.05, 604973.11, 360680.22, 558261.61, 563693.38, 569927.39, 434754.07, 430825.92, 543432.52],
+    ocupacao: [58.5, 58.8, 75.2, 75.3, 56.6, 69.3, 72.2, 65.5, 73.1, 61.2, 65.3, 63.5],
+    avaliacao: [4.6, 4.0, 3.8, 4.0, 4.4, 4.2, 4.5, 4.0, 4.0, 3.8, 4.3, 4.4]
+  },
+  "Canoa Quebrada": {
+    clientes: [1884, 3098, 2997, 2653, 3191, 2998, 2524, 3311, 2373, 4046, 3135, 3254],
+    receita: [244724.65, 409745.46, 590685.82, 528860.32, 561039.10, 597169.28, 569663.34, 620120.89, 755838.18, 526148.06, 474311.86, 354392.30],
+    ocupacao: [76.6, 76.7, 62.8, 62.4, 68.7, 64.9, 66.5, 68.0, 69.3, 70.2, 69.8, 64.7],
+    avaliacao: [4.3, 4.2, 4.3, 4.2, 3.9, 4.0, 4.0, 3.9, 4.4, 4.3, 4.5, 4.0]
+  },
+  "Natal": {
+    clientes: [2471, 2440, 3776, 3698, 3285, 3916, 3279, 3903, 2713, 2837, 3893, 3434],
+    receita: [490879.74, 540668.97, 443605.40, 707571.74, 558898.42, 500454.24, 558397.95, 630048.79, 500098.85, 621076.84, 414770.18, 548599.21],
+    ocupacao: [72.6, 69.3, 53.5, 73.3, 72.5, 58.3, 80.2, 54.9, 67.1, 67.3, 71.3, 67.4],
+    avaliacao: [3.9, 4.0, 4.5, 4.2, 4.0, 3.7, 3.9, 3.7, 4.2, 3.7, 4.3, 3.8]
+  },
+  "Pipa": {
+    clientes: [2376, 2295, 4096, 3333, 3276, 4131, 3290, 4098, 2614, 3290, 4228, 4001],
+    receita: [506402.11, 467523.42, 477475.07, 510155.37, 579654.11, 349101.32, 542606.01, 539785.76, 321606.23, 441048.75, 449456.70, 611684.07],
+    ocupacao: [66.4, 68.8, 44.3, 62.4, 65.2, 67.5, 70.0, 68.2, 60.6, 69.6, 65.7, 71.5],
+    avaliacao: [3.5, 3.6, 4.2, 4.4, 4.0, 3.5, 3.5, 4.0, 4.4, 4.5, 4.3, 3.9]
+  },
+  "Genipabu": {
+    clientes: [2552, 2064, 3560, 3368, 3093, 3665, 2981, 3392, 2793, 2987, 3419, 3265],
+    receita: [424085.67, 423753.39, 466844.33, 713314.77, 529073.00, 521604.01, 563581.87, 576572.17, 443345.55, 471026.51, 514726.73, 625513.02],
+    ocupacao: [79.8, 64.9, 62.2, 66.8, 75.9, 65.5, 67.8, 69.2, 78.7, 74.8, 66.4, 73.1],
+    avaliacao: [3.5, 4.1, 4.1, 3.9, 4.5, 4.0, 4.2, 3.7, 4.0, 4.1, 4.3, 4.3]
+  },
+  "Recife": {
+    clientes: [3099, 2739, 3864, 3449, 3099, 3935, 2967, 3115, 2376, 2739, 2933, 3685],
+    receita: [512755.06, 390316.41, 384023.39, 456685.79, 551668.35, 497006.38, 649558.48, 535458.75, 386389.52, 550365.40, 350723.56, 615000.17],
+    ocupacao: [72.1, 62.1, 69.3, 56.6, 72.1, 77.3, 65.1, 73.8, 76.1, 62.2, 73.3, 77.2],
+    avaliacao: [3.8, 3.6, 3.6, 3.4, 3.4, 3.6, 4.5, 3.8, 3.9, 4.5, 3.6, 3.9]
+  },
+  "Porto de Galinhas": {
+    clientes: [3244, 2925, 4157, 3900, 3368, 4048, 3256, 3557, 2551, 2912, 3407, 4461],
+    receita: [608785.67, 393649.33, 535700.55, 477478.40, 813710.14, 448746.02, 749600.47, 631541.42, 555858.22, 497898.17, 380277.16, 569144.25],
+    ocupacao: [69.0, 59.9, 66.2, 56.8, 71.1, 71.1, 70.1, 76.3, 61.3, 72.1, 73.8, 73.8],
+    avaliacao: [3.7, 4.0, 3.7, 4.0, 3.4, 3.6, 3.6, 3.4, 4.3, 4.0, 4.3, 3.9]
+  },
+  "Olinda": {
+    clientes: [2663, 2902, 3843, 3360, 2952, 3561, 2704, 2941, 2132, 2793, 3064, 3574],
+    receita: [519264.00, 504559.00, 537759.20, 581708.56, 653864.48, 467163.95, 670323.68, 537931.23, 462710.15, 579056.99, 401305.45, 579007.58],
+    ocupacao: [76.2, 72.0, 67.9, 64.1, 69.1, 72.4, 80.2, 72.2, 65.7, 63.1, 74.1, 72.5],
+    avaliacao: [3.6, 4.0, 4.2, 4.3, 4.2, 4.5, 4.5, 4.3, 4.2, 4.0, 4.0, 4.2]
+  },
+  "Teresina": {
+    clientes: [3744, 2920, 3780, 3289, 3326, 2527, 3076, 3154, 3103, 4398, 3813, 3628],
+    receita: [677019.55, 383023.15, 678610.47, 464982.26, 641181.02, 595765.67, 546244.55, 482011.46, 578671.00, 556367.77, 358744.42, 581953.88],
+    ocupacao: [62.4, 78.3, 56.2, 76.2, 67.9, 83.5, 56.2, 72.1, 72.3, 75.3, 68.0, 61.6],
+    avaliacao: [3.9, 4.1, 3.8, 3.8, 3.6, 3.6, 4.2, 3.7, 3.5, 4.2, 4.1, 3.7]
+  },
+  "Luis Correia": {
+    clientes: [3935, 3164, 3873, 3440, 3602, 2862, 3367, 3329, 3432, 4422, 4089, 3792],
+    receita: [630990.24, 372489.92, 643735.02, 464116.33, 587792.64, 443714.26, 564553.64, 536193.75, 546009.48, 480723.03, 518437.35, 477835.34],
+    ocupacao: [58.2, 71.3, 51.8, 68.6, 77.1, 76.3, 62.3, 69.1, 70.2, 67.8, 73.2, 62.2],
+    avaliacao: [3.5, 3.9, 4.4, 4.3, 4.2, 4.1, 4.5, 4.4, 3.9, 3.8, 4.0, 4.1]
+  },
+  "Parnaíba": {
+    clientes: [3363, 2845, 3409, 3279, 3241, 2483, 3065, 2866, 3093, 3941, 3674, 3509],
+    receita: [544524.47, 410736.28, 586170.31, 530354.30, 599480.76, 532940.93, 548272.86, 538335.13, 479856.53, 406663.38, 403323.15, 412772.71],
+    ocupacao: [61.4, 72.1, 61.9, 75.0, 75.5, 80.3, 65.7, 68.0, 70.9, 71.7, 73.1, 63.8],
+    avaliacao: [4.1, 4.1, 3.8, 3.8, 4.1, 3.9, 4.7, 3.9, 4.0, 4.0, 3.9, 4.1]
+  }
 };
 
 // ============================================================
-// SIMULADOR DE INVESTIMENTO - Multiplicadores Turísticos
-// Fonte: MTur/FGV - Conta Satélite do Turismo
+// DADOS POR TIPO DE EMPREENDIMENTO (agregado mensal)
 // ============================================================
-const MULTIPLIERS = {
-  economicMultiplier: { min: 5, max: 7 },
-  jobsPerMillion: { min: 12, max: 25 },
-  touristsPerMillion: { min: 800, max: 3000 },
-  occupancyBoostPerMillion: 0.5,
+const dadosPorTipo = {
+  "Hotel": {
+    clientes: [11279, 10677, 13277, 12181, 12109, 12757, 10971, 13081, 8841, 11999, 13005, 12755],
+    receita: [2332285.02, 1610024.42, 1938445.78, 1773498.48, 2152556.15, 1651989.42, 2060974.47, 1772461.21, 1813375.67, 1640893.29, 1487474.73, 1769755.93],
+    ocupacao: [72.9, 67.2, 58.1, 65.2, 71.1, 68.9, 71.1, 67.3, 68.2, 68.8, 72.6, 66.6],
+    avaliacao: [3.9, 3.9, 4.0, 3.8, 3.8, 3.8, 4.2, 3.9, 4.0, 3.9, 4.1, 4.0]
+  },
+  "Pousada": {
+    clientes: [12422, 11413, 14437, 12459, 12816, 14112, 11375, 13254, 10233, 13463, 12788, 14043],
+    receita: [1783003.76, 1620773.18, 2153003.28, 1881750.39, 1901816.38, 1569773.22, 1740558.70, 1773539.13, 1640949.87, 1618419.36, 1448805.28, 1568753.41],
+    ocupacao: [73.2, 74.7, 59.2, 68.0, 66.2, 72.5, 65.3, 68.7, 74.0, 66.5, 70.4, 66.7],
+    avaliacao: [4.0, 4.0, 4.0, 4.0, 4.3, 4.0, 4.3, 3.8, 4.1, 4.1, 4.2, 4.1]
+  },
+  "Agência": {
+    clientes: [12028, 11799, 16588, 14641, 14510, 14565, 12807, 14382, 11107, 14059, 14513, 16861],
+    receita: [2103892.38, 2073076.40, 2485987.69, 2986905.46, 3205666.31, 2732777.46, 3280791.51, 2832249.73, 2972843.11, 2707322.08, 2267415.90, 2817637.51],
+    ocupacao: [57.2, 58.4, 63.8, 67.0, 69.4, 70.4, 69.1, 65.3, 66.4, 69.7, 69.8, 69.7],
+    avaliacao: [3.9, 4.2, 4.1, 4.3, 3.9, 3.8, 4.1, 3.8, 4.1, 4.3, 4.3, 3.9]
+  }
 };
 
-const STATE_INVESTMENT_PROFILE = {
-  "Sergipe":            { efficiency: 1.40, jobMult: 25, touristMult: 3000 },
-  "Maranhão":           { efficiency: 1.35, jobMult: 23, touristMult: 2800 },
-  "Piauí":              { efficiency: 1.30, jobMult: 22, touristMult: 2600 },
-  "Paraíba":            { efficiency: 1.25, jobMult: 20, touristMult: 2400 },
-  "Alagoas":            { efficiency: 1.15, jobMult: 18, touristMult: 2000 },
-  "Rio Grande do Norte": { efficiency: 1.10, jobMult: 16, touristMult: 1600 },
-  "Pernambuco":         { efficiency: 1.00, jobMult: 15, touristMult: 1200 },
-  "Ceará":              { efficiency: 0.95, jobMult: 14, touristMult: 1000 },
-  "Bahia":              { efficiency: 0.90, jobMult: 12, touristMult: 800 },
+// ============================================================
+// DISTRIBUIÇÃO POR TIPO (% da receita)
+// ============================================================
+const TIPO_LABELS = ["Hotel", "Pousada", "Agência"];
+const TIPO_COLORS = ["#00B4D8", "#06D6A0", "#FFB703"];
+
+const tipoDistribuicao = {
+  "Todos": [27.1, 26.3, 46.6],
+  "Ceará": [27.2, 27.1, 45.7],
+  "Rio Grande do Norte": [27.2, 27.3, 45.5],
+  "Pernambuco": [27.5, 26.3, 46.2],
+  "Piauí": [26.5, 24.5, 49.0],
 };
+
+// ============================================================
+// RANKING DE CIDADES (por receita anual total em R$ milhões)
+// ============================================================
+const rankingDestinos = [
+  { nome: "Canoa Quebrada – CE", receita: 6.68, icon: "🏖️" },
+  { nome: "Fortaleza – CE", receita: 6.66, icon: "🌅" },
+  { nome: "Porto de Galinhas – PE", receita: 6.62, icon: "🎨" },
+  { nome: "Luis Correia – PI", receita: 6.57, icon: "🌊" },
+  { nome: "Teresina – PI", receita: 6.54, icon: "🐠" },
+  { nome: "Natal – RN", receita: 6.51, icon: "🏜️" },
+  { nome: "Genipabu – RN", receita: 6.47, icon: "🌴" },
+  { nome: "Olinda – PE", receita: 6.27, icon: "🎭" },
+  { nome: "Recife – PE", receita: 6.15, icon: "🌺" },
+  { nome: "Jericoacoara – CE", receita: 5.99, icon: "🏝️" },
+  { nome: "Parnaíba – PI", receita: 5.69, icon: "⛵" },
+  { nome: "Pipa – RN", receita: 5.60, icon: "🎶" },
+];
 
 // ============================================================
 // RADAR CHART - Eixos de Competitividade
 // ============================================================
-const RADAR_AXES = ["Crescimento", "Eficiência", "Volume", "Infraestrutura", "Potencial", "Regularidade"];
+const RADAR_AXES = ["Receita Total", "Nº Clientes", "Ocupação", "Avaliação", "Sazonalidade", "Diversidade"];
 
 // ============================================================
-// INSIGHTS - Limiares para geração automática de alertas
+// INSIGHTS - Limiares
 // ============================================================
 const INSIGHT_THRESHOLDS = {
-  highGrowth: 2.0,
-  highEfficiency: 1.5,
-  seasonalConcentration: 0.35,
+  highRevenue: 1.2,
+  highOccupancy: 75,
   lowOccupancy: 60,
+  highRating: 4.3,
 };

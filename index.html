@@ -4,110 +4,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ObIT-NE | Dashboard de Inteligência Turística do Nordeste</title>
+  <title>Dashboard Turístico do Nordeste</title>
   <meta name="description"
-    content="Observatório do Turismo do Nordeste – painel interativo de dados turísticos por estado, período e indicadores. Protótipo para candidatura BNB/ObIT-NE." />
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="ObIT-NE | Dashboard de Inteligência Turística do Nordeste" />
-  <meta property="og:description"
-    content="Painel interativo de inteligência turística regional com dados EMBRATUR, IBGE e projeções 2026 para investimento BNB." />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://idarlandias.github.io/Dashboard-Turistico-do-Nordeste/" />
-  <meta property="og:locale" content="pt_BR" />
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="ObIT-NE | Dashboard Turístico do Nordeste" />
-  <meta name="twitter:description" content="Inteligência turística regional com dados verificados e projeções 2026." />
-
-  <!-- Theme & Canonical -->
+    content="Painel interativo de dados turísticos do Nordeste — CE, RN, PE, PI — com dados reais de receita, clientes, ocupação e avaliação." />
   <meta name="theme-color" content="#0077B6" />
-  <link rel="canonical" href="https://idarlandias.github.io/Dashboard-Turistico-do-Nordeste/" />
-  <meta name="author" content="Idarlan Dias" />
-  <meta name="robots" content="index, follow" />
-
   <link rel="stylesheet" href="style.css" />
-
-  <!-- PostHog Analytics (Session Recording) -->
-  <script>
-    !function (t, e) { var o, n, p, r; e.__SV || (window.posthog && window.posthog.__loaded) || (window.posthog = e, e._i = [], e.init = function (i, s, a) { function g(t, e) { var o = e.split("."); 2 == o.length && (t = t[o[0]], e = o[1]), t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } } (p = t.createElement("script")).type = "text/javascript", p.crossOrigin = "anonymous", p.async = !0, p.src = s.api_host.replace(".i.posthog.com", "-assets.i.posthog.com") + "/static/array.js", (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(p, r); var u = e; for (void 0 !== a ? u = e[a] = [] : a = "posthog", u.people = u.people || [], u.toString = function (t) { var e = "posthog"; return "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e }, u.people.toString = function () { return u.toString(1) + ".people (stub)" }, o = "init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify setPersonProperties group reset resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags get_distinct_id alias opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing".split(" "), n = 0; n < o.length; n++)g(u, o[n]); e._i.push([i, s, a]) }, e.__SV = 1) }(document, window.posthog || []);
-    posthog.init('phc_KCR0kNj86O3O71piFzwrUcVAp0a6IC0Cz5wRSHx0XUp', {
-      api_host: 'https://eu.i.posthog.com',
-      defaults: '2026-01-30',
-      person_profiles: 'always', // or 'always' to create profiles for anonymous users as well
-    })
-  </script>
-  
-<!-- PostHog Identify: Modal de identificação voluntária -->
-<script>
-  window.addEventListener('DOMContentLoaded', function() {
-    // Verifica se visitante já se identificou antes
-    var savedName = localStorage.getItem('ph_visitor_name');
-    var savedEmail = localStorage.getItem('ph_visitor_email');
-
-    if (savedName || savedEmail) {
-      // Já se identificou: apenas re-identifica no PostHog
-      posthog.identify(savedEmail || savedName, {
-        name: savedName || '',
-        email: savedEmail || ''
-      });
-      return;
-    }
-
-    // Cria o modal
-    var overlay = document.createElement('div');
-    overlay.id = 'ph-identify-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,50,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;';
-
-    overlay.innerHTML = [
-      '<div style="background:#0d1b2a;border:1px solid #0077B6;border-radius:12px;padding:32px;max-width:400px;width:90%;color:#fff;font-family:sans-serif;">',
-      '  <h2 style="margin:0 0 8px;color:#00b4d8;font-size:1.2rem;">Bem-vindo ao ObIT-NE</h2>',
-      '  <p style="margin:0 0 20px;font-size:0.9rem;color:#adb5bd;">Identifique-se para personalizar sua experiência (opcional).</p>',
-      '  <input id="ph-name" type="text" placeholder="Seu nome" style="width:100%;padding:10px;margin-bottom:10px;background:#1a2a3a;border:1px solid #0077B6;border-radius:6px;color:#fff;box-sizing:border-box;"/>',
-      '  <input id="ph-email" type="email" placeholder="Seu e-mail (opcional)" style="width:100%;padding:10px;margin-bottom:20px;background:#1a2a3a;border:1px solid #0077B6;border-radius:6px;color:#fff;box-sizing:border-box;"/>',
-      '  <div style="display:flex;gap:10px;">',
-      '    <button id="ph-identify-btn" style="flex:1;padding:10px;background:#0077B6;border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:1rem;">Entrar</button>',
-      '    <button id="ph-skip-btn" style="flex:1;padding:10px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;cursor:pointer;font-size:1rem;">Pular</button>',
-      '  </div>',
-      '</div>'
-    ].join('');
-
-    document.body.appendChild(overlay);
-
-    function identify(name, email) {
-      var uid = email || name || ('anon_' + Date.now());
-      posthog.identify(uid, { name: name, email: email });
-      if (name) localStorage.setItem('ph_visitor_name', name);
-      if (email) localStorage.setItem('ph_visitor_email', email);
-      overlay.remove();
-    }
-
-    document.getElementById('ph-identify-btn').addEventListener('click', function() {
-      var name = document.getElementById('ph-name').value.trim();
-      var email = document.getElementById('ph-email').value.trim();
-      identify(name, email);
-    });
-
-    document.getElementById('ph-skip-btn').addEventListener('click', function() {
-      localStorage.setItem('ph_visitor_name', 'anonimo');
-      overlay.remove();
-    });
-  });
-</script>
 </head>
 
 <body>
 
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
-  <!-- ══════════════════════════════════════════════════════════ -->
-  <!--  SIDEBAR                                                   -->
-  <!-- ══════════════════════════════════════════════════════════ -->
+
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-badge">🌊 BNB · ObIT-NE</div>
-      <h1>Observatório do<br>Turismo do<br>Nordeste</h1>
-      <p>Inteligência Turística Regional</p>
+      <div class="logo-badge">🌊 Turismo NE</div>
+      <h1>Dashboard<br>Turístico do<br>Nordeste</h1>
+      <p>CE · RN · PE · PI</p>
     </div>
 
     <nav class="sidebar-nav">
@@ -116,9 +29,6 @@
       <a class="nav-item active" data-section="sec-overview" href="#">
         <span class="nav-icon">📊</span> Visão Geral
       </a>
-      <a class="nav-item" data-section="sec-overview" href="#">
-        <span class="nav-icon">🗺️</span> Por Estado
-      </a>
       <a class="nav-item" data-section="sec-sazonalidade" href="#">
         <span class="nav-icon">📅</span> Sazonalidade
       </a>
@@ -126,57 +36,43 @@
         <span class="nav-icon">🌡️</span> Mapa de Calor
       </a>
       <a class="nav-item" data-section="sec-ranking" href="#">
-        <span class="nav-icon">🏆</span> Ranking Destinos
+        <span class="nav-icon">🏆</span> Ranking Cidades
       </a>
 
       <div class="nav-section-label" style="margin-top:16px;">Análises</div>
 
       <a class="nav-item" data-section="sec-categorias" href="#">
-        <span class="nav-icon">🎯</span> Categorias de Atração
+        <span class="nav-icon">🎯</span> Tipos de Empreendimento
       </a>
       <a class="nav-item" data-section="sec-evolucao" href="#">
-        <span class="nav-icon">📈</span> Evolução Temporal
+        <span class="nav-icon">📈</span> Evolução Mensal
       </a>
       <a class="nav-item" data-section="sec-radar" href="#">
         <span class="nav-icon">🕸️</span> Radar Comparativo
       </a>
 
-      <div class="nav-section-label" style="margin-top:16px;">Inteligência BNB</div>
+      <div class="nav-section-label" style="margin-top:16px;">Inteligência</div>
 
-      <a class="nav-item" data-section="sec-prospecoes" href="#">
-        <span class="nav-icon">🔮</span> Prospecções 2026
-      </a>
       <a class="nav-item" data-section="sec-bubble" href="#">
-        <span class="nav-icon">🫧</span> Matriz BCG
-      </a>
-      <a class="nav-item" data-section="sec-simulador" href="#">
-        <span class="nav-icon">🎛️</span> Simulador What-If
+        <span class="nav-icon">🫧</span> Análise Comparativa
       </a>
       <a class="nav-item" data-section="sec-insights" href="#">
         <span class="nav-icon">💡</span> Insights Automáticos
       </a>
-
-      <div class="nav-section-label" style="margin-top:16px;">Relatórios</div>
-
-      <a class="nav-item" href="#" onclick="document.getElementById('btn-export').click(); return false;">
-        <span class="nav-icon">📥</span> Exportar Dados
-      </a>
     </nav>
 
     <div class="sidebar-footer">
-      <strong>BNB · ObIT-NE</strong><br>
-      Dados: EMBRATUR + IBGE<br>
-      Protótipo v2.0 · 2026<br>
-      <span style="color:#00B4D8">Portfólio de candidatura</span>
+      <strong>Turismo NE</strong><br>
+      Dados: base_case_turismo.xlsx<br>
+      4 Estados · 12 Cidades · 3 Tipos<br>
+      <span style="color:#00B4D8">Dashboard Analítico</span>
     </div>
   </aside>
 
-  <!-- ══════════════════════════════════════════════════════════ -->
-  <!--  MAIN                                                      -->
-  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- MAIN -->
   <main class="main">
 
-    <!-- ── Topbar ── -->
+    <!-- Topbar -->
     <header class="topbar">
       <div class="topbar-left">
         <button class="mobile-menu-btn" id="btn-menu" aria-label="Abrir menu lateral">
@@ -189,95 +85,82 @@
         </button>
         <div>
           <h2>Dashboard Turístico do Nordeste</h2>
-          <p>Indicadores consolidados · Observatório ObIT-NE · BNB</p>
+          <p>Indicadores por estado, cidade e tipo de empreendimento</p>
         </div>
       </div>
       <div class="topbar-right">
-        <div class="last-updated">
-          <span class="status-dot"></span>
-          Fontes oficiais · Atualizado em tempo real
-        </div>
         <div class="export-group">
           <span style="font-size:0.75rem;color:#90a4ae;margin-right:6px;">Exportar:</span>
           <button class="btn-export btn-csv" id="btn-export-csv" title="Baixar dados em CSV">📄 CSV</button>
           <button class="btn-export btn-xls" id="btn-export-xls" title="Abrir no Excel">📊 Excel</button>
           <button class="btn-export btn-pdf" id="btn-export-pdf" title="Salvar como PDF">🖨️ PDF</button>
-          <button class="btn-export btn-report" id="btn-export-report" title="Relatório Executivo BNB">📑
-            Relatório</button>
         </div>
       </div>
     </header>
 
-    <!-- ── Filter Bar ── -->
+    <!-- Filter Bar -->
     <div class="filter-bar">
       <span class="filter-label">Filtros</span>
       <div class="filter-group">
         <select class="filter-select" id="sel-estado" aria-label="Filtrar por estado" title="Filtrar por estado">
-          <!-- preenchido pelo JS -->
         </select>
-        <select class="filter-select" id="sel-periodo" aria-label="Selecionar período" title="Selecionar período">
-          <!-- preenchido pelo JS -->
+        <select class="filter-select" id="sel-cidade" aria-label="Filtrar por cidade" title="Filtrar por cidade">
+        </select>
+        <select class="filter-select" id="sel-tipo" aria-label="Filtrar por tipo" title="Filtrar por tipo">
+        </select>
+        <select class="filter-select" id="sel-mes" aria-label="Filtrar por mês" title="Filtrar por mês">
         </select>
       </div>
       <div class="filter-chips">
-        <button class="chip active" data-ind="turistas" title="Chegada de turistas">✈️ Turistas</button>
-        <button class="chip" data-ind="receita" title="Receita turística">💰 Receita</button>
-        <button class="chip" data-ind="ocupacao" title="Taxa de ocupação hoteleira">🏨 Ocupação</button>
-        <button class="chip" data-ind="empregos" title="Empregos diretos no turismo">👥 Empregos</button>
+        <button class="chip active" data-ind="clientes" title="Número de clientes">👥 Clientes</button>
+        <button class="chip" data-ind="receita" title="Receita mensal">💰 Receita</button>
+        <button class="chip" data-ind="ocupacao" title="Taxa de ocupação">🏨 Ocupação</button>
+        <button class="chip" data-ind="avaliacao" title="Avaliação média">⭐ Avaliação</button>
       </div>
     </div>
 
-    <!-- ── Content ── -->
+    <!-- Content -->
     <div class="content">
 
-      <!-- ===== SEÇÃO: Visão Geral ===== -->
+      <!-- VISÃO GERAL -->
       <section class="dash-section" id="sec-overview">
 
-        <!-- KPIs -->
         <p class="section-title">Indicadores-chave</p>
         <div class="kpi-grid">
 
-          <div class="kpi-card a" id="kpi-turistas">
-            <div class="kpi-icon">✈️</div>
+          <div class="kpi-card a" id="kpi-clientes">
+            <div class="kpi-icon">👥</div>
             <div class="kpi-body">
-              <div class="kpi-label">Chegada de Turistas</div>
+              <div class="kpi-label">Total de Clientes</div>
               <div class="kpi-value">—</div>
-              <span class="kpi-trend">— vs —</span>
-              <span class="kpi-confidence" data-ind="turistas"></span>
             </div>
           </div>
 
           <div class="kpi-card b" id="kpi-receita">
             <div class="kpi-icon">💰</div>
             <div class="kpi-body">
-              <div class="kpi-label">Receita Turística</div>
+              <div class="kpi-label">Receita Total</div>
               <div class="kpi-value">—</div>
-              <span class="kpi-trend">— vs —</span>
-              <span class="kpi-confidence" data-ind="receita"></span>
             </div>
           </div>
 
           <div class="kpi-card c" id="kpi-ocupacao">
             <div class="kpi-icon">🏨</div>
             <div class="kpi-body">
-              <div class="kpi-label">Ocupação Hoteleira</div>
+              <div class="kpi-label">Ocupação Média</div>
               <div class="kpi-value">—</div>
-              <span class="kpi-trend">— vs —</span>
-              <span class="kpi-confidence" data-ind="ocupacao"></span>
             </div>
           </div>
 
-          <div class="kpi-card d" id="kpi-empregos">
-            <div class="kpi-icon">👥</div>
+          <div class="kpi-card d" id="kpi-avaliacao">
+            <div class="kpi-icon">⭐</div>
             <div class="kpi-body">
-              <div class="kpi-label">Empregos Diretos</div>
+              <div class="kpi-label">Avaliação Média</div>
               <div class="kpi-value">—</div>
-              <span class="kpi-trend">— vs —</span>
-              <span class="kpi-confidence" data-ind="empregos"></span>
             </div>
           </div>
 
-        </div><!-- /kpi-grid -->
+        </div>
 
         <!-- Charts row -->
         <div class="charts-grid">
@@ -286,37 +169,35 @@
           <div class="chart-card">
             <div class="chart-header">
               <div>
-                <div class="chart-title">Mapa Interativo (GeoViz)</div>
-                <div class="chart-subtitle">Filtre o dashboard clicando em um estado</div>
+                <div class="chart-title">Mapa Interativo</div>
+                <div class="chart-subtitle">Clique em um estado para filtrar</div>
               </div>
               <span class="chart-badge" id="badge-mapa">Nordeste</span>
             </div>
             <div class="svg-map-wrap" id="mapa-container"
               style="height:240px; display:flex; justify-content:center; align-items:center;">
-              <!-- Map loaded via JS -->
             </div>
           </div>
 
-          <!-- Barras por estado -->
+          <!-- Barras por estado/cidade -->
           <div class="chart-card" id="sec-estados">
             <div class="chart-header">
               <div>
-                <div class="chart-title">Comparativo por Estado</div>
-                <div class="chart-subtitle">Indicador selecionado · Período filtrado</div>
+                <div class="chart-title">Comparativo por Estado / Cidade</div>
+                <div class="chart-subtitle">Indicador selecionado · Anual</div>
               </div>
-              <span class="chart-badge" id="badge-estados">2025</span>
             </div>
             <div class="chart-wrap" style="height:240px;">
               <canvas id="chart-estados" style="width:100%;height:100%;display:block;"></canvas>
             </div>
           </div>
 
-          <!-- Donut categorias (visao geral) -->
+          <!-- Donut tipos -->
           <div class="chart-card">
             <div class="chart-header">
               <div>
-                <div class="chart-title">Categorias de Atrações</div>
-                <div class="chart-subtitle">Distribuição por tipo de atração turística</div>
+                <div class="chart-title">Distribuição por Tipo</div>
+                <div class="chart-subtitle">% da receita por tipo de empreendimento</div>
               </div>
               <span class="chart-badge" id="badge-categorias-geral">Nordeste</span>
             </div>
@@ -328,19 +209,19 @@
             </div>
           </div>
 
-        </div><!-- /charts-grid -->
+        </div>
       </section>
 
-      <!-- ===== SEÇÃO: Evolução Temporal ===== -->
+      <!-- EVOLUÇÃO MENSAL -->
       <section class="dash-section" id="sec-evolucao" style="display:none;">
-        <p class="section-title">Evolução Temporal (2021–2026*)</p>
+        <p class="section-title">Evolução Mensal (Jan–Dez)</p>
         <div class="chart-card">
           <div class="chart-header">
             <div>
-              <div class="chart-title">Série Histórica</div>
-              <div class="chart-subtitle">Indicador filtrado · Todos os anos disponíveis</div>
+              <div class="chart-title">Série Mensal</div>
+              <div class="chart-subtitle">Indicador filtrado · Todos os meses</div>
             </div>
-            <span class="chart-badge">2021–2025</span>
+            <span class="chart-badge">Jan–Dez</span>
           </div>
           <div class="chart-wrap" style="height:260px;">
             <canvas id="chart-temporal" style="width:100%;height:100%;display:block;"></canvas>
@@ -348,14 +229,14 @@
         </div>
       </section>
 
-      <!-- ===== SEÇÃO: Sazonalidade ===== -->
+      <!-- SAZONALIDADE -->
       <section class="dash-section" id="sec-sazonalidade" style="display:none;">
         <p class="section-title">Sazonalidade Mensal</p>
         <div class="chart-card">
           <div class="chart-header">
             <div>
-              <div class="chart-title">Chegada de Turistas por Mês</div>
-              <div class="chart-subtitle">Média consolidada · Nordeste · dados reais</div>
+              <div class="chart-title">Clientes por Mês</div>
+              <div class="chart-subtitle">Total consolidado · Nordeste</div>
             </div>
             <span class="chart-badge">Jan–Dez</span>
           </div>
@@ -365,31 +246,30 @@
         </div>
       </section>
 
-      <!-- ===== SEÇÃO: Ranking ===== -->
+      <!-- RANKING -->
       <section class="dash-section" id="sec-ranking" style="display:none;">
-        <p class="section-title">Ranking de Destinos Mais Visitados · 2025</p>
+        <p class="section-title">Ranking de Cidades por Receita Anual</p>
         <div class="chart-card">
           <div class="chart-header">
             <div>
-              <div class="chart-title">Top 8 Destinos Turísticos</div>
-              <div class="chart-subtitle">Milhões de visitantes · período selecionado</div>
+              <div class="chart-title">Top 12 Cidades Turísticas</div>
+              <div class="chart-subtitle">Receita anual total em R$ milhões</div>
             </div>
-            <span class="chart-badge">Nordeste</span>
+            <span class="chart-badge">Anual</span>
           </div>
           <div class="ranking-list" id="ranking-list" style="margin-top:4px;"></div>
         </div>
       </section>
 
-      <!-- ===== SEÇÃO: Categorias de Atração (seção dedicada) ===== -->
+      <!-- TIPOS DE EMPREENDIMENTO -->
       <section class="dash-section" id="sec-categorias" style="display:none;">
-        <p class="section-title">Categorias de Atração Turística</p>
+        <p class="section-title">Distribuição por Tipo de Empreendimento</p>
         <div class="charts-grid">
           <div class="chart-card chart-card--full" style="grid-column:1/-1;">
             <div class="chart-header">
               <div>
-                <div class="chart-title">Mix de Atrações por Estado</div>
-                <div class="chart-subtitle" id="categorias-sub">Distribuição estimada do perfil turístico · Nordeste
-                </div>
+                <div class="chart-title">Mix de Empreendimentos por Estado</div>
+                <div class="chart-subtitle" id="categorias-sub">Distribuição da receita por tipo · Nordeste</div>
               </div>
               <span class="chart-badge" id="badge-categorias">Nordeste</span>
             </div>
@@ -404,302 +284,46 @@
         </div>
       </section>
 
-      <!-- ===== SEÇÃO: Prospecções 2026 ===== -->
-      <section class="dash-section" id="sec-prospecoes" style="display:none;">
-        <p class="section-title">🔮 Prospecções 2026 · Inteligência de Investimento BNB</p>
-
-        <!-- KPIs 2026 -->
-        <div class="kpi-grid" style="margin-bottom:24px;">
-          <div class="kpi-card a">
-            <div class="kpi-icon">✈️</div>
-            <div class="kpi-body">
-              <div class="kpi-label">Chegadas Projetadas 2026</div>
-              <div class="kpi-value" id="proj-chegadas">712 mil</div>
-              <span class="kpi-trend up">↑ +13,6% vs 2025</span>
-            </div>
-          </div>
-          <div class="kpi-card b">
-            <div class="kpi-icon">💰</div>
-            <div class="kpi-body">
-              <div class="kpi-label">Receita Projetada 2026</div>
-              <div class="kpi-value" id="proj-receita">R$ 85,8 bi</div>
-              <span class="kpi-trend up">↑ +22,4% vs 2025</span>
-            </div>
-          </div>
-          <div class="kpi-card c">
-            <div class="kpi-icon">🎯</div>
-            <div class="kpi-body">
-              <div class="kpi-label">Estados Oportunidade Alta</div>
-              <div class="kpi-value">4 estados</div>
-              <span class="kpi-trend">SE · MA · PB · PI</span>
-            </div>
-          </div>
-          <div class="kpi-card d">
-            <div class="kpi-icon">📊</div>
-            <div class="kpi-body">
-              <div class="kpi-label">Metodologia</div>
-              <div class="kpi-value" style="font-size:1rem;">Reg. Linear OLS</div>
-              <span class="kpi-trend">CAGR · Potencial · Eficiência</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Matriz de Oportunidade -->
-        <div class="chart-card" style="margin-bottom:24px;">
-          <div class="chart-header">
-            <div>
-              <div class="chart-title">Matriz de Oportunidade de Investimento BNB</div>
-              <div class="chart-subtitle">Índice 0–100 · Composito: CAGR (35%) + Potencial não explorado (35%) +
-                Eficiência econômica (30%)</div>
-            </div>
-            <span class="chart-badge">2026*</span>
-          </div>
-          <div id="matriz-investimento" style="padding:8px 0;"></div>
-        </div>
-
-        <!-- Nota metodologica expandida -->
-        <div class="chart-card metodologia-panel"
-          style="background:rgba(0,180,216,0.06); border:1px solid rgba(0,180,216,0.2);">
-          <button class="metodologia-toggle" id="btn-metodologia" aria-expanded="false"
-            aria-controls="metodologia-body">
-            <span>📋 Nota Metodológica e Limitações</span>
-            <span class="metodologia-chevron" id="metodologia-chevron">▸</span>
-          </button>
-          <div class="metodologia-body" id="metodologia-body" style="display:none;">
-            <div class="metodologia-content">
-
-              <h4>Modelo de Projeção</h4>
-              <p><strong>Regressão Linear OLS</strong> (Ordinary Least Squares) aplicada individualmente sobre a série
-                histórica 2021–2025 de cada estado do Nordeste.</p>
-
-              <h4>Limitações do Modelo</h4>
-              <ul>
-                <li>Regressão linear assume tendência constante — não captura choques externos (pandemias, crises),
-                  sazonalidade ou aceleração/desaceleração.</li>
-                <li>Série curta (5 pontos) limita a robustez estatística. Intervalos de confiança não são reportados por
-                  insuficiência amostral.</li>
-                <li>Projeções para 2026 são extrapolações lineares e <strong>não constituem previsão</strong> — servem
-                  como cenário tendencial para planejamento.</li>
-                <li>O modelo não incorpora variáveis exógenas (câmbio, PIB, conectividade aérea) que impactam
-                  diretamente o turismo.</li>
-              </ul>
-
-              <h4>Índice de Oportunidade BNB</h4>
-              <p>Índice composto ponderado (0–100) com três componentes:</p>
-              <table class="metodologia-table">
-                <thead>
-                  <tr>
-                    <th>Componente</th>
-                    <th>Peso</th>
-                    <th>Descrição</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>CAGR 3 anos</td>
-                    <td>35%</td>
-                    <td>Taxa composta de crescimento anual de chegadas internacionais</td>
-                  </tr>
-                  <tr>
-                    <td>Potencial não explorado</td>
-                    <td>35%</td>
-                    <td>Inverso da participação de mercado — estados menores pontuam mais</td>
-                  </tr>
-                  <tr>
-                    <td>Eficiência econômica</td>
-                    <td>30%</td>
-                    <td>Receita gerada por chegada internacional (gasto médio)</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <h4>Fontes de Dados</h4>
-              <table class="metodologia-table">
-                <thead>
-                  <tr>
-                    <th>Indicador</th>
-                    <th>Fonte</th>
-                    <th>Período</th>
-                    <th>Confiança</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Chegadas internacionais</td>
-                    <td>EMBRATUR / Polícia Federal</td>
-                    <td>2021–2024</td>
-                    <td><span class="conf-badge conf-verificado">✓ Verificado</span></td>
-                  </tr>
-                  <tr>
-                    <td>Receita turística</td>
-                    <td>PNAD Contínua IBGE + MTur</td>
-                    <td>2021–2024</td>
-                    <td><span class="conf-badge conf-verificado">✓ Verificado</span></td>
-                  </tr>
-                  <tr>
-                    <td>Ocupação hoteleira</td>
-                    <td>MTur / ABIH</td>
-                    <td>2021–2025</td>
-                    <td><span class="conf-badge conf-estimativa">≈ Estimativa</span></td>
-                  </tr>
-                  <tr>
-                    <td>Empregos diretos</td>
-                    <td>EMBRATUR / MTur</td>
-                    <td>2021–2025</td>
-                    <td><span class="conf-badge conf-estimativa">≈ Estimativa</span></td>
-                  </tr>
-                  <tr>
-                    <td>Projeções 2026</td>
-                    <td>Regressão Linear OLS</td>
-                    <td>2026</td>
-                    <td><span class="conf-badge conf-projecao">◇ Projeção</span></td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <p class="metodologia-disclaimer">Os valores projetados para 2025 e 2026 são estimativas baseadas em
-                modelagem estatística. Não constituem garantia de resultado e não devem ser utilizados como única base
-                para decisões de investimento.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== SEÇÃO: Simulador de Investimento What-If ===== -->
-      <section class="dash-section" id="sec-simulador" style="display:none;">
-        <p class="section-title">Simulador de Investimento "What-If"</p>
-
-        <div class="sim-controls">
-          <div class="sim-control-group">
-            <label class="sim-label" for="sim-valor">Investimento (R$ milhões)</label>
-            <div class="sim-input-row">
-              <input type="range" id="sim-slider" min="1" max="500" value="50" class="sim-slider">
-              <input type="number" id="sim-valor" min="1" max="500" value="50" class="sim-input-number">
-              <span class="sim-unit">R$ mi</span>
-            </div>
-          </div>
-          <div class="sim-control-group">
-            <label class="sim-label" for="sim-estado">Estado destino</label>
-            <select id="sim-estado" class="filter-select" aria-label="Estado para simulação">
-              <!-- populated by JS -->
-            </select>
-          </div>
-        </div>
-
-        <div class="kpi-grid" style="margin-top:20px;">
-          <div class="kpi-card a" id="sim-kpi-retorno">
-            <div class="kpi-icon">💰</div>
-            <div class="kpi-body">
-              <div class="kpi-label">Retorno Econômico Projetado</div>
-              <div class="kpi-value">—</div>
-              <span class="kpi-trend">Multiplicador turístico 5–7x</span>
-            </div>
-          </div>
-          <div class="kpi-card b" id="sim-kpi-empregos">
-            <div class="kpi-icon">👥</div>
-            <div class="kpi-body">
-              <div class="kpi-label">Empregos Gerados</div>
-              <div class="kpi-value">—</div>
-              <span class="kpi-trend">Diretos + indiretos</span>
-            </div>
-          </div>
-          <div class="kpi-card c" id="sim-kpi-turistas">
-            <div class="kpi-icon">✈️</div>
-            <div class="kpi-body">
-              <div class="kpi-label">Turistas Adicionais</div>
-              <div class="kpi-value">—</div>
-              <span class="kpi-trend">Projeção incremental</span>
-            </div>
-          </div>
-          <div class="kpi-card d" id="sim-kpi-roi">
-            <div class="kpi-icon">📊</div>
-            <div class="kpi-body">
-              <div class="kpi-label">ROI Estimado</div>
-              <div class="kpi-value">—</div>
-              <span class="kpi-trend">Retorno sobre investimento</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="charts-grid" style="margin-top:20px;">
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">Impacto: Cenário Atual vs. Pós-Investimento</div>
-                <div class="chart-subtitle">Comparação de indicadores antes e depois do aporte</div>
-              </div>
-              <span class="chart-badge" id="badge-sim">Simulação</span>
-            </div>
-            <div class="chart-wrap" style="height:260px;">
-              <canvas id="chart-sim-antes-depois" style="width:100%;height:100%;display:block;"></canvas>
-            </div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <div class="chart-title">Eficiência Marginal por Estado</div>
-                <div class="chart-subtitle">Retorno por R$ 1 milhão investido</div>
-              </div>
-              <span class="chart-badge">Comparativo</span>
-            </div>
-            <div class="chart-wrap" style="height:260px;">
-              <canvas id="chart-sim-eficiencia" style="width:100%;height:100%;display:block;"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <div class="chart-card"
-          style="background:rgba(0,180,216,0.06); border:1px solid rgba(0,180,216,0.2); margin-top:16px;">
-          <div style="padding:8px; font-size:0.82rem; color:#b0bec5; line-height:1.7;">
-            <strong style="color:#00B4D8;">Nota Metodológica:</strong> Simulação baseada em multiplicadores turísticos
-            do MTur/FGV.
-            Cada R$1 investido no turismo gera entre R$5 e R$7 na economia local (Conta Satélite do Turismo).
-            Estados com menor desenvolvimento turístico apresentam maior retorno marginal.
-            Resultados são estimativas para fins de planejamento estratégico.
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== SEÇÃO: Bubble Chart BCG ===== -->
+      <!-- BUBBLE CHART -->
       <section class="dash-section" id="sec-bubble" style="display:none;">
-        <p class="section-title">Matriz BCG de Oportunidade Turística</p>
+        <p class="section-title">Análise Comparativa: Clientes × Ticket Médio</p>
         <div class="chart-card">
           <div class="chart-header">
             <div>
-              <div class="chart-title">Crescimento × Eficiência × Volume</div>
-              <div class="chart-subtitle">CAGR 3a (eixo X) · Receita/turista (eixo Y) · Tamanho = volume de chegadas
+              <div class="chart-title">Clientes × Ticket Médio × Receita</div>
+              <div class="chart-subtitle">Total de clientes (eixo X) · Ticket médio (eixo Y) · Tamanho = receita total
               </div>
             </div>
-            <span class="chart-badge" id="badge-bubble">2025</span>
+            <span class="chart-badge">Anual</span>
           </div>
           <div class="chart-wrap" style="height:420px;">
             <canvas id="chart-bubble" style="width:100%;height:100%;display:block;"></canvas>
           </div>
           <div class="bubble-quadrant-legend">
-            <span style="border-color:rgba(6,214,160,.4); color:#06D6A0;">Estrelas — alto crescimento + alta
-              eficiência</span>
-            <span style="border-color:rgba(0,180,216,.4); color:#00B4D8;">Potenciais — alto crescimento + baixa
-              eficiência</span>
-            <span style="border-color:rgba(244,162,97,.4); color:#F4A261;">Consolidados — baixo crescimento + alta
-              eficiência</span>
-            <span style="border-color:rgba(231,111,81,.4); color:#E76F51;">Atenção — baixo crescimento + baixa
-              eficiência</span>
+            <span style="border-color:rgba(6,214,160,.4); color:#06D6A0;">Estrelas — muitos clientes + alto
+              ticket</span>
+            <span style="border-color:rgba(0,180,216,.4); color:#00B4D8;">Potenciais — muitos clientes + baixo
+              ticket</span>
+            <span style="border-color:rgba(244,162,97,.4); color:#F4A261;">Premium — poucos clientes + alto
+              ticket</span>
+            <span style="border-color:rgba(231,111,81,.4); color:#E76F51;">Atenção — poucos clientes + baixo
+              ticket</span>
           </div>
         </div>
       </section>
 
-      <!-- ===== SEÇÃO: Heatmap de Sazonalidade ===== -->
+      <!-- HEATMAP -->
       <section class="dash-section" id="sec-heatmap" style="display:none;">
-        <p class="section-title">Mapa de Calor: Sazonalidade por Estado</p>
+        <p class="section-title">Mapa de Calor: Clientes por Estado × Mês</p>
         <div class="chart-card">
           <div class="chart-header">
             <div>
-              <div class="chart-title">Intensidade Turística: 9 Estados × 12 Meses</div>
-              <div class="chart-subtitle">Índice relativo de chegadas · Gradiente frio→quente</div>
+              <div class="chart-title">Intensidade Mensal: 4 Estados × 12 Meses</div>
+              <div class="chart-subtitle">Número de clientes · Gradiente frio → quente</div>
             </div>
             <span class="chart-badge">Jan–Dez</span>
           </div>
-          <div class="chart-wrap" style="height:340px;">
+          <div class="chart-wrap" style="height:260px;">
             <canvas id="chart-heatmap" style="width:100%;height:100%;display:block;"></canvas>
           </div>
           <div class="heatmap-legend">
@@ -710,7 +334,7 @@
         </div>
       </section>
 
-      <!-- ===== SEÇÃO: Radar Comparativo ===== -->
+      <!-- RADAR -->
       <section class="dash-section" id="sec-radar" style="display:none;">
         <p class="section-title">Radar Comparativo de Competitividade</p>
         <div class="charts-grid">
@@ -718,7 +342,7 @@
             <div class="chart-header">
               <div>
                 <div class="chart-title">Perfil Competitivo Multidimensional</div>
-                <div class="chart-subtitle" id="radar-subtitle">Estado selecionado vs. Média NE · 6 dimensões</div>
+                <div class="chart-subtitle" id="radar-subtitle">Estado selecionado vs. Média · 6 dimensões</div>
               </div>
               <span class="chart-badge" id="badge-radar">Nordeste</span>
             </div>
@@ -738,43 +362,21 @@
         </div>
       </section>
 
-      <!-- ===== SEÇÃO: Insights Automáticos ===== -->
+      <!-- INSIGHTS -->
       <section class="dash-section" id="sec-insights" style="display:none;">
         <p class="section-title">Insights e Alertas Automáticos</p>
         <div class="insights-summary" id="insights-summary"></div>
         <div class="insights-grid" id="insights-grid"></div>
       </section>
 
-    </div><!-- /content -->
+    </div>
   </main>
 
   <!-- Scripts -->
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-  <script src="data.js?v=2.0"></script>
+  <script src="data.js?v=3.0"></script>
   <script src="mapa_nordeste.js?v=2.0"></script>
   <script src="charts.js?v=2.0"></script>
-  <script>
-    // Preenche legenda do donut após carregar
-    document.addEventListener('DOMContentLoaded', () => {
-      const legend = document.getElementById('donut-legend');
-      if (legend) {
-        legend.innerHTML = atracoesCategoria.labels.map((lbl, i) => `
-        <div class="legend-item">
-          <div class="legend-dot" style="background:${atracoesCategoria.colors[i]}"></div>
-          <span>${lbl}</span>
-          <span class="legend-pct">${atracoesCategoria.data[i]}%</span>
-        </div>
-      `).join('');
-      }
-
-      // Sync badge de estados com período selecionado
-      document.getElementById('sel-periodo').addEventListener('change', e => {
-        const b = document.getElementById('badge-estados');
-        if (b) b.textContent = e.target.value;
-      });
-    });
-  </script>
-  <script src="app.js?v=2.0"></script>
+  <script src="app.js?v=3.0"></script>
 </body>
 
 </html>

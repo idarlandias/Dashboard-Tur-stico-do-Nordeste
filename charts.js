@@ -266,7 +266,7 @@ function drawDonutChart(canvasId, labels, data, colors) {
         ctx.fillText('100%', cx, cy + 4);
         ctx.fillStyle = COLORS.muted;
         ctx.font = '10px Inter, sans-serif';
-        ctx.fillText('ATRAÇÕES', cx, cy + 18);
+        ctx.fillText('RECEITA', cx, cy + 18);
         if (prog < 1) requestAnimationFrame(animate);
     }
     animate();

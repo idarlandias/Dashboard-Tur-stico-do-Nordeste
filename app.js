@@ -1,51 +1,48 @@
 // ============================================================
-// ObIT-NE – Lógica principal: filtros, KPIs e render de seções
+// Dashboard Turístico do Nordeste – Lógica principal
 // ============================================================
 
-// ── Estado centralizado ─────────────────────────────────────
 const DashboardState = {
     _estado: 'Todos',
-    _periodo: '2025',
-    _indicador: 'turistas',
+    _cidade: 'Todas',
+    _tipo: 'Todos',
+    _mes: 'Todos',
+    _indicador: 'clientes',
     _listeners: [],
 
     get estado() { return this._estado; },
-    get periodo() { return this._periodo; },
+    get cidade() { return this._cidade; },
+    get tipo() { return this._tipo; },
+    get mes() { return this._mes; },
     get indicador() { return this._indicador; },
 
-    set estado(v) { if (this._estado !== v) { this._estado = v; this._notify(); } },
-    set periodo(v) { if (this._periodo !== v) { this._periodo = v; this._notify(); } },
+    set estado(v) { if (this._estado !== v) { this._estado = v; this._cidade = 'Todas'; this._notify(); } },
+    set cidade(v) { if (this._cidade !== v) { this._cidade = v; this._notify(); } },
+    set tipo(v) { if (this._tipo !== v) { this._tipo = v; this._notify(); } },
+    set mes(v) { if (this._mes !== v) { this._mes = v; this._notify(); } },
     set indicador(v) { if (this._indicador !== v) { this._indicador = v; this._notify(); } },
 
-    /** Atualiza sem disparar render (para batch updates) */
     setSilent(key, value) { this['_' + key] = value; },
-
-    /** Registra callback de mudança */
     onChange(fn) { this._listeners.push(fn); },
-
-    _notify() {
-        this._listeners.forEach(fn => fn());
-    }
+    _notify() { this._listeners.forEach(fn => fn()); }
 };
 
-// Dispara render em cada mudança de estado
 DashboardState.onChange(() => render());
 
 // ── Inicialização ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     populateSelects();
     initMap();
-    initSimulador();
     bindEvents();
     render();
 });
 
-function periodoIdx(p) { return PERIODOS.indexOf(p); }
-
 // ── População de selects ──────────────────────────────────────
 function populateSelects() {
     const selEstado = document.getElementById('sel-estado');
-    const selPeriodo = document.getElementById('sel-periodo');
+    const selCidade = document.getElementById('sel-cidade');
+    const selTipo = document.getElementById('sel-tipo');
+    const selMes = document.getElementById('sel-mes');
 
     selEstado.innerHTML = '<option value="Todos">Todos os estados</option>';
     ESTADOS.forEach(e => {
@@ -54,23 +51,56 @@ function populateSelects() {
         selEstado.appendChild(opt);
     });
 
-    selPeriodo.innerHTML = '';
-    PERIODOS.forEach(p => {
+    populateCidades();
+
+    if (selTipo) {
+        selTipo.innerHTML = '<option value="Todos">Todos os tipos</option>';
+        TIPOS.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t; opt.textContent = t;
+            selTipo.appendChild(opt);
+        });
+    }
+
+    if (selMes) {
+        selMes.innerHTML = '<option value="Todos">Todos os meses</option>';
+        PERIODOS.forEach((m, i) => {
+            const opt = document.createElement('option');
+            opt.value = String(i); opt.textContent = MESES_FULL[i];
+            selMes.appendChild(opt);
+        });
+    }
+}
+
+function populateCidades() {
+    const selCidade = document.getElementById('sel-cidade');
+    if (!selCidade) return;
+    selCidade.innerHTML = '<option value="Todas">Todas as cidades</option>';
+    const cidades = DashboardState.estado === 'Todos'
+        ? TODAS_CIDADES
+        : (CIDADES_POR_ESTADO[DashboardState.estado] || []);
+    cidades.forEach(c => {
         const opt = document.createElement('option');
-        opt.value = p; opt.textContent = p;
-        selPeriodo.appendChild(opt);
+        opt.value = c; opt.textContent = c;
+        selCidade.appendChild(opt);
     });
-    selPeriodo.value = '2025';
 }
 
 // ── Bind de eventos ───────────────────────────────────────────
 function bindEvents() {
     document.getElementById('sel-estado').addEventListener('change', e => {
         DashboardState.estado = e.target.value;
+        populateCidades();
     });
-    document.getElementById('sel-periodo').addEventListener('change', e => {
-        DashboardState.periodo = e.target.value;
-    });
+
+    const selCidade = document.getElementById('sel-cidade');
+    if (selCidade) selCidade.addEventListener('change', e => { DashboardState.cidade = e.target.value; });
+
+    const selTipo = document.getElementById('sel-tipo');
+    if (selTipo) selTipo.addEventListener('change', e => { DashboardState.tipo = e.target.value; });
+
+    const selMes = document.getElementById('sel-mes');
+    if (selMes) selMes.addEventListener('change', e => { DashboardState.mes = e.target.value; });
 
     document.querySelectorAll('.chip').forEach(chip => {
         chip.addEventListener('click', () => {
@@ -116,71 +146,55 @@ function bindEvents() {
     }
 
     // ── Exportação ──────────────────────────────────────────────
-    document.getElementById('btn-export-csv').addEventListener('click', exportCSV);
-    document.getElementById('btn-export-xls').addEventListener('click', exportExcel);
-    document.getElementById('btn-export-pdf').addEventListener('click', exportPDF);
-
-    // ── Relatório Executivo ─────────────────────────────────
-    const btnReport = document.getElementById('btn-export-report');
-    if (btnReport) btnReport.addEventListener('click', generateExecutiveReport);
-
-    // ── Metodologia toggle ──────────────────────────────────────
-    const btnMetodologia = document.getElementById('btn-metodologia');
-    if (btnMetodologia) {
-        btnMetodologia.addEventListener('click', () => {
-            const body = document.getElementById('metodologia-body');
-            const chevron = document.getElementById('metodologia-chevron');
-            const expanded = btnMetodologia.getAttribute('aria-expanded') === 'true';
-            btnMetodologia.setAttribute('aria-expanded', !expanded);
-            body.style.display = expanded ? 'none' : 'block';
-            chevron.classList.toggle('open', !expanded);
-        });
-    }
+    const btnCsv = document.getElementById('btn-export-csv');
+    const btnXls = document.getElementById('btn-export-xls');
+    const btnPdf = document.getElementById('btn-export-pdf');
+    if (btnCsv) btnCsv.addEventListener('click', exportCSV);
+    if (btnXls) btnXls.addEventListener('click', exportExcel);
+    if (btnPdf) btnPdf.addEventListener('click', exportPDF);
 }
 
-// ── Integração GeoViz (Mapa SVG) ──────────────────────────────
+// ── Mapa SVG ──────────────────────────────────────────────────
 function initMap() {
     const container = document.getElementById('mapa-container');
     if (!container || typeof mapaNordesteSVG === 'undefined') return;
 
     container.innerHTML = mapaNordesteSVG;
-
     const svg = container.querySelector('svg');
     svg.style.width = '100%';
     svg.style.height = '100%';
     svg.style.filter = 'drop-shadow(0px 8px 16px rgba(0,0,0,0.4))';
 
-    const estadoToUf = {
-        "Maranhão": "MA", "Piauí": "PI", "Ceará": "CE",
-        "Rio Grande do Norte": "RN", "Paraíba": "PB", "Pernambuco": "PE",
-        "Alagoas": "AL", "Sergipe": "SE", "Bahia": "BA"
-    };
-
-    const ufToEstado = Object.fromEntries(Object.entries(estadoToUf).map(([k, v]) => [v, k]));
+    const ufToEstado = { "CE": "Ceará", "RN": "Rio Grande do Norte", "PE": "Pernambuco", "PI": "Piauí" };
 
     const shapes = svg.querySelectorAll('.estado-shape');
     shapes.forEach(shape => {
+        const sigla = shape.id;
+        if (!ufToEstado[sigla]) {
+            shape.style.opacity = '0.3';
+            shape.style.pointerEvents = 'none';
+            return;
+        }
         shape.addEventListener('click', () => {
-            const sigla = shape.id;
             const nomeEstado = ufToEstado[sigla];
-            if (!nomeEstado) return;
-
             if (DashboardState.estado === nomeEstado) {
                 DashboardState.setSilent('estado', 'Todos');
             } else {
                 DashboardState.setSilent('estado', nomeEstado);
             }
-
+            DashboardState.setSilent('cidade', 'Todas');
+            populateCidades();
             const selEstado = document.getElementById('sel-estado');
             if (selEstado) selEstado.value = DashboardState.estado;
-
+            const selCidade = document.getElementById('sel-cidade');
+            if (selCidade) selCidade.value = 'Todas';
             render();
         });
 
         const nome = shape.getAttribute('data-nome');
         if (nome) {
             const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-            title.textContent = nome + ' (Clique para filtrar o Dashboard)';
+            title.textContent = nome + ' (Clique para filtrar)';
             shape.appendChild(title);
         }
     });
@@ -189,17 +203,9 @@ function initMap() {
 function updateMapSelection() {
     const shapes = document.querySelectorAll('.estado-shape');
     if (!shapes.length) return;
-
     shapes.forEach(shape => shape.classList.remove('selected'));
-
-    const estadoToUf = {
-        "Maranhão": "MA", "Piauí": "PI", "Ceará": "CE",
-        "Rio Grande do Norte": "RN", "Paraíba": "PB", "Pernambuco": "PE",
-        "Alagoas": "AL", "Sergipe": "SE", "Bahia": "BA"
-    };
-
     if (DashboardState.estado !== 'Todos') {
-        const uf = estadoToUf[DashboardState.estado];
+        const uf = UF_SIGLAS[DashboardState.estado];
         if (uf) {
             const shapeSel = document.getElementById(uf);
             if (shapeSel) shapeSel.classList.add('selected');
@@ -207,18 +213,60 @@ function updateMapSelection() {
     }
 }
 
-// ── Helpers de exportação ─────────────────────────────────────
+// ── Helpers de dados filtrados ────────────────────────────────
+function getFilteredMonthlyData(metric) {
+    const estado = DashboardState.estado;
+    const cidade = DashboardState.cidade;
+    const tipo = DashboardState.tipo;
+
+    if (tipo !== 'Todos' && dadosPorTipo[tipo]) {
+        return dadosPorTipo[tipo][metric];
+    }
+
+    if (cidade !== 'Todas' && dadosPorCidade[cidade]) {
+        return dadosPorCidade[cidade][metric];
+    }
+
+    const datasets = { clientes, receita, ocupacao, avaliacao };
+    const ds = datasets[metric];
+
+    if (estado === 'Todos') {
+        if (metric === 'ocupacao' || metric === 'avaliacao') {
+            return PERIODOS.map((_, i) => {
+                const vals = ESTADOS.map(e => ds[e][i]);
+                return parseFloat((vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1));
+            });
+        }
+        return PERIODOS.map((_, i) => ESTADOS.reduce((s, e) => s + ds[e][i], 0));
+    }
+
+    return ds[estado] || PERIODOS.map(() => 0);
+}
+
+function getAggregatedValue(metric) {
+    const data = getFilteredMonthlyData(metric);
+    const mesIdx = DashboardState.mes !== 'Todos' ? parseInt(DashboardState.mes) : null;
+
+    if (mesIdx !== null) return data[mesIdx] || 0;
+
+    if (metric === 'ocupacao' || metric === 'avaliacao') {
+        return parseFloat((data.reduce((a, b) => a + b, 0) / data.length).toFixed(1));
+    }
+    return data.reduce((a, b) => a + b, 0);
+}
+
+// ── Exportação ────────────────────────────────────────────────
 function buildDataRows() {
     const rows = [];
     ESTADOS.forEach(est => {
-        PERIODOS.forEach((ano, idx) => {
+        PERIODOS.forEach((mes, idx) => {
             rows.push({
                 Estado: est,
-                Ano: ano,
-                Chegadas_Int: (chegadasInt[est] || [])[idx] || '',
-                Receita_Mi_BRL: (receita[est] || [])[idx] || '',
-                Ocupacao_Pct: (ocupacao[est] || [])[idx] || '',
-                Empregos_Mil: (empregos[est] || [])[idx] || '',
+                Mês: MESES_FULL[idx],
+                Clientes: clientes[est][idx],
+                Receita_BRL: receita[est][idx].toFixed(2),
+                Ocupacao_Pct: ocupacao[est][idx],
+                Avaliacao: avaliacao[est][idx],
             });
         });
     });
@@ -229,99 +277,28 @@ function exportCSV() {
     const rows = buildDataRows();
     const header = Object.keys(rows[0]).join(';');
     const body = rows.map(r => Object.values(r).join(';')).join('\n');
-    const bom = '\uFEFF';
-    const blob = new Blob([bom + header + '\n' + body], { type: 'text/csv;charset=utf-8;' });
-    downloadBlob(blob, 'obit-ne_turismo_nordeste.csv');
+    const blob = new Blob(['\uFEFF' + header + '\n' + body], { type: 'text/csv;charset=utf-8;' });
+    downloadBlob(blob, 'dashboard_turismo_nordeste.csv');
 }
 
 function exportExcel() {
-    // Usa SheetJS se disponível, senão fallback para HTML-table
-    if (typeof XLSX !== 'undefined') {
-        exportExcelSheetJS();
-    } else {
-        exportExcelFallback();
-    }
-}
-
-function exportExcelSheetJS() {
-    const rows = buildDataRows();
-    const wb = XLSX.utils.book_new();
-
-    // Sheet 1: Dados
-    const ws = XLSX.utils.json_to_sheet(rows);
-
-    // Larguras de coluna
-    ws['!cols'] = [
-        { wch: 24 }, // Estado
-        { wch: 8 },  // Ano
-        { wch: 14 }, // Chegadas
-        { wch: 16 }, // Receita
-        { wch: 14 }, // Ocupação
-        { wch: 14 }, // Empregos
-    ];
-    XLSX.utils.book_append_sheet(wb, ws, 'Dados Turísticos');
-
-    // Sheet 2: Metadata
-    const meta = [
-        { Campo: 'Projeto', Valor: 'ObIT-NE · Observatório do Turismo do Nordeste' },
-        { Campo: 'Instituição', Valor: 'Banco do Nordeste do Brasil (BNB)' },
-        { Campo: 'Fontes', Valor: 'EMBRATUR/PF · PNAD Contínua IBGE 2024 · MTur' },
-        { Campo: 'Período', Valor: '2021–2025 (verificados) + 2026 (projeção OLS)' },
-        { Campo: 'Gerado em', Valor: new Date().toLocaleString('pt-BR') },
-        { Campo: 'Confiança - Chegadas', Valor: '2021-2024: Verificado | 2025-2026: Projeção' },
-        { Campo: 'Confiança - Receita', Valor: '2021-2024: Verificado | 2025-2026: Projeção' },
-        { Campo: 'Confiança - Ocupação', Valor: '2021-2025: Estimativa | 2026: Projeção' },
-        { Campo: 'Confiança - Empregos', Valor: '2021-2025: Estimativa | 2026: Projeção' },
-    ];
-    const wsMeta = XLSX.utils.json_to_sheet(meta);
-    wsMeta['!cols'] = [{ wch: 26 }, { wch: 56 }];
-    XLSX.utils.book_append_sheet(wb, wsMeta, 'Metadados');
-
-    // Sheet 3: Prospecções 2026
-    if (typeof prospecoes2026 !== 'undefined') {
-        const prosp = prospecoes2026.map(d => ({
-            Estado: d.estado,
-            UF: d.uf,
-            'Índice Oportunidade': d.indice,
-            Classificação: d.classificacao,
-            'Chegadas Proj.': d.chegadas_proj,
-            'Receita Proj. (R$ mi)': d.receita_proj,
-            'CAGR 3a (%)': d.cagr,
-            'Variação (%)': d.variacao,
-            Análise: d.rationale,
-        }));
-        const wsProsp = XLSX.utils.json_to_sheet(prosp);
-        wsProsp['!cols'] = [
-            { wch: 24 }, { wch: 4 }, { wch: 18 }, { wch: 14 },
-            { wch: 14 }, { wch: 18 }, { wch: 12 }, { wch: 12 }, { wch: 60 },
-        ];
-        XLSX.utils.book_append_sheet(wb, wsProsp, 'Prospecções 2026');
-    }
-
-    XLSX.writeFile(wb, 'obit-ne_turismo_nordeste.xlsx');
-}
-
-function exportExcelFallback() {
     const rows = buildDataRows();
     const header = `<tr>${Object.keys(rows[0]).map(h => `<th style="background:#0077B6;color:#fff;font-weight:bold;padding:6px 10px;">${h}</th>`).join('')}</tr>`;
     const body = rows.map((r, i) => {
         const bg = i % 2 === 0 ? '#EBF5FB' : '#fff';
         return `<tr>${Object.values(r).map(v => `<td style="padding:5px 10px;background:${bg};">${v}</td>`).join('')}</tr>`;
     }).join('');
-    const html = `
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
+    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
       xmlns:x="urn:schemas-microsoft-com:office:excel"
       xmlns="http://www.w3.org/TR/REC-html40">
 <head><meta charset="UTF-8">
 <style>table{border-collapse:collapse;font-family:Arial;font-size:10pt;}td,th{border:1px solid #ccc;}</style>
 </head><body>
-<h2 style="color:#0077B6;font-family:Arial;">ObIT-NE · Dados Turísticos do Nordeste</h2>
-<p style="font-family:Arial;color:#555;font-size:9pt;">Fonte: EMBRATUR/PF + PNAD-IBGE 2024 · Projeções 2026 por Regressão Linear OLS</p>
+<h2 style="color:#0077B6;font-family:Arial;">Dashboard Turístico do Nordeste</h2>
 <table>${header}${body}</table>
-<p style="font-family:Arial;color:#999;font-size:8pt;margin-top:8px;">Gerado em: ${new Date().toLocaleString('pt-BR')} · Dashboard ObIT-NE BNB</p>
 </body></html>`;
     const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    downloadBlob(blob, 'obit-ne_turismo_nordeste.xls');
+    downloadBlob(blob, 'dashboard_turismo_nordeste.xls');
 }
 
 function exportPDF() {
@@ -348,7 +325,6 @@ function downloadBlob(blob, filename) {
 // ── Render principal ──────────────────────────────────────────
 function render() {
     renderKPIs();
-    renderConfidence();
     renderCharts();
     renderRanking();
     renderSazonalidade();
@@ -356,330 +332,271 @@ function render() {
     renderBubbleChart();
     renderRadarChart();
     renderInsights();
-    renderSimulador();
-    renderProspecoes2026();
+    renderTipoDistribuicao();
     updateMapSelection();
 
     const badgeMapa = document.getElementById('badge-mapa');
     if (badgeMapa) badgeMapa.textContent = DashboardState.estado === 'Todos' ? 'Nordeste' : DashboardState.estado;
 }
 
-// ── Confiança dos dados ──────────────────────────────────────
-function renderConfidence() {
-    if (typeof DATA_CONFIDENCE === 'undefined' || typeof CONFIDENCE_META === 'undefined') return;
-
-    const idx = periodoIdx(DashboardState.periodo);
-    document.querySelectorAll('.kpi-confidence').forEach(el => {
-        const ind = el.dataset.ind;
-        const conf = DATA_CONFIDENCE[ind];
-        if (!conf || idx < 0) return;
-
-        const nivel = conf.niveis[idx] || 'estimativa';
-        const meta = CONFIDENCE_META[nivel];
-        const cls = 'conf-' + nivel;
-
-        el.className = 'kpi-confidence conf-badge ' + cls;
-        el.innerHTML = `${meta.icon} ${meta.label}`;
-        el.title = meta.desc + ' · Fonte: ' + conf.fonte;
-    });
-}
-
-// ── Prospecoes 2026 ───────────────────────────────────────────
-function renderProspecoes2026() {
-    const container = document.getElementById('matriz-investimento');
-    if (!container || typeof prospecoes2026 === 'undefined') return;
-
-    container.innerHTML = prospecoes2026.map((d, i) => {
-        const barWidth = (d.indice).toFixed(0);
-        const barColor = d.cor || '#00B4D8';
-        const badgeCls = d.classificacao === 'ALTA' ? 'badge-alta'
-            : d.classificacao === 'MEDIA-ALTA' ? 'badge-media-alta'
-                : 'badge-media';
-        return `
-<div class="invest-row" style="padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.05);">
-  <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-    <span style="font-size:1.3rem; min-width:28px;">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + '.'}</span>
-    <div style="flex:1;">
-      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-        <strong style="color:#e0f0ff; font-size:0.95rem;">${d.estado}</strong>
-        <span style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:20px; background:${barColor}22; color:${barColor}; border:1px solid ${barColor}44;">${d.classificacao}</span>
-        <span style="font-size:0.75rem; color:#90a4ae;">CAGR ${d.cagr}% · Proj. +${d.variacao}%</span>
-      </div>
-      <div style="margin-top:5px; background:rgba(255,255,255,0.07); border-radius:4px; height:8px; overflow:hidden;">
-        <div style="height:100%; width:${barWidth}%; background:linear-gradient(90deg, ${barColor}, ${barColor}aa); border-radius:4px; transition:width 0.6s ease;"></div>
-      </div>
-      <div style="margin-top:2px; display:flex; justify-content:space-between;">
-        <span style="font-size:0.72rem; color:#b0bec5;">${d.rationale.substring(0, 90)}…</span>
-        <span style="font-size:0.8rem; font-weight:700; color:${barColor}; white-space:nowrap; margin-left:8px;">${d.indice}/100</span>
-      </div>
-    </div>
-  </div>
-</div>`;
-    }).join('');
-}
-
 // ── KPIs ──────────────────────────────────────────────────────
 function renderKPIs() {
-    const idx = periodoIdx(DashboardState.periodo);
-    const estados = DashboardState.estado === 'Todos' ? ESTADOS : [DashboardState.estado];
-
-    const totalTuristas = estados.reduce((s, e) => s + turistas[e][idx], 0);
-    const totalReceita = estados.reduce((s, e) => s + receita[e][idx], 0);
-    const mediaOcupacao = estados.reduce((s, e) => s + ocupacao[e][idx], 0) / estados.length;
-    const totalEmpregos = estados.reduce((s, e) => s + empregos[e][idx], 0);
-
-    const idxPrev = idx > 0 ? idx - 1 : null;
-    function varPct(curr, prev) {
-        if (prev === null) return null;
-        return (((curr - prev) / prev) * 100).toFixed(1);
-    }
-
-    const prevTuristas = idxPrev !== null ? estados.reduce((s, e) => s + turistas[e][idxPrev], 0) : null;
-    const prevReceita = idxPrev !== null ? estados.reduce((s, e) => s + receita[e][idxPrev], 0) : null;
-    const prevOcup = idxPrev !== null ? estados.reduce((s, e) => s + ocupacao[e][idxPrev], 0) / estados.length : null;
-    const prevEmp = idxPrev !== null ? estados.reduce((s, e) => s + empregos[e][idxPrev], 0) : null;
+    const totalClientes = getAggregatedValue('clientes');
+    const totalReceita = getAggregatedValue('receita');
+    const mediaOcupacao = getAggregatedValue('ocupacao');
+    const mediaAvaliacao = getAggregatedValue('avaliacao');
 
     function fmtNum(n) {
-        if (n >= 1000000) return (n / 1000000).toFixed(1) + ' mi';
-        if (n >= 1000) return (n / 1000).toFixed(1) + ' mil';
-        return n.toFixed(0);
+        return Math.round(n).toLocaleString('pt-BR');
     }
     function fmtRec(n) {
-        if (n >= 1000) return 'R$ ' + (n / 1000).toFixed(1) + ' bi';
-        return 'R$ ' + n + ' mi';
+        if (n >= 1000000000) return 'R$ ' + (n / 1000000000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + 'B';
+        if (n >= 1000000) return 'R$ ' + (n / 1000000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + 'M';
+        if (n >= 1000) return 'R$ ' + (n / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + 'K';
+        return 'R$ ' + n.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
     }
 
-    setKPI('kpi-turistas', fmtNum(totalTuristas), varPct(totalTuristas, prevTuristas));
-    setKPI('kpi-receita', fmtRec(totalReceita), varPct(totalReceita, prevReceita));
-    setKPI('kpi-ocupacao', mediaOcupacao.toFixed(1) + '%', varPct(mediaOcupacao, prevOcup));
-    setKPI('kpi-empregos', fmtNum(totalEmpregos) + ' empregos', varPct(totalEmpregos, prevEmp));
+    setKPI('kpi-clientes', fmtNum(totalClientes));
+    setKPI('kpi-receita', fmtRec(totalReceita));
+    setKPI('kpi-ocupacao', mediaOcupacao.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%');
+    setKPI('kpi-avaliacao', mediaAvaliacao.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' / 5,0');
 }
 
-function setKPI(id, val, pct) {
+function setKPI(id, val) {
     const card = document.getElementById(id);
     if (!card) return;
-    card.querySelector('.kpi-value').textContent = val;
-    const trend = card.querySelector('.kpi-trend');
-    if (pct !== null) {
-        const up = parseFloat(pct) >= 0;
-        trend.className = 'kpi-trend' + (up ? '' : ' down');
-        trend.innerHTML = `${up ? '▲' : '▼'} ${Math.abs(pct)}% vs ${PERIODOS[periodoIdx(DashboardState.periodo) - 1] || ''}`;
-        trend.style.display = '';
-    } else {
-        trend.style.display = 'none';
-    }
+    const valEl = card.querySelector('.kpi-value');
+    if (valEl) valEl.textContent = val;
 }
 
 // ── Gráficos ──────────────────────────────────────────────────
 function renderCharts() {
-    const idx = periodoIdx(DashboardState.periodo);
     const estados = DashboardState.estado === 'Todos' ? ESTADOS : [DashboardState.estado];
-    const ds = { turistas, receita, ocupacao, empregos }[DashboardState.indicador] || turistas;
+    const ind = DashboardState.indicador;
+    const datasets = { clientes, receita, ocupacao, avaliacao };
+    const ds = datasets[ind] || clientes;
+    const indLabel = { clientes: 'Clientes', receita: 'Receita (R$)', ocupacao: 'Ocupação (%)', avaliacao: 'Avaliação (1-5)' }[ind];
 
-    const labels1 = estados.map(e => e.split(' ')[0]);
-    const vals1 = estados.map(e => ds[e][idx]);
-    const indLabel = { turistas: 'Turistas (mil)', receita: 'Receita (R$ mi)', ocupacao: 'Ocupação (%)', empregos: 'Empregos (mil)' }[DashboardState.indicador];
+    // Comparativo por estado (barras)
+    if (DashboardState.estado === 'Todos') {
+        const labels1 = estados.map(e => UF_SIGLAS[e]);
+        const vals1 = estados.map(e => {
+            const arr = ds[e];
+            if (ind === 'ocupacao' || ind === 'avaliacao') {
+                return parseFloat((arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1));
+            }
+            return arr.reduce((a, b) => a + b, 0);
+        });
+        drawBarChart('chart-estados', labels1, [{ label: indLabel, data: vals1, color: '#00B4D8', color2: '#0077B6' }], {
+            yFormat: v => ind === 'receita' ? 'R$ ' + (v / 1e6).toFixed(1) + 'M' : v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v),
+        });
+    } else {
+        // Mostrar cidades do estado
+        const cidades = CIDADES_POR_ESTADO[DashboardState.estado] || [];
+        const labels1 = cidades;
+        const vals1 = cidades.map(c => {
+            const cityD = dadosPorCidade[c];
+            if (!cityD) return 0;
+            const arr = cityD[ind];
+            if (ind === 'ocupacao' || ind === 'avaliacao') {
+                return parseFloat((arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1));
+            }
+            return arr.reduce((a, b) => a + b, 0);
+        });
+        drawBarChart('chart-estados', labels1, [{ label: indLabel, data: vals1, color: '#00B4D8', color2: '#0077B6' }], {
+            yFormat: v => ind === 'receita' ? 'R$ ' + (v / 1e6).toFixed(1) + 'M' : v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v),
+        });
+    }
 
-    drawBarChart('chart-estados', labels1, [{ label: indLabel, data: vals1, color: '#00B4D8', color2: '#0077B6' }], {
-        yFormat: v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v),
-    });
-
-    const timeData = PERIODOS.map(p => {
-        return DashboardState.estado === 'Todos'
-            ? ESTADOS.reduce((s, e) => s + ds[e][PERIODOS.indexOf(p)], 0)
-            : ds[DashboardState.estado][PERIODOS.indexOf(p)];
-    });
-
+    // Evolução temporal (linha mensal)
+    const timeData = getFilteredMonthlyData(ind);
     drawLineChart('chart-temporal', PERIODOS, [{ label: indLabel, data: timeData, color: '#06D6A0' }], {
-        yFormat: v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v),
+        yFormat: v => ind === 'receita' ? 'R$ ' + (v / 1000).toFixed(0) + 'k' : v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v * 10) / 10,
     });
 
-    const perfilEstado = (atracoesPerEstado && atracoesPerEstado[DashboardState.estado])
-        ? atracoesPerEstado[DashboardState.estado]
-        : atracoesCategoria.data;
-    drawDonutChart('chart-categorias', ATRACAO_LABELS || atracoesCategoria.labels, perfilEstado, ATRACAO_COLORS || atracoesCategoria.colors);
+    // Donut — distribuição por tipo
+    const perfilEstado = (tipoDistribuicao && tipoDistribuicao[DashboardState.estado])
+        ? tipoDistribuicao[DashboardState.estado]
+        : tipoDistribuicao["Todos"];
+    drawDonutChart('chart-categorias', TIPO_LABELS, perfilEstado, TIPO_COLORS);
 
     const legend = document.getElementById('donut-legend');
     if (legend) {
-        const labels = ATRACAO_LABELS || atracoesCategoria.labels;
-        const colors = ATRACAO_COLORS || atracoesCategoria.colors;
-        legend.innerHTML = labels.map((lbl, i) => `
+        const total = perfilEstado.reduce((a, b) => a + b, 0);
+        legend.innerHTML = TIPO_LABELS.map((lbl, i) => `
           <div class="legend-item">
-            <div class="legend-dot" style="background:${colors[i]}"></div>
+            <div class="legend-dot" style="background:${TIPO_COLORS[i]}"></div>
             <span>${lbl}</span>
-            <span class="legend-pct">${perfilEstado[i]}%</span>
+            <span class="legend-pct">${perfilEstado[i].toFixed(1)}%</span>
           </div>
         `).join('');
     }
 
     const badgeGeral = document.getElementById('badge-categorias-geral');
     if (badgeGeral) badgeGeral.textContent = DashboardState.estado === 'Todos' ? 'Nordeste' : DashboardState.estado;
+}
 
-    const labels = ATRACAO_LABELS || atracoesCategoria.labels;
-    const colors = ATRACAO_COLORS || atracoesCategoria.colors;
-    drawDonutChart('chart-categorias-sec', labels, perfilEstado, colors);
+// ── Distribuição por Tipo (seção dedicada) ────────────────────
+function renderTipoDistribuicao() {
+    const perfilEstado = (tipoDistribuicao && tipoDistribuicao[DashboardState.estado])
+        ? tipoDistribuicao[DashboardState.estado]
+        : tipoDistribuicao["Todos"];
+
+    drawDonutChart('chart-categorias-sec', TIPO_LABELS, perfilEstado, TIPO_COLORS);
 
     const legendSec = document.getElementById('donut-legend-sec');
     if (legendSec) {
-        legendSec.innerHTML = labels.map((lbl, i) => `
+        legendSec.innerHTML = TIPO_LABELS.map((lbl, i) => `
           <div class="legend-item">
-            <div class="legend-dot" style="background:${colors[i]}"></div>
+            <div class="legend-dot" style="background:${TIPO_COLORS[i]}"></div>
             <span>${lbl}</span>
-            <span class="legend-pct">${perfilEstado[i]}%</span>
+            <span class="legend-pct">${perfilEstado[i].toFixed(1)}%</span>
           </div>
         `).join('');
     }
+
     const badgeSec = document.getElementById('badge-categorias');
     if (badgeSec) badgeSec.textContent = DashboardState.estado === 'Todos' ? 'Nordeste' : DashboardState.estado;
     const subSec = document.getElementById('categorias-sub');
     if (subSec) subSec.textContent = DashboardState.estado === 'Todos'
-        ? 'Distribuição estimada do perfil turístico · Nordeste'
-        : `Perfil de atrações · ${DashboardState.estado} · estimativa`;
+        ? 'Distribuição da receita por tipo de empreendimento · Nordeste'
+        : `Distribuição da receita · ${DashboardState.estado}`;
 }
 
 // ── Ranking ───────────────────────────────────────────────────
 function renderRanking() {
     const list = document.getElementById('ranking-list');
     if (!list) return;
-    const maxV = rankingDestinos[0].visitas;
-    list.innerHTML = rankingDestinos.map((d, i) => `
+
+    let filtered = rankingDestinos;
+    if (DashboardState.estado !== 'Todos') {
+        const uf = UF_SIGLAS[DashboardState.estado];
+        filtered = rankingDestinos.filter(d => d.nome.includes(uf));
+    }
+
+    const maxV = filtered.length ? filtered[0].receita : 1;
+    list.innerHTML = filtered.map((d, i) => `
     <div class="ranking-item">
       <span class="rank-num${i < 3 ? ' top' : ''}">${i + 1}</span>
       <span class="rank-icon">${d.icon}</span>
       <span class="rank-name">${d.nome}</span>
       <div class="rank-bar-wrap">
         <div class="rank-bar-bg">
-          <div class="rank-bar" style="width:${(d.visitas / maxV * 100).toFixed(0)}%"></div>
+          <div class="rank-bar" style="width:${(d.receita / maxV * 100).toFixed(0)}%"></div>
         </div>
       </div>
-      <span class="rank-value">${d.visitas}M</span>
+      <span class="rank-value">R$ ${d.receita.toFixed(1)}M</span>
     </div>
   `).join('');
 }
 
 // ── Sazonalidade ──────────────────────────────────────────────
 function renderSazonalidade() {
-    const dadosMes = (typeof sazonalidadePerEstado !== 'undefined' && sazonalidadePerEstado[DashboardState.estado])
-        ? sazonalidadePerEstado[DashboardState.estado]
-        : sazonalidade.data;
-
-    drawBarChart('chart-sazonalidade', sazonalidade.labels,
-        [{ label: 'Índice de Chegadas (relativo)', data: dadosMes, color: '#F4A261', color2: '#E76F51' }],
-        { yFormat: v => Math.round(v) }
+    const data = getFilteredMonthlyData('clientes');
+    drawBarChart('chart-sazonalidade', PERIODOS,
+        [{ label: 'Nº de Clientes por Mês', data: data, color: '#F4A261', color2: '#E76F51' }],
+        { yFormat: v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v) }
     );
 
     const sub = document.querySelector('#sec-sazonalidade .chart-subtitle');
     if (sub) sub.textContent = DashboardState.estado === 'Todos'
-        ? 'Média consolidada · Nordeste · perfil estimado por mês'
-        : `Perfil de sazonalidade · ${DashboardState.estado} · base estimada`;
+        ? 'Total consolidado · Nordeste'
+        : `Clientes por mês · ${DashboardState.estado}`;
 }
 
-// ── Heatmap de Sazonalidade ──────────────────────────────────
+// ── Heatmap ───────────────────────────────────────────────────
 function renderHeatmap() {
     const canvas = document.getElementById('chart-heatmap');
     if (!canvas) return;
     const states = ESTADOS;
-    const months = sazonalidadePerEstado.labels;
-    const matrix = states.map(s => sazonalidadePerEstado[s]);
-    const shortNames = states.map(s => {
-        const parts = s.split(' ');
-        return parts.length > 2 ? UF_SIGLAS[s] : parts[0];
-    });
-    drawHeatmapChart('chart-heatmap', shortNames, months, matrix);
+    const shortNames = states.map(s => UF_SIGLAS[s]);
+    const matrix = states.map(s => clientes[s]);
+    drawHeatmapChart('chart-heatmap', shortNames, PERIODOS, matrix);
 }
 
-// ── Bubble Chart BCG ─────────────────────────────────────────
+// ── Bubble Chart (Receita vs Clientes) ───────────────────────
 function renderBubbleChart() {
-    const estado = DashboardState.estado;
-    const periodo = DashboardState.periodo;
     const canvas = document.getElementById('chart-bubble');
     if (!canvas) return;
-    const idx = periodoIdx(periodo);
+
     const bubbles = ESTADOS.map(est => {
-        const p = prospecoes2026.find(p => p.estado === est);
-        const vol = chegadasInt[est][idx];
-        const rec = receita[est][idx];
-        const efficiency = vol > 0 ? (rec / vol) * 1000000 : 0;
+        const totalRec = receita[est].reduce((a, b) => a + b, 0);
+        const totalCli = clientes[est].reduce((a, b) => a + b, 0);
+        const mediaOcup = ocupacao[est].reduce((a, b) => a + b, 0) / 12;
+        const ticketMedio = totalCli > 0 ? totalRec / totalCli : 0;
         return {
             label: UF_SIGLAS[est],
-            x: p ? p.cagr : 0,
-            y: Math.round(efficiency),
-            size: vol,
-            color: p ? p.cor : '#00B4D8'
+            x: totalCli / 1000,
+            y: ticketMedio,
+            size: totalRec,
+            color: ['#00B4D8', '#06D6A0', '#F4A261', '#845EC2'][ESTADOS.indexOf(est)]
         };
     });
+
     drawBubbleChart('chart-bubble', bubbles, {
-        xLabel: 'CAGR 3 anos (%)',
-        yLabel: 'Receita por Turista (R$)',
-        xFormat: v => v.toFixed(0) + '%',
-        yFormat: v => 'R$' + (v / 1000).toFixed(0) + 'k'
+        xLabel: 'Total de Clientes (mil)',
+        yLabel: 'Ticket Médio (R$)',
+        xFormat: v => v.toFixed(0) + 'k',
+        yFormat: v => 'R$' + v.toFixed(0)
     });
-    const badge = document.getElementById('badge-bubble');
-    if (badge) badge.textContent = periodo;
 }
 
 // ── Radar Comparativo ────────────────────────────────────────
-function computeRadarScores(est, idx) {
-    // Normaliza cada eixo para 0-100 com base nos valores do NE
-    const allCagr = ESTADOS.map(e => {
-        const p = prospecoes2026.find(pr => pr.estado === e);
-        return p ? p.cagr : 0;
-    });
-    const allEff = ESTADOS.map(e => {
-        const vol = chegadasInt[e][idx];
-        return vol > 0 ? (receita[e][idx] / vol) * 1000000 : 0;
-    });
-    const allVol = ESTADOS.map(e => chegadasInt[e][idx]);
-    const allInfra = ESTADOS.map(e => ocupacao[e][idx]);
-    const allPot = ESTADOS.map(e => {
-        const p = prospecoes2026.find(pr => pr.estado === e);
-        return p ? p.indice : 0;
-    });
-    const allSaz = ESTADOS.map(e => {
-        const data = sazonalidadePerEstado[e];
-        const mean = data.reduce((a, b) => a + b, 0) / data.length;
-        const variance = data.reduce((a, b) => a + (b - mean) ** 2, 0) / data.length;
-        const cv = Math.sqrt(variance) / mean;
-        return (1 - cv) * 100; // Lower CV = more regular = higher score
-    });
+function computeRadarScores(est) {
+    const totalRec = receita[est].reduce((a, b) => a + b, 0);
+    const totalCli = clientes[est].reduce((a, b) => a + b, 0);
+    const mediaOcup = ocupacao[est].reduce((a, b) => a + b, 0) / 12;
+    const mediaAval = avaliacao[est].reduce((a, b) => a + b, 0) / 12;
 
-    function normalize(arr, val) {
-        const min = Math.min(...arr);
-        const max = Math.max(...arr);
-        return max === min ? 50 : ((val - min) / (max - min)) * 100;
-    }
+    // Sazonalidade (regularidade)
+    const cliArr = clientes[est];
+    const mean = cliArr.reduce((a, b) => a + b, 0) / cliArr.length;
+    const variance = cliArr.reduce((a, b) => a + (b - mean) ** 2, 0) / cliArr.length;
+    const cv = Math.sqrt(variance) / mean;
+    const sazScore = (1 - cv) * 100;
 
-    const p = prospecoes2026.find(pr => pr.estado === est);
-    const cagr = p ? p.cagr : 0;
-    const vol = chegadasInt[est][idx];
-    const eff = vol > 0 ? (receita[est][idx] / vol) * 1000000 : 0;
-    const infra = ocupacao[est][idx];
-    const pot = p ? p.indice : 0;
-    const sazData = sazonalidadePerEstado[est];
-    const sazMean = sazData.reduce((a, b) => a + b, 0) / sazData.length;
-    const sazVar = sazData.reduce((a, b) => a + (b - sazMean) ** 2, 0) / sazData.length;
-    const sazScore = (1 - Math.sqrt(sazVar) / sazMean) * 100;
+    // Diversidade (número de cidades com receita significativa)
+    const cidadesEst = CIDADES_POR_ESTADO[est] || [];
+    const cidadeRevs = cidadesEst.map(c => dadosPorCidade[c] ? dadosPorCidade[c].receita.reduce((a, b) => a + b, 0) : 0);
+    const maxCidRev = Math.max(...cidadeRevs);
+    const diversidade = cidadeRevs.filter(r => r > maxCidRev * 0.5).length / cidadesEst.length * 100;
 
-    return [
-        normalize(allCagr, cagr),
-        normalize(allEff, eff),
-        normalize(allVol, vol),
-        normalize(allInfra, infra),
-        normalize(allPot, pot),
-        normalize(allSaz, sazScore)
-    ];
+    return { totalRec, totalCli, mediaOcup, mediaAval, sazScore, diversidade };
 }
 
 function renderRadarChart() {
     const estado = DashboardState.estado;
-    const periodo = DashboardState.periodo;
     const canvas = document.getElementById('chart-radar');
     if (!canvas) return;
-    const idx = periodoIdx(periodo);
 
-    // Average NE scores
+    function normalize(vals, val) {
+        const min = Math.min(...vals);
+        const max = Math.max(...vals);
+        return max === min ? 50 : ((val - min) / (max - min)) * 100;
+    }
+
+    const allScores = ESTADOS.map(e => computeRadarScores(e));
+    const allRec = allScores.map(s => s.totalRec);
+    const allCli = allScores.map(s => s.totalCli);
+    const allOcup = allScores.map(s => s.mediaOcup);
+    const allAval = allScores.map(s => s.mediaAval);
+    const allSaz = allScores.map(s => s.sazScore);
+    const allDiv = allScores.map(s => s.diversidade);
+
+    function normalizedScores(est) {
+        const s = computeRadarScores(est);
+        return [
+            normalize(allRec, s.totalRec),
+            normalize(allCli, s.totalCli),
+            normalize(allOcup, s.mediaOcup),
+            normalize(allAval, s.mediaAval),
+            normalize(allSaz, s.sazScore),
+            normalize(allDiv, s.diversidade),
+        ];
+    }
+
     const avgScores = RADAR_AXES.map((_, ai) => {
-        return ESTADOS.reduce((s, e) => s + computeRadarScores(e, idx)[ai], 0) / ESTADOS.length;
+        return ESTADOS.reduce((s, e) => s + normalizedScores(e)[ai], 0) / ESTADOS.length;
     });
 
     const datasets = [{
@@ -689,30 +606,26 @@ function renderRadarChart() {
     }];
 
     if (estado !== 'Todos') {
-        const scores = computeRadarScores(estado, idx);
         datasets.unshift({
             label: estado,
-            data: scores,
+            data: normalizedScores(estado),
             color: '#00B4D8'
         });
     }
 
     drawRadarChart('chart-radar', RADAR_AXES, datasets, { maxVal: 100, levels: 5 });
 
-    // Badge
     const badge = document.getElementById('badge-radar');
     if (badge) badge.textContent = estado === 'Todos' ? 'Nordeste' : UF_SIGLAS[estado] || estado;
 
-    // Subtitle
     const sub = document.getElementById('radar-subtitle');
     if (sub) sub.textContent = estado === 'Todos'
-        ? 'Selecione um estado para comparar com a média NE'
-        : `${estado} vs. Média NE · 6 dimensões`;
+        ? 'Selecione um estado para comparar com a média'
+        : `${estado} vs. Média · 6 dimensões`;
 
-    // Detail list
     const list = document.getElementById('radar-detail-list');
     if (!list) return;
-    const scores = estado !== 'Todos' ? computeRadarScores(estado, idx) : avgScores;
+    const scores = estado !== 'Todos' ? normalizedScores(estado) : avgScores;
     list.innerHTML = RADAR_AXES.map((axis, i) => `
         <div class="radar-detail-item">
             <span class="radar-detail-axis">${axis}</span>
@@ -727,114 +640,93 @@ function renderRadarChart() {
 // ── Insights Automáticos ─────────────────────────────────────
 function generateInsights() {
     const estado = DashboardState.estado;
-    const periodo = DashboardState.periodo;
-    const idx = periodoIdx(periodo);
-    const idxPrev = idx > 0 ? idx - 1 : null;
     const insights = [];
 
-    // 1. CAGR leaders
-    const sortedByCagr = [...prospecoes2026].sort((a, b) => b.cagr - a.cagr);
-    const avgCagr = prospecoes2026.reduce((s, p) => s + p.cagr, 0) / prospecoes2026.length;
+    // 1. Melhor receita
+    const recByState = ESTADOS.map(e => ({
+        estado: e,
+        total: receita[e].reduce((a, b) => a + b, 0)
+    })).sort((a, b) => b.total - a.total);
 
-    sortedByCagr.slice(0, 2).forEach(d => {
-        if (d.cagr > avgCagr * INSIGHT_THRESHOLDS.highGrowth) {
-            insights.push({
-                type: 'success', icon: '🚀',
-                title: `${d.estado}: Crescimento ${(d.cagr / avgCagr).toFixed(1)}x acima da média`,
-                body: `CAGR de ${d.cagr}% contra média de ${avgCagr.toFixed(1)}% do Nordeste. Janela de investimento aberta para capturar crescimento acelerado.`,
-                state: d.estado
-            });
-        }
+    insights.push({
+        type: 'success', icon: '💰',
+        title: `${recByState[0].estado}: Maior receita anual`,
+        body: `Receita total de R$ ${(recByState[0].total / 1e6).toFixed(2)} milhões. Líder entre os 4 estados analisados.`,
+        state: recByState[0].estado
     });
 
-    // 2. Efficiency leaders (receita/turista)
-    const effData = ESTADOS.map(e => ({
+    // 2. Melhor avaliação
+    const avalByState = ESTADOS.map(e => ({
         estado: e,
-        eff: chegadasInt[e][idx] > 0 ? (receita[e][idx] / chegadasInt[e][idx]) * 1000000 : 0
-    })).sort((a, b) => b.eff - a.eff);
-    const avgEff = effData.reduce((s, d) => s + d.eff, 0) / effData.length;
+        media: avaliacao[e].reduce((a, b) => a + b, 0) / 12
+    })).sort((a, b) => b.media - a.media);
 
-    if (effData[0].eff > avgEff * INSIGHT_THRESHOLDS.highEfficiency) {
+    if (avalByState[0].media >= INSIGHT_THRESHOLDS.highRating) {
         insights.push({
-            type: 'info', icon: '💎',
-            title: `${effData[0].estado}: Maior eficiência econômica do NE`,
-            body: `Receita de R$ ${Math.round(effData[0].eff).toLocaleString('pt-BR')} por turista — ${(effData[0].eff / avgEff).toFixed(1)}x a média regional. Perfil de turismo premium.`,
-            state: effData[0].estado
+            type: 'success', icon: '⭐',
+            title: `${avalByState[0].estado}: Melhor avaliação média`,
+            body: `Nota média de ${avalByState[0].media.toFixed(2)}/5.0. Qualidade percebida pelos clientes é a mais alta da região.`,
+            state: avalByState[0].estado
         });
     }
 
-    // 3. Seasonal concentration
+    // 3. Baixa ocupação
     ESTADOS.forEach(e => {
-        const data = sazonalidadePerEstado[e];
-        const mean = data.reduce((a, b) => a + b, 0) / data.length;
-        const variance = data.reduce((a, b) => a + (b - mean) ** 2, 0) / data.length;
-        const cv = Math.sqrt(variance) / mean;
-        if (cv > INSIGHT_THRESHOLDS.seasonalConcentration) {
-            const peakMonth = sazonalidadePerEstado.labels[data.indexOf(Math.max(...data))];
-            insights.push({
-                type: 'warning', icon: '📅',
-                title: `${e}: Alta concentração sazonal`,
-                body: `Coeficiente de variação de ${(cv * 100).toFixed(0)}%. Pico em ${peakMonth}. Oportunidade de investir em diversificação para meses de baixa.`,
-                state: e
-            });
-        }
-    });
-
-    // 4. Low occupancy = infrastructure opportunity
-    ESTADOS.forEach(e => {
-        if (ocupacao[e][idx] < INSIGHT_THRESHOLDS.lowOccupancy) {
+        const mediaOcup = ocupacao[e].reduce((a, b) => a + b, 0) / 12;
+        if (mediaOcup < INSIGHT_THRESHOLDS.lowOccupancy) {
             insights.push({
                 type: 'alert', icon: '🏨',
-                title: `${e}: Ocupação hoteleira abaixo de ${INSIGHT_THRESHOLDS.lowOccupancy}%`,
-                body: `Taxa atual de ${ocupacao[e][idx]}%. Indica necessidade de investimento em marketing e conectividade aérea para elevar a demanda.`,
+                title: `${e}: Ocupação média abaixo de ${INSIGHT_THRESHOLDS.lowOccupancy}%`,
+                body: `Taxa média anual de ${mediaOcup.toFixed(1)}%. Oportunidade de investimento em marketing e promoção.`,
                 state: e
             });
         }
     });
 
-    // 5. YoY acceleration
-    if (idxPrev !== null && idx >= 2) {
-        ESTADOS.forEach(e => {
-            const curr = chegadasInt[e][idx];
-            const prev = chegadasInt[e][idxPrev];
-            const prevPrev = chegadasInt[e][idx - 2];
-            const growthCurr = prev > 0 ? (curr - prev) / prev : 0;
-            const growthPrev = prevPrev > 0 ? (prev - prevPrev) / prevPrev : 0;
-            if (growthCurr > growthPrev * 1.5 && growthCurr > 0.15) {
-                insights.push({
-                    type: 'success', icon: '📈',
-                    title: `${e}: Aceleração de crescimento detectada`,
-                    body: `Crescimento de ${(growthCurr * 100).toFixed(1)}% em ${periodo} vs ${(growthPrev * 100).toFixed(1)}% no período anterior. Trajetória ascendente reforçada.`,
-                    state: e
-                });
-            }
-        });
-    }
-
-    // 6. Top opportunity index
-    const topOp = prospecoes2026[0];
-    insights.push({
-        type: 'info', icon: '🎯',
-        title: `${topOp.estado}: Líder no Índice de Oportunidade BNB`,
-        body: `Score de ${topOp.indice}/100. ${topOp.rationale.substring(0, 100)}`,
-        state: topOp.estado
+    // 4. Alta ocupação
+    ESTADOS.forEach(e => {
+        const mediaOcup = ocupacao[e].reduce((a, b) => a + b, 0) / 12;
+        if (mediaOcup >= INSIGHT_THRESHOLDS.highOccupancy) {
+            insights.push({
+                type: 'info', icon: '📈',
+                title: `${e}: Ocupação acima de ${INSIGHT_THRESHOLDS.highOccupancy}%`,
+                body: `Taxa média de ${mediaOcup.toFixed(1)}%. Demanda sólida que justifica expansão da oferta hoteleira.`,
+                state: e
+            });
+        }
     });
 
-    // 7. Highest absolute growth
-    if (idxPrev !== null) {
-        const growths = ESTADOS.map(e => ({
-            estado: e,
-            abs: chegadasInt[e][idx] - chegadasInt[e][idxPrev]
-        })).sort((a, b) => b.abs - a.abs);
-        insights.push({
-            type: 'info', icon: '✈️',
-            title: `${growths[0].estado}: Maior ganho absoluto de turistas`,
-            body: `+${growths[0].abs.toLocaleString('pt-BR')} chegadas internacionais em ${periodo} vs ${PERIODOS[idxPrev]}. Volume bruto que sustenta a cadeia produtiva local.`,
-            state: growths[0].estado
-        });
-    }
+    // 5. Sazonalidade
+    ESTADOS.forEach(e => {
+        const cliArr = clientes[e];
+        const mean = cliArr.reduce((a, b) => a + b, 0) / cliArr.length;
+        const variance = cliArr.reduce((a, b) => a + (b - mean) ** 2, 0) / cliArr.length;
+        const cv = Math.sqrt(variance) / mean;
+        if (cv > 0.15) {
+            const maxIdx = cliArr.indexOf(Math.max(...cliArr));
+            const minIdx = cliArr.indexOf(Math.min(...cliArr));
+            insights.push({
+                type: 'warning', icon: '📅',
+                title: `${e}: Variação sazonal significativa`,
+                body: `Pico em ${MESES_FULL[maxIdx]} e vale em ${MESES_FULL[minIdx]}. Coeficiente de variação: ${(cv * 100).toFixed(0)}%.`,
+                state: e
+            });
+        }
+    });
 
-    // Filter by selected state if not "Todos"
+    // 6. Cidade destaque por receita
+    const cidadeRevs = TODAS_CIDADES.map(c => ({
+        nome: c,
+        total: dadosPorCidade[c] ? dadosPorCidade[c].receita.reduce((a, b) => a + b, 0) : 0
+    })).sort((a, b) => b.total - a.total);
+
+    insights.push({
+        type: 'info', icon: '🏙️',
+        title: `${cidadeRevs[0].nome}: Cidade com maior receita`,
+        body: `R$ ${(cidadeRevs[0].total / 1e6).toFixed(2)} milhões no ano. Principal polo turístico entre as 12 cidades analisadas.`,
+        state: null
+    });
+
     if (estado !== 'Todos') {
         return insights.filter(i => i.state === estado || !i.state);
     }
@@ -842,8 +734,6 @@ function generateInsights() {
 }
 
 function renderInsights() {
-    const estado = DashboardState.estado;
-    const periodo = DashboardState.periodo;
     const grid = document.getElementById('insights-grid');
     const summary = document.getElementById('insights-summary');
     if (!grid) return;
@@ -857,7 +747,7 @@ function renderInsights() {
         summary.innerHTML = `
             <div class="insights-summary-card">
                 <div class="sum-value" style="color:#06D6A0;">${successCount}</div>
-                <div class="sum-label">Oportunidades</div>
+                <div class="sum-label">Destaques</div>
             </div>
             <div class="insights-summary-card">
                 <div class="sum-value" style="color:#F4A261;">${warningCount}</div>
@@ -875,206 +765,9 @@ function renderInsights() {
             <div class="insight-icon">${ins.icon}</div>
             <div class="insight-title">${ins.title}</div>
             <div class="insight-body">${ins.body}</div>
-            <span class="insight-tag ${ins.type}">${ins.type === 'success' ? 'oportunidade' : ins.type === 'warning' ? 'atenção' : ins.type === 'alert' ? 'alerta' : 'informação'}</span>
+            <span class="insight-tag ${ins.type}">${ins.type === 'success' ? 'destaque' : ins.type === 'warning' ? 'atenção' : ins.type === 'alert' ? 'alerta' : 'informação'}</span>
         </div>
     `).join('');
-}
-
-// ── Simulador de Investimento What-If ────────────────────────
-function initSimulador() {
-    const slider = document.getElementById('sim-slider');
-    const input = document.getElementById('sim-valor');
-    const selEst = document.getElementById('sim-estado');
-    if (!slider || !input || !selEst) return;
-
-    // Populate
-    selEst.innerHTML = ESTADOS.map(e => `<option value="${e}">${e}</option>`).join('');
-
-    slider.addEventListener('input', () => { input.value = slider.value; renderSimulador(); });
-    input.addEventListener('input', () => {
-        let v = Math.min(500, Math.max(1, parseInt(input.value) || 1));
-        input.value = v;
-        slider.value = v;
-        renderSimulador();
-    });
-    selEst.addEventListener('change', renderSimulador);
-}
-
-function renderSimulador() {
-    const estado = DashboardState.estado;
-    const periodo = DashboardState.periodo;
-    const valorEl = document.getElementById('sim-valor');
-    const estEl = document.getElementById('sim-estado');
-    if (!valorEl || !estEl) return;
-
-    const valor = parseFloat(valorEl.value) || 50;
-    const est = estEl.value;
-    const profile = STATE_INVESTMENT_PROFILE[est];
-    if (!profile) return;
-
-    const avgMult = (MULTIPLIERS.economicMultiplier.min + MULTIPLIERS.economicMultiplier.max) / 2;
-    const retornoEconomico = valor * avgMult * profile.efficiency;
-    const empregosGerados = Math.round(valor * profile.jobMult);
-    const turistasAdicionais = Math.round(valor * profile.touristMult);
-    const roi = ((retornoEconomico / valor - 1) * 100).toFixed(0);
-
-    function fmtBRL(n) {
-        if (n >= 1000) return 'R$ ' + (n / 1000).toFixed(1) + ' bi';
-        return 'R$ ' + n.toFixed(0) + ' mi';
-    }
-
-    setKPI('sim-kpi-retorno', fmtBRL(retornoEconomico), null);
-    setKPI('sim-kpi-empregos', empregosGerados.toLocaleString('pt-BR') + ' empregos', null);
-    setKPI('sim-kpi-turistas', turistasAdicionais.toLocaleString('pt-BR') + ' turistas', null);
-    setKPI('sim-kpi-roi', roi + '%', null);
-
-    // KPI trend texts
-    const trendRetorno = document.querySelector('#sim-kpi-retorno .kpi-trend');
-    if (trendRetorno) { trendRetorno.textContent = `Multiplicador ${(avgMult * profile.efficiency).toFixed(1)}x`; trendRetorno.className = 'kpi-trend'; trendRetorno.style.display = ''; }
-    const trendEmp = document.querySelector('#sim-kpi-empregos .kpi-trend');
-    if (trendEmp) { trendEmp.textContent = `${profile.jobMult} empregos/R$ mi`; trendEmp.className = 'kpi-trend'; trendEmp.style.display = ''; }
-    const trendTur = document.querySelector('#sim-kpi-turistas .kpi-trend');
-    if (trendTur) { trendTur.textContent = `${profile.touristMult.toLocaleString('pt-BR')} turistas/R$ mi`; trendTur.className = 'kpi-trend'; trendTur.style.display = ''; }
-    const trendRoi = document.querySelector('#sim-kpi-roi .kpi-trend');
-    if (trendRoi) { trendRoi.textContent = `Eficiência: ${profile.efficiency.toFixed(2)}x`; trendRoi.className = 'kpi-trend'; trendRoi.style.display = ''; }
-
-    // Antes vs Depois bar chart
-    const idx = periodoIdx(periodo);
-    const receitaAtual = receita[est][idx];
-    const empregosAtuais = empregos[est][idx];
-    const turistasAtuais = chegadasInt[est][idx];
-
-    const receitaPos = receitaAtual + retornoEconomico;
-    const empregosPos = empregosAtuais + empregosGerados;
-    const turistasPos = turistasAtuais + turistasAdicionais;
-
-    // Normalize for grouped chart
-    drawBarChart('chart-sim-antes-depois',
-        ['Receita (R$ mi)', 'Empregos', 'Turistas'],
-        [
-            { label: 'Atual', data: [receitaAtual, empregosAtuais, turistasAtuais / 100], color: '#8896B3', color2: '#4A5568' },
-            { label: 'Pós-Investimento', data: [receitaPos, empregosPos, turistasPos / 100], color: '#06D6A0', color2: '#00B4D8' }
-        ],
-        { yFormat: v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v) }
-    );
-
-    // Efficiency per state bar chart
-    const effLabels = ESTADOS.map(e => UF_SIGLAS[e]);
-    const effData = ESTADOS.map(e => {
-        const p = STATE_INVESTMENT_PROFILE[e];
-        return p ? p.efficiency * avgMult : 0;
-    });
-    drawBarChart('chart-sim-eficiencia', effLabels,
-        [{ label: 'Multiplicador efetivo', data: effData, color: '#00B4D8', color2: '#0077B6' }],
-        { yFormat: v => v.toFixed(1) + 'x' }
-    );
-
-    const badge = document.getElementById('badge-sim');
-    if (badge) badge.textContent = est.split(' ')[0];
-}
-
-// ── Relatório Executivo PDF ──────────────────────────────────
-function generateExecutiveReport() {
-    const estado = DashboardState.estado;
-    const periodo = DashboardState.periodo;
-    const idx = periodoIdx(periodo);
-    const estados = estado === 'Todos' ? ESTADOS : [estado];
-
-    const totalTuristas = estados.reduce((s, e) => s + chegadasInt[e][idx], 0);
-    const totalReceita = estados.reduce((s, e) => s + receita[e][idx], 0);
-    const mediaOcupacao = (estados.reduce((s, e) => s + ocupacao[e][idx], 0) / estados.length).toFixed(1);
-    const totalEmpregos = estados.reduce((s, e) => s + empregos[e][idx], 0);
-
-    // Capture visible charts
-    const chartImages = {};
-    ['chart-estados', 'chart-temporal', 'chart-bubble', 'chart-heatmap', 'chart-radar'].forEach(id => {
-        const c = document.getElementById(id);
-        if (c && c.width > 0) {
-            try { chartImages[id] = c.toDataURL('image/png'); } catch (e) { /* ignore */ }
-        }
-    });
-
-    const top4 = prospecoes2026.slice(0, 4);
-    const dataAtual = new Date().toLocaleDateString('pt-BR', { year: 'numeric', month: 'long', day: 'numeric' });
-
-    const html = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Relatório Executivo ObIT-NE · BNB</title>
-<style>
-  body { font-family: Arial, Helvetica, sans-serif; color: #222; max-width: 210mm; margin: 0 auto; padding: 20mm 16mm; line-height: 1.6; }
-  .cover { text-align: center; page-break-after: always; padding-top: 25vh; }
-  .cover .brand { color: #0077B6; font-size: 11pt; letter-spacing: 4px; text-transform: uppercase; }
-  .cover h1 { color: #0077B6; font-size: 28pt; margin: 16px 0 8px; }
-  .cover .sub { color: #666; font-size: 13pt; }
-  .cover .date { color: #999; font-size: 10pt; margin-top: 24px; }
-  .cover .line { width: 80px; height: 3px; background: linear-gradient(90deg, #0077B6, #00B4D8); margin: 20px auto; border-radius: 2px; }
-  h2 { color: #0077B6; border-bottom: 2px solid #0077B6; padding-bottom: 4px; margin-top: 28px; font-size: 14pt; }
-  .kpi-row { display: flex; gap: 12px; margin: 16px 0; flex-wrap: wrap; }
-  .kpi-box { flex: 1; min-width: 120px; padding: 14px; background: #f0f8ff; border: 1px solid #b0d4ea; border-radius: 8px; text-align: center; }
-  .kpi-box h3 { color: #0077B6; font-size: 20pt; margin: 0; }
-  .kpi-box p { color: #555; font-size: 8pt; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
-  .op-card { padding: 12px 16px; margin: 8px 0; background: #fffbe6; border-left: 4px solid #FFA502; border-radius: 4px; }
-  .op-card strong { color: #0077B6; }
-  .op-card .score { float: right; font-weight: bold; color: #FF4757; }
-  .chart-img { max-width: 100%; margin: 12px 0; border: 1px solid #ddd; border-radius: 8px; }
-  .footer { text-align: center; font-size: 8pt; color: #888; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 8px; }
-  .nota { font-size: 9pt; color: #555; background: #f8f9fa; padding: 12px; border-radius: 6px; margin-top: 16px; }
-  @page { size: A4 portrait; margin: 16mm; }
-  @media print { body { padding: 0; } .cover { padding-top: 30vh; } }
-</style>
-</head>
-<body>
-  <div class="cover">
-    <p class="brand">Banco do Nordeste do Brasil</p>
-    <div class="line"></div>
-    <h1>Relatório Executivo<br>Inteligência Turística</h1>
-    <p class="sub">Observatório do Turismo do Nordeste (ObIT-NE)</p>
-    <p class="date">${dataAtual}</p>
-    <p style="color:#999; font-size:9pt; margin-top:40px;">Período de análise: ${periodo} · ${estado === 'Todos' ? 'Todos os estados do NE' : estado}</p>
-  </div>
-
-  <h2>1. Resumo Executivo</h2>
-  <div class="kpi-row">
-    <div class="kpi-box"><h3>${totalTuristas.toLocaleString('pt-BR')}</h3><p>Chegadas Internacionais</p></div>
-    <div class="kpi-box"><h3>R$ ${(totalReceita / 1000).toFixed(1)} bi</h3><p>Receita Turística</p></div>
-    <div class="kpi-box"><h3>${mediaOcupacao}%</h3><p>Ocupação Hoteleira</p></div>
-    <div class="kpi-box"><h3>${totalEmpregos.toLocaleString('pt-BR')} mil</h3><p>Empregos Diretos</p></div>
-  </div>
-
-  <h2>2. Top 4 Oportunidades de Investimento BNB</h2>
-  ${top4.map((d, i) => `
-  <div class="op-card">
-    <span class="score">${d.indice}/100</span>
-    <strong>${i + 1}. ${d.estado} (${d.uf})</strong> — CAGR: ${d.cagr}% · Classificação: ${d.classificacao}
-    <p style="margin:4px 0 0; color:#555; font-size:9pt;">${d.rationale}</p>
-  </div>`).join('')}
-
-  <h2>3. Análise Visual</h2>
-  ${Object.entries(chartImages).map(([id, src]) => {
-        const titles = { 'chart-estados': 'Comparativo por Estado', 'chart-temporal': 'Evolução Temporal', 'chart-bubble': 'Matriz BCG', 'chart-heatmap': 'Heatmap Sazonalidade', 'chart-radar': 'Radar Comparativo' };
-        return `<p style="font-size:10pt;color:#0077B6;font-weight:bold;margin-top:12px;">${titles[id] || id}</p><img class="chart-img" src="${src}" alt="${id}">`;
-    }).join('')}
-
-  <h2>4. Nota Metodológica</h2>
-  <div class="nota">
-    <strong>Projeções 2026:</strong> Regressão Linear OLS sobre série 2021–2025.<br>
-    <strong>Índice de Oportunidade BNB:</strong> CAGR 3 anos (35%) + Potencial não explorado (35%) + Eficiência econômica (30%).<br>
-    <strong>Fontes:</strong> EMBRATUR/Polícia Federal · PNAD Contínua Turismo IBGE 2024 · MTur.<br>
-    <strong>Multiplicadores:</strong> Conta Satélite do Turismo MTur/FGV — R$1 investido gera R$5–7 na economia local.<br>
-    <em>* Valores 2025/2026 são estimativas/projeções. Não constituem garantia de resultado.</em>
-  </div>
-
-  <div class="footer">
-    Gerado em ${new Date().toLocaleString('pt-BR')} · Dashboard ObIT-NE · Banco do Nordeste do Brasil<br>
-    Dados: EMBRATUR/PF + PNAD Contínua IBGE 2024 · Projeções por Regressão Linear OLS
-  </div>
-</body>
-</html>`;
-
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
-    downloadBlob(blob, `relatorio_executivo_obit_ne_${periodo}.html`);
 }
 
 // ── Redimensionamento ─────────────────────────────────────────
