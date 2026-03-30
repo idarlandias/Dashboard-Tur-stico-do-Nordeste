@@ -1,21 +1,17 @@
 <div align="center">
 
-# 🌊 ObIT-NE · Dashboard de Inteligência Turística do Nordeste
+# 🌊 Dashboard Turístico do Nordeste
 
-<img src="https://img.shields.io/badge/Projeto-ObIT--NE-00B4D8?style=for-the-badge" alt="ObIT-NE">
-<img src="https://img.shields.io/badge/BNB-Candidatura_2026-F4A261?style=for-the-badge" alt="BNB">
-<img src="https://img.shields.io/badge/Dados-EMBRATUR_%2F_IBGE-06D6A0?style=for-the-badge" alt="Dados Reais">
-<img src="https://img.shields.io/badge/Stack-HTML_%7C_CSS_%7C_JS_%7C_Python-845EC2?style=for-the-badge" alt="Stack">
+![Stack](https://img.shields.io/badge/Stack-HTML_%7C_CSS_%7C_JavaScript-845EC2?style=for-the-badge)
+![Deploy](https://img.shields.io/badge/Deploy-GitHub_Pages-00B4D8?style=for-the-badge)
+![Dados](https://img.shields.io/badge/Dados-432_registros_mensais-06D6A0?style=for-the-badge)
+![Estados](https://img.shields.io/badge/Cobertura-CE_%C2%B7_RN_%C2%B7_PE_%C2%B7_PI-F4A261?style=for-the-badge)
 
-<br/><br/>
+> **Painel interativo de inteligência turística do Nordeste brasileiro**
+> 4 Estados · 12 Cidades · 3 Tipos de Empreendimento · 432 Registros Mensais
+> Filtros por estado, cidade, tipo e mês com atualização em tempo real
 
-> **Painel interativo de inteligência turística do Nordeste brasileiro**  
-> Desenvolvido como portfólio de candidatura ao **Perfil 2 – ObIT-NE / Banco do Nordeste**  
-> Filtros por estado, período e indicador · Dados reais verificados (2021–2026*)
-
-<br/>
-
-[![Abrir Dashboard](https://img.shields.io/badge/▶%20Abrir%20Dashboard-0077B6?style=for-the-badge&logo=googlechrome&logoColor=white)](https://idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste/)
+### [🔗 Abrir Dashboard ao Vivo](https://idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste/)
 
 </div>
 
@@ -23,7 +19,86 @@
 
 ## 🎯 Sobre o Projeto
 
-Protótipo funcional de dashboard de inteligência turística para a candidatura ao **ObIT-NE (Observatório do Turismo do Nordeste)** – BNB Perfil 2: Dashboards, Relatórios e UX/UI.
+Painel analítico interativo de inteligência turística desenvolvido como entrega do **Case Turismo — BNB / ObIT-NE**.
+O dashboard consolida **432 registros mensais** da base `base_case_turismo.xlsx`, cobrindo os estados do **Ceará, Rio Grande do Norte, Pernambuco e Piauí**, com 12 cidades e 3 categorias de empreendimento (Hotel, Pousada e Agência).
+
+Toda a interface é construída com **HTML + CSS + JavaScript puro**, sem frameworks front-end, e publicada via GitHub Pages com deploy automático.
+
+---
+
+## 📊 Indicadores-Chave (KPIs)
+
+| Indicador | Valor | Melhor Mês | Menor Mês |
+|---|---|---|---|
+| **Total de Clientes** | 472.607 | Mar (44.302) | Set (32.181) |
+| **Receita Total** | R$ 75,8M | Mai (R$ 7,3M) | Nov (R$ 5,2M) |
+| **Ocupação Média** | 68% | Nov (71,1%) | Mar (60,6%) |
+| **Avaliação Média** | 4,0 / 5,0 | Jul (4,2) | Jan (3,9) |
+
+---
+
+## 🗺️ Cobertura Geográfica
+
+| Estado | Cidades |
+|---|---|
+| **Ceará (CE)** | Fortaleza · Jericoacoara · Canoa Quebrada |
+| **Rio Grande do Norte (RN)** | Natal · Pipa · Genipabu |
+| **Pernambuco (PE)** | Recife · Porto de Galinhas · Olinda |
+| **Piauí (PI)** | Teresina · Luís Correia · Parnaíba |
+
+---
+
+## ✨ Funcionalidades
+
+### Painel Principal
+
+| Módulo | Descrição |
+|---|---|
+| **Visão Geral** | KPIs consolidados com mín/máx por mês e comparativo anual |
+| **Mapa Interativo (GeoViz)** | Clique nos polígonos dos estados para cross-filtering em todo o dashboard |
+| **Comparativo por Estado / Cidade** | Gráfico de barras com indicador selecionado · Anual |
+| **Distribuição por Tipo** | Donut chart — Hotel 33,0% · Pousada 32,9% · Agência 34,1% |
+| **Principais Insights** | Geração automática dos 5 insights mais relevantes da base |
+
+### Análises
+
+| Módulo | Descrição |
+|---|---|
+| **Sazonalidade** | Padrão mensal real por estado e indicador |
+| **Mapa de Calor** | Intensidade cruzada estado × mês |
+| **Ranking de Cidades** | Ordenação dinâmica por qualquer indicador selecionado |
+| **Tipos de Empreendimento** | Comparativo receita, ocupação e avaliação por categoria |
+| **Evolução Mensal** | Série temporal com linha de tendência |
+| **Radar Comparativo** | Perfil multidimensional por estado |
+
+### Inteligência
+
+| Módulo | Descrição |
+|---|---|
+| **Análise Comparativa** | Scatter plot ocupação × receita por cidade |
+| **Insights Automáticos** | Destaques gerados dinamicamente com base nos filtros ativos |
+| **Descrição Analítica** | Síntese completa da entrega do case com interpretação dos dados |
+
+---
+
+## 🔍 Filtros Disponíveis
+
+- **Estado:** Todos · Ceará · Pernambuco · Rio Grande do Norte · Piauí
+- **Cidade:** Todas as 12 cidades cobertas
+- **Tipo:** Todos · Hotel · Pousada · Agência
+- **Mês:** Todos · Janeiro a Dezembro
+
+> Todos os filtros são combinados e atualizam os gráficos, KPIs e insights em tempo real.
+
+---
+
+## 💡 Principais Insights
+
+- **Ceará** lidera em receita com **R$ 19.336.349**, representando **25,5%** do faturamento total
+- **Genipabu (RN)** tem a maior taxa de ocupação média (**73,2%**), enquanto **Pipa** apresenta a menor (**61,1%**) — diferença de 12,1 p.p.
+- O segmento **Agência** apresenta a maior receita média por unidade (**R$ 179.494**), sugerindo maior potencial de retorno por empreendimento
+- **Maio** é o mês de maior faturamento e **Novembro** o de menor — oportunidade para ações promocionais em períodos de baixa
+- **Canoa Quebrada** destaca-se na satisfação do cliente com nota média **4,2 / 5,0**, referência de benchmark para as demais localidades
 
 ---
 
@@ -32,117 +107,73 @@ Protótipo funcional de dashboard de inteligência turística para a candidatura
 ```
 Dashboard-Turistico-do-Nordeste/
 │
-├── 🌐 index.html                  → Dashboard principal
-├── 🎨 style.css                   → Design system (dark mode oceânico)
-├── 📊 data.js                     → Dados reais + projeções 2026
-├── 📈 charts.js                   → Engine Canvas (sem dependências)
-├── ⚙️  app.js                     → Filtros, KPIs, exportação
+├── entrevista-bnb.html    → SPA principal (Dashboard completo)
+├── app.js                 → Filtros, KPIs, lógica de exportação
+├── charts.js              → Engine de gráficos Canvas API (sem dependências)
+├── data.js                → Dataset consolidado (432 registros mensais)
 │
-├── 🐍 processar_dados.py          → Pipeline de coleta MTur (--refresh)
-├── 🐍 gerar_prospecoes.py         → Projeções 2026 + Índice BNB
+├── fetch_map.py           → Geração de malha GeoJSON (IBGE)
 │
-├── dados_brutos/
-│   ├── chegadas_internacionais_nordeste.csv   ← EMBRATUR / PF
-│   ├── receitas_bcb_22741_mensal.csv          ← API Banco Central (SGS)
-│   └── receita_turismo_domestico_nordeste.csv ← PNAD-IBGE
-│
-├── turismo_nordeste_2021_2025.csv  → Dataset consolidado
-├── turismo_nordeste_2021_2025.json → JSON para o dashboard
-└── prospecoes_2026.json           → Projeções e Índice de Oportunidade BNB
+├── case-turismo/          → Materiais do case original
+└── dados_brutos/
+    ├── chegadas_internacionais_nordeste.csv   ← EMBRATUR / PF
+    ├── receitas_bcb_22741_mensal.csv          ← API Banco Central (SGS)
+    └── receita_turismo_domestico_nordeste.csv ← PNAD-IBGE
 ```
 
 ---
 
-## ✨ Funcionalidades
+## 🛠️ Stack Tecnológica
 
-- ✅ **Filtros dinâmicos** — estado, período e indicador com atualização em tempo real
-- ✅ **Mapa SVG Interativo (GeoViz)** — Filtre todo o dashboard cruzando dados através de cliques diretos nos polígonos dos estados do mapa (*Cross-filtering*).
-- ✅ **Navegação Responsiva** — menu mobile "hamburguer" ajustável a smartphones e tablets com overlay.
-- ✅ **Suporte a Touch Móvel** — tooltips dinâmicos ativados por toque e arraste (`touchmove`) na tela em dispositivos touch.
-- ✅ **Acessibilidade Otimizada (A11y)** — labels ocultas em filtros (`aria-label`) e ocultação de overlay dinâmico de leitores de tela (`aria-hidden`).
-- ✅ **6 seções de visualização** — Visão Geral, Sazonalidade, Ranking, Categorias, Evolução Temporal e Prospecções 2026
-- ✅ **KPIs com variação** — comparativo automático vs. ano anterior (%)
-- ✅ **Gráficos animados** — barras, linhas com área e donut interativo
-- ✅ **Categorias de atração por estado** — perfil real de cada UF (Lençóis Maranhenses domina MA, Carnaval domina PE em fev, etc.)
-- ✅ **Sazonalidade por estado** — padrão mensal real de cada destino (inverno x verão nordestino)
-- ✅ **Exportação real:** 📄 CSV · 📊 Excel · 🖨️ PDF
-- ✅ **Prospecções 2026** — Regressão Linear OLS + Índice de Oportunidade de Investimento BNB
-
----
-
-## 🔮 Prospecções 2026 · Índice de Oportunidade BNB
-
-| Ranking | Estado | Índice | Tier |
-|---------|--------|-------:|------|
-| 🥇 | Sergipe | 93,0 | 🔴 ALTA |
-| 🥈 | Maranhão | 88,4 | 🔴 ALTA |
-| 🥉 | Paraíba | 86,1 | 🔴 ALTA |
-| 4 | Piauí | 85,1 | 🔴 ALTA |
-| 5 | Alagoas | 64,7 | 🟠 MÉDIA-ALTA · CAGR 48,5% |
-| 6-9 | BA · RN · CE · PE | 40–48 | 🟡 Consolidado |
-
-> **Metodologia:** Índice composto = CAGR 3 anos (35%) + Potencial não explorado (35%) + Eficiência econômica (30%) · Projeções por Regressão Linear OLS sobre série 2021–2025
-
----
-
-## 📊 Fontes de Dados
-
-| Indicador | Fonte | Status |
-|-----------|-------|--------|
-| Chegadas internacionais por UF | EMBRATUR / Polícia Federal | ✅ Fechamento 2025 verificado |
-| Receitas de viagens int. | API Banco Central (SGS 22741) | ✅ Integrado via Python |
-| Gasto médio por estado 2024 | PNAD Contínua Turismo – IBGE | ✅ Verificado |
-| Receita turística estimada | MTur + IBGE pro-rata | 🟡 Estimado |
-| Portal MTur CSVs | dados.turismo.gov.br | ❌ 502 (aguardando retorno) |
-
-**Totais nacionais verificados (Anuário Embratur 2025):**  
-2021: 745k · 2022: 3,6M · 2023: 5,9M · 2024: **6,7M chegadas internacionais**
+| Camada | Tecnologia |
+|---|---|
+| **Frontend** | HTML5 + CSS3 + JavaScript puro (ES6+) |
+| **Gráficos** | Canvas API nativa — sem Chart.js, D3 ou bibliotecas externas |
+| **Mapa** | SVG interativo com malha GeoJSON real do IBGE |
+| **Design** | Dark mode · Paleta oceânica · Google Fonts Syne + Inter |
+| **Exportação** | CSV (Blob) · Excel (.xls) · PDF (print CSS A4) |
+| **ETL** | Python 3.8+ · `urllib`, `json`, `csv` — sem dependências pesadas |
+| **Deploy** | GitHub Pages — CI/CD automático via GitHub Actions |
 
 ---
 
 ## 🚀 Como Executar
 
 ```bash
-# Dashboard — abrir no navegador sem instalação
-index.html → duplo clique
+# Opção 1 — Acesso direto (sem instalação)
+# https://idarlandias.github.io/Dashboard-Tur-stico-do-Nordeste/
 
-# Pipeline de dados
-python processar_dados.py           # usa dados verificados embutidos
-python processar_dados.py --refresh # tenta download MTur quando disponível
+# Opção 2 — Localmente
+# Abrir entrevista-bnb.html no navegador (duplo clique)
 
-# Projeções 2026
-python gerar_prospecoes.py
+# Opção 3 — Atualizar malha do mapa (GeoJSON IBGE)
+python fetch_map.py
 ```
 
 ---
 
-## 🛠️ Stack
+## 📋 Descrição Analítica
 
-| Camada | Tecnologia |
-|--------|-----------|
-| **Frontend** | HTML5 + CSS3 + JavaScript puro |
-| **Gráficos** | Canvas API nativa (sem Chart.js) |
-| **Design** | Dark mode · Paleta oceânica · Google Fonts Syne + Inter |
-| **Exportação** | CSV (Blob), Excel (HTML-table XLS), PDF (print CSS A4) |
-| **Backend/ETL** | Python 3.8+ · `urllib`, `json`, `csv` · sem pip pesado |
-| **Dados** | EMBRATUR · PNAD-IBGE · MTur |
+A análise dos dados de **432 registros mensais** revela que o **Ceará** concentra a maior fatia da receita regional (25,5%), impulsionado principalmente por Fortaleza e Jericoacoara. A sazonalidade é um fator relevante: **maio** apresenta o maior faturamento, enquanto **novembro** registra o menor movimento — indicando oportunidade para campanhas de incentivo na baixa temporada.
+
+Entre os tipos de empreendimento, as **agências** lideram em receita média por unidade, sugerindo maior ticket médio nesse segmento. **Genipabu (RN)** se destaca com a maior taxa de ocupação (73,2%), enquanto **Pipa** apresenta a menor (61,1%), apontando potencial de crescimento com estratégias de marketing direcionadas.
+
+Em satisfação do cliente, **Canoa Quebrada** lidera com avaliação 4,2/5, demonstrando excelência no atendimento que pode servir de benchmark para as demais localidades. A correlação entre ocupação e receita confirma que **ocupação elevada não garante alta receita** — o tipo de empreendimento e o perfil do destino influenciam diretamente o faturamento.
 
 ---
 
-## 👤 Candidatura
+## 👤 Autor
 
 ```
-Vaga:    Perfil 2 – ObIT-NE / Banco do Nordeste
-Foco:    Dashboards, Relatórios e UX/UI para turismo
-Prazo:   13/03/2026
+Desenvolvido por: Idarlan Dias
+GitHub:           github.com/idarlandias
+Projeto:          Case Turismo — BNB / ObIT-NE · 2026
 ```
 
 ---
 
 <div align="center">
 
-**Desenvolvido com 🌊 para o Nordeste · ObIT-NE · BNB · 2026**
-
-[![GitHub](https://img.shields.io/badge/GitHub-idarlandias-181717?style=flat-square&logo=github)](https://github.com/idarlandias)
+**Desenvolvido com dedicação para o Nordeste · CE · RN · PE · PI · 2026**
 
 </div>
