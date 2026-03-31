@@ -107,7 +107,9 @@ npx serve .
 
 ## 👨‍💻 Autor
 
-**Idarlan Dias** — Projeto Inova Talentos 🎓
+**Idarlan Dias** ☕ — Projeto Inova Talentos 🎓
+
+> *Desenvolvido com muito amor e café* ☕❤️
 
 ---
 
