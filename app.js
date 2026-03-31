@@ -1561,6 +1561,171 @@ function generateInsights() {
         state: null
     });
 
+    // 7. Ticket Médio — Cidade com maior receita por cliente
+    const cidadeTicket = TODAS_CIDADES.map(c => {
+        const cd = dadosPorCidade[c];
+        if (!cd) return { nome: c, ticket: 0 };
+        const rec = cd.receita.reduce((a, b) => a + b, 0);
+        const cli = cd.clientes.reduce((a, b) => a + b, 0);
+        return { nome: c, ticket: cli > 0 ? rec / cli : 0 };
+    }).sort((a, b) => b.ticket - a.ticket);
+    if (cidadeTicket.length > 1) {
+        const top = cidadeTicket[0];
+        const bottom = cidadeTicket[cidadeTicket.length - 1];
+        const diff = ((top.ticket / bottom.ticket - 1) * 100).toFixed(1);
+        insights.push({
+            type: 'info', icon: '🎫',
+            title: `${top.nome}: Maior ticket médio por cliente`,
+            body: `R$ ${top.ticket.toFixed(2)} por cliente — ${diff}% superior a ${bottom.nome} (R$ ${bottom.ticket.toFixed(2)}). Indica maior poder de monetização por turista.`,
+            state: null
+        });
+    }
+
+    // 8. Correlação Ocupação x Avaliação — Alta ocupação com baixa avaliação = risco
+    const mediaOcupGeral = ESTADOS.reduce((s, e) => s + ocupacao[e].reduce((a, b) => a + b, 0) / 12, 0) / ESTADOS.length;
+    const mediaAvalGeral = ESTADOS.reduce((s, e) => s + avaliacao[e].reduce((a, b) => a + b, 0) / 12, 0) / ESTADOS.length;
+    const cidadeRisco = TODAS_CIDADES.map(c => {
+        const cd = dadosPorCidade[c];
+        if (!cd) return null;
+        const ocup = cd.ocupacao.reduce((a, b) => a + b, 0) / 12;
+        const aval = cd.avaliacao.reduce((a, b) => a + b, 0) / 12;
+        return { nome: c, ocup, aval };
+    }).filter(Boolean);
+    const emRisco = cidadeRisco.filter(c => c.ocup > mediaOcupGeral && c.aval < mediaAvalGeral);
+    if (emRisco.length > 0) {
+        emRisco.sort((a, b) => a.aval - b.aval);
+        insights.push({
+            type: 'alert', icon: '⚠️',
+            title: `${emRisco[0].nome}: Alta ocupação, baixa avaliação`,
+            body: `Ocupação de ${emRisco[0].ocup.toFixed(1)}% (acima da média) mas avaliação de ${emRisco[0].aval.toFixed(2)}/5 (abaixo da média). Risco de deterioração — investir em qualidade do serviço.`,
+            state: null
+        });
+    } else {
+        const destaque = cidadeRisco.filter(c => c.ocup > mediaOcupGeral && c.aval > mediaAvalGeral).sort((a, b) => b.aval - a.aval);
+        if (destaque.length > 0) {
+            insights.push({
+                type: 'success', icon: '✅',
+                title: `${destaque[0].nome}: Equilíbrio demanda × qualidade`,
+                body: `Ocupação de ${destaque[0].ocup.toFixed(1)}% e nota ${destaque[0].aval.toFixed(2)}/5 — ambos acima da média. Destino com demanda sólida e experiência positiva.`,
+                state: null
+            });
+        }
+    }
+
+    // 9. Crescimento Semestral — 1º vs 2º semestre
+    const recTotalMensal = PERIODOS.map((_, i) => ESTADOS.reduce((s, e) => s + receita[e][i], 0));
+    const sem1 = recTotalMensal.slice(0, 6).reduce((a, b) => a + b, 0);
+    const sem2 = recTotalMensal.slice(6, 12).reduce((a, b) => a + b, 0);
+    if (sem1 > 0 && sem2 > 0) {
+        const variacao = ((sem2 - sem1) / sem1 * 100);
+        insights.push({
+            type: variacao > 0 ? 'success' : 'warning', icon: variacao > 0 ? '📈' : '📉',
+            title: `2º semestre: ${variacao > 0 ? 'Crescimento' : 'Retração'} de ${Math.abs(variacao).toFixed(1)}%`,
+            body: `R$ ${(sem1 / 1e6).toFixed(1)}M (1º sem.) → R$ ${(sem2 / 1e6).toFixed(1)}M (2º sem.). ${variacao > 0 ? 'Alta temporada fortalece o 2º semestre.' : 'Oportunidade de ações para aquecer o 2º semestre.'}`,
+            state: null
+        });
+    }
+
+    // 10. Concentração de Clientes — Top cidade em volume vs receita
+    const cidadeClientes = TODAS_CIDADES.map(c => {
+        const cd = dadosPorCidade[c];
+        return { nome: c, clientes: cd ? cd.clientes.reduce((a, b) => a + b, 0) : 0, receita: cd ? cd.receita.reduce((a, b) => a + b, 0) : 0 };
+    });
+    const topClientes = [...cidadeClientes].sort((a, b) => b.clientes - a.clientes)[0];
+    const topReceita = [...cidadeClientes].sort((a, b) => b.receita - a.receita)[0];
+    if (topClientes.nome !== topReceita.nome) {
+        insights.push({
+            type: 'warning', icon: '👥',
+            title: `${topClientes.nome}: Líder em volume, não em receita`,
+            body: `${topClientes.nome} atrai mais turistas (${topClientes.clientes.toLocaleString('pt-BR')}), mas ${topReceita.nome} lidera em receita. Oportunidade de upselling para converter volume em faturamento.`,
+            state: null
+        });
+    } else {
+        const totalCli = cidadeClientes.reduce((s, c) => s + c.clientes, 0);
+        const pct = (topClientes.clientes / totalCli * 100).toFixed(1);
+        insights.push({
+            type: 'info', icon: '👥',
+            title: `${topClientes.nome}: Líder em clientes e receita`,
+            body: `Concentra ${pct}% dos clientes e também lidera em faturamento — forte correlação entre volume e receita neste destino.`,
+            state: null
+        });
+    }
+
+    // 11. Gap de Qualidade por Tipo
+    const tipoAvalRank = TIPOS.map(t => {
+        const td = dadosPorTipo[t];
+        return { tipo: t, media: td ? td.avaliacao.reduce((a, b) => a + b, 0) / 12 : 0 };
+    }).sort((a, b) => b.media - a.media);
+    if (tipoAvalRank.length > 1) {
+        const melhor = tipoAvalRank[0];
+        const pior = tipoAvalRank[tipoAvalRank.length - 1];
+        const gap = melhor.media - pior.media;
+        insights.push({
+            type: gap > 0.2 ? 'warning' : 'info', icon: '🏷️',
+            title: `Gap de qualidade: ${melhor.tipo} vs ${pior.tipo}`,
+            body: `${melhor.tipo} lidera em satisfação (${melhor.media.toFixed(2)}/5) com gap de ${gap.toFixed(2)} pontos sobre ${pior.tipo} (${pior.media.toFixed(2)}/5). ${gap > 0.2 ? 'Diferença significativa — atenção estratégica necessária.' : 'Qualidade homogênea entre segmentos.'}`,
+            state: null
+        });
+    }
+
+    // 12. Eficiência de Ocupação — Alta ocupação + baixa receita = preço baixo
+    const cidadeEficiencia = TODAS_CIDADES.map(c => {
+        const cd = dadosPorCidade[c];
+        if (!cd) return null;
+        return { nome: c, ocup: cd.ocupacao.reduce((a, b) => a + b, 0) / 12, recMedia: cd.receita.reduce((a, b) => a + b, 0) / 12 };
+    }).filter(Boolean);
+    const mediaRecGeral = cidadeEficiencia.reduce((s, c) => s + c.recMedia, 0) / cidadeEficiencia.length;
+    const subAproveitados = cidadeEficiencia.filter(c => c.ocup > mediaOcupGeral && c.recMedia < mediaRecGeral).sort((a, b) => b.ocup - a.ocup);
+    if (subAproveitados.length > 0) {
+        const dest = subAproveitados[0];
+        insights.push({
+            type: 'warning', icon: '💡',
+            title: `${dest.nome}: Ocupação alta, receita abaixo da média`,
+            body: `Ocupação de ${dest.ocup.toFixed(1)}% mas receita média mensal de R$ ${(dest.recMedia / 1e3).toFixed(0)}k. Potencial para reajuste de preços ou oferta de serviços premium.`,
+            state: null
+        });
+    }
+
+    // 13. Destino de Maior Potencial — Score composto (avaliação + ocupação + clientes)
+    const totalClientesGeral = cidadeClientes.reduce((s, c) => s + c.clientes, 0);
+    const cidadeScore = TODAS_CIDADES.map(c => {
+        const cd = dadosPorCidade[c];
+        if (!cd) return null;
+        const aval = cd.avaliacao.reduce((a, b) => a + b, 0) / 12;
+        const ocup = cd.ocupacao.reduce((a, b) => a + b, 0) / 12;
+        const cli = cd.clientes.reduce((a, b) => a + b, 0);
+        const score = (aval / 5) * 0.4 + (ocup / 100) * 0.3 + (cli / totalClientesGeral) * 0.3;
+        return { nome: c, score, aval, ocup };
+    }).filter(Boolean).sort((a, b) => b.score - a.score);
+    if (cidadeScore.length > 1) {
+        const top = cidadeScore[0];
+        insights.push({
+            type: 'success', icon: '🚀',
+            title: `${top.nome}: Destino de maior potencial`,
+            body: `Melhor índice composto (avaliação ${top.aval.toFixed(2)}/5 + ocupação ${top.ocup.toFixed(1)}%). Posiciona-se como prioridade para investimentos em infraestrutura turística.`,
+            state: null
+        });
+    }
+
+    // 14. Estado mais equilibrado — Menor variação de receita entre suas cidades
+    const estadoEquil = ESTADOS.map(e => {
+        const cidades = CIDADES_POR_ESTADO[e] || [];
+        const receitas = cidades.map(c => dadosPorCidade[c] ? dadosPorCidade[c].receita.reduce((a, b) => a + b, 0) : 0);
+        if (receitas.length < 2) return { estado: e, cv: Infinity };
+        const med = receitas.reduce((a, b) => a + b, 0) / receitas.length;
+        const desvio = Math.sqrt(receitas.reduce((s, v) => s + Math.pow(v - med, 2), 0) / receitas.length);
+        return { estado: e, cv: med > 0 ? desvio / med : Infinity };
+    }).filter(e => e.cv !== Infinity).sort((a, b) => a.cv - b.cv);
+    if (estadoEquil.length > 0) {
+        const melhor = estadoEquil[0];
+        insights.push({
+            type: 'info', icon: '⚖️',
+            title: `${melhor.estado}: Receita mais equilibrada entre cidades`,
+            body: `Coeficiente de variação de ${(melhor.cv * 100).toFixed(1)}% entre suas cidades. Indica maturidade turística com desenvolvimento homogêneo dos destinos.`,
+            state: melhor.estado
+        });
+    }
+
     if (estado !== 'Todos') {
         return insights.filter(i => i.state === estado || !i.state);
     }
